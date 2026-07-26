@@ -36,7 +36,9 @@ function NovoPost() {
   const [videoPath, setVideoPath] = useState<string>("");
   const [agendadoPara, setAgendadoPara] = useState<string>("");
   const [uploading, setUploading] = useState(false);
+  const [progresso, setProgresso] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
 
   useEffect(() => {
     if (!editId) return;
