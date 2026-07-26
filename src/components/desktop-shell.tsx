@@ -12,6 +12,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Sparkles,
+  Home,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useMyRole } from "@/hooks/use-role";
@@ -21,29 +22,30 @@ import { toast } from "sonner";
 
 type Item = { to: string; label: string; icon: typeof CalendarDays; exact?: boolean };
 
-const SECTIONS: Array<{ title: string; items: Item[] }> = [
+const SECTIONS: Array<{ title: string | null; items: Item[] }> = [
   {
-    title: "Publicador",
+    title: null,
+    items: [{ to: "/", label: "Início", icon: Home, exact: true }],
+  },
+  {
+    title: "Conversas",
     items: [
-      { to: "/publicador", label: "Agenda", icon: CalendarDays, exact: true },
-      { to: "/publicador/novo", label: "Novo post", icon: PlusCircle },
-      { to: "/publicador/historico", label: "Histórico", icon: Clock },
+      { to: "/conversas", label: "Conversas", icon: MessageCircle },
+      { to: "/automacoes", label: "Automações", icon: Zap },
+      { to: "/contatos", label: "Contatos", icon: Users },
     ],
   },
   {
-    title: "QuitaMany",
+    title: "Publicações",
     items: [
-      { to: "/quitamany", label: "Conversas", icon: MessageCircle, exact: true },
-      { to: "/quitamany/automacoes", label: "Automações", icon: Zap },
-      { to: "/quitamany/contatos", label: "Contatos", icon: Users },
+      { to: "/agenda", label: "Agenda", icon: CalendarDays },
+      { to: "/novo", label: "Novo post", icon: PlusCircle },
+      { to: "/historico", label: "Histórico", icon: Clock },
     ],
   },
 ];
 
-const BOTTOM_ITEMS: Item[] = [
-  { to: "/publicador/ajustes", label: "Ajustes Publicador", icon: Settings },
-  { to: "/quitamany/ajustes", label: "Ajustes QuitaMany", icon: Settings },
-];
+const BOTTOM_ITEMS: Item[] = [{ to: "/ajustes", label: "Ajustes", icon: Settings }];
 
 /**
  * Layout desktop: sidebar fixa 240px (recolhível para 64px) + área de conteúdo.
@@ -66,10 +68,11 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       window.localStorage.setItem("desktop-sidebar-collapsed", collapsed ? "1" : "0");
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }, [collapsed]);
 
-  // Atalho [ para toggle
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement)?.tagName;
@@ -83,8 +86,12 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const isActive = (item: Item) =>
-    item.exact ? location.pathname === item.to : location.pathname.startsWith(item.to);
+  const isActive = (item: Item) => {
+    if (item.exact) return location.pathname === item.to;
+    // Match exact or subpath; special-case conversa/$id -> conversas
+    if (item.to === "/conversas" && location.pathname.startsWith("/conversa/")) return true;
+    return location.pathname === item.to || location.pathname.startsWith(item.to + "/");
+  };
 
   const sair = async () => {
     await supabase.auth.signOut();
@@ -102,8 +109,12 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
           collapsed ? "w-16" : "w-60",
         )}
       >
-        {/* Logo */}
-        <div className={cn("flex h-16 items-center gap-2 border-b border-border/60 px-3", collapsed && "justify-center px-0")}>
+        <div
+          className={cn(
+            "flex h-16 items-center gap-2 border-b border-border/60 px-3",
+            collapsed && "justify-center px-0",
+          )}
+        >
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
             <Sparkles className="h-5 w-5" />
           </div>
@@ -115,11 +126,10 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
           )}
         </div>
 
-        {/* Nav sections */}
         <nav className="flex-1 space-y-4 overflow-y-auto px-2 py-4">
-          {SECTIONS.map((sec) => (
-            <div key={sec.title}>
-              {!collapsed && (
+          {SECTIONS.map((sec, idx) => (
+            <div key={sec.title ?? `sec-${idx}`}>
+              {!collapsed && sec.title && (
                 <p className="mb-1 px-3 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                   {sec.title}
                 </p>
@@ -155,7 +165,6 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
           ))}
         </nav>
 
-        {/* Ajustes + user */}
         <div className="border-t border-border/60 p-2">
           <ul className="mb-2 space-y-0.5">
             {BOTTOM_ITEMS.map((it) => {
@@ -182,7 +191,6 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
             })}
           </ul>
 
-          {/* User card */}
           <div
             className={cn(
               "flex items-center gap-2 rounded-xl bg-accent/40 p-2",
@@ -190,9 +198,7 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
             )}
           >
             <Avatar className="h-9 w-9 shrink-0">
-              <AvatarFallback className="bg-primary/10 text-primary font-bold">
-                {inicial}
-              </AvatarFallback>
+              <AvatarFallback className="bg-primary/10 font-bold text-primary">{inicial}</AvatarFallback>
             </Avatar>
             {!collapsed && (
               <div className="min-w-0 flex-1">
@@ -213,7 +219,6 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
             )}
           </div>
 
-          {/* Toggle */}
           <button
             onClick={() => setCollapsed((c) => !c)}
             title="Recolher sidebar ( [ )"
@@ -221,22 +226,22 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
               "mt-2 flex w-full items-center justify-center gap-1 rounded-lg py-1.5 text-[11px] font-medium text-muted-foreground hover:bg-accent hover:text-foreground",
             )}
           >
-            {collapsed ? <ChevronRight className="h-3.5 w-3.5" /> : (<><ChevronLeft className="h-3.5 w-3.5" /> Recolher</>)}
+            {collapsed ? (
+              <ChevronRight className="h-3.5 w-3.5" />
+            ) : (
+              <>
+                <ChevronLeft className="h-3.5 w-3.5" /> Recolher
+              </>
+            )}
           </button>
         </div>
       </aside>
 
-      {/* Conteúdo */}
-      <div className="flex min-w-0 flex-1 flex-col">
-        {children}
-      </div>
+      <div className="flex min-w-0 flex-1 flex-col">{children}</div>
     </div>
   );
 }
 
-/**
- * Header padrão de páginas desktop: título, subtítulo, breadcrumb e ações.
- */
 export function DesktopPageHeader({
   breadcrumb,
   title,

@@ -11,9 +11,14 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthenticatedQuitamanyRouteRouteImport } from './routes/_authenticated/quitamany/route'
-import { Route as AuthenticatedPublicadorRouteRouteImport } from './routes/_authenticated/publicador/route'
+import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedNovoRouteImport } from './routes/_authenticated/novo'
+import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
+import { Route as AuthenticatedConversasRouteImport } from './routes/_authenticated/conversas'
+import { Route as AuthenticatedContatosRouteImport } from './routes/_authenticated/contatos'
+import { Route as AuthenticatedAutomacoesRouteImport } from './routes/_authenticated/automacoes'
+import { Route as AuthenticatedAjustesRouteImport } from './routes/_authenticated/ajustes'
+import { Route as AuthenticatedAgendaRouteImport } from './routes/_authenticated/agenda'
 import { Route as AuthenticatedQuitamanyIndexRouteImport } from './routes/_authenticated/quitamany/index'
 import { Route as AuthenticatedPublicadorIndexRouteImport } from './routes/_authenticated/publicador/index'
 import { Route as ApiPublicMetaCallbackRouteImport } from './routes/api/public/meta-callback'
@@ -23,6 +28,7 @@ import { Route as AuthenticatedQuitamanyAjustesRouteImport } from './routes/_aut
 import { Route as AuthenticatedPublicadorNovoRouteImport } from './routes/_authenticated/publicador/novo'
 import { Route as AuthenticatedPublicadorHistoricoRouteImport } from './routes/_authenticated/publicador/historico'
 import { Route as AuthenticatedPublicadorAjustesRouteImport } from './routes/_authenticated/publicador/ajustes'
+import { Route as AuthenticatedConversaIdRouteImport } from './routes/_authenticated/conversa.$id'
 import { Route as ApiPublicHooksWebhookInstagramRouteImport } from './routes/api/public/hooks/webhook-instagram'
 import { Route as ApiPublicHooksRenovarTokensRouteImport } from './routes/api/public/hooks/renovar-tokens'
 import { Route as ApiPublicHooksPublicarPostsRouteImport } from './routes/api/public/hooks/publicar-posts'
@@ -37,34 +43,57 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
+const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedQuitamanyRouteRoute =
-  AuthenticatedQuitamanyRouteRouteImport.update({
-    id: '/quitamany',
-    path: '/quitamany',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedPublicadorRouteRoute =
-  AuthenticatedPublicadorRouteRouteImport.update({
-    id: '/publicador',
-    path: '/publicador',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
+const AuthenticatedNovoRoute = AuthenticatedNovoRouteImport.update({
+  id: '/novo',
+  path: '/novo',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHistoricoRoute = AuthenticatedHistoricoRouteImport.update({
+  id: '/historico',
+  path: '/historico',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedConversasRoute = AuthenticatedConversasRouteImport.update({
+  id: '/conversas',
+  path: '/conversas',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedContatosRoute = AuthenticatedContatosRouteImport.update({
+  id: '/contatos',
+  path: '/contatos',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAutomacoesRoute = AuthenticatedAutomacoesRouteImport.update({
+  id: '/automacoes',
+  path: '/automacoes',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAjustesRoute = AuthenticatedAjustesRouteImport.update({
+  id: '/ajustes',
+  path: '/ajustes',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAgendaRoute = AuthenticatedAgendaRouteImport.update({
+  id: '/agenda',
+  path: '/agenda',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedQuitamanyIndexRoute =
   AuthenticatedQuitamanyIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => AuthenticatedQuitamanyRouteRoute,
+    id: '/quitamany/',
+    path: '/quitamany/',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedPublicadorIndexRoute =
   AuthenticatedPublicadorIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => AuthenticatedPublicadorRouteRoute,
+    id: '/publicador/',
+    path: '/publicador/',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const ApiPublicMetaCallbackRoute = ApiPublicMetaCallbackRouteImport.update({
   id: '/api/public/meta-callback',
@@ -73,40 +102,45 @@ const ApiPublicMetaCallbackRoute = ApiPublicMetaCallbackRouteImport.update({
 } as any)
 const AuthenticatedQuitamanyContatosRoute =
   AuthenticatedQuitamanyContatosRouteImport.update({
-    id: '/contatos',
-    path: '/contatos',
-    getParentRoute: () => AuthenticatedQuitamanyRouteRoute,
+    id: '/quitamany/contatos',
+    path: '/quitamany/contatos',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedQuitamanyAutomacoesRoute =
   AuthenticatedQuitamanyAutomacoesRouteImport.update({
-    id: '/automacoes',
-    path: '/automacoes',
-    getParentRoute: () => AuthenticatedQuitamanyRouteRoute,
+    id: '/quitamany/automacoes',
+    path: '/quitamany/automacoes',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedQuitamanyAjustesRoute =
   AuthenticatedQuitamanyAjustesRouteImport.update({
-    id: '/ajustes',
-    path: '/ajustes',
-    getParentRoute: () => AuthenticatedQuitamanyRouteRoute,
+    id: '/quitamany/ajustes',
+    path: '/quitamany/ajustes',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedPublicadorNovoRoute =
   AuthenticatedPublicadorNovoRouteImport.update({
-    id: '/novo',
-    path: '/novo',
-    getParentRoute: () => AuthenticatedPublicadorRouteRoute,
+    id: '/publicador/novo',
+    path: '/publicador/novo',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedPublicadorHistoricoRoute =
   AuthenticatedPublicadorHistoricoRouteImport.update({
-    id: '/historico',
-    path: '/historico',
-    getParentRoute: () => AuthenticatedPublicadorRouteRoute,
+    id: '/publicador/historico',
+    path: '/publicador/historico',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedPublicadorAjustesRoute =
   AuthenticatedPublicadorAjustesRouteImport.update({
-    id: '/ajustes',
-    path: '/ajustes',
-    getParentRoute: () => AuthenticatedPublicadorRouteRoute,
+    id: '/publicador/ajustes',
+    path: '/publicador/ajustes',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedConversaIdRoute = AuthenticatedConversaIdRouteImport.update({
+  id: '/conversa/$id',
+  path: '/conversa/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const ApiPublicHooksWebhookInstagramRoute =
   ApiPublicHooksWebhookInstagramRouteImport.update({
     id: '/api/public/hooks/webhook-instagram',
@@ -127,16 +161,22 @@ const ApiPublicHooksPublicarPostsRoute =
   } as any)
 const AuthenticatedQuitamanyConversaIdRoute =
   AuthenticatedQuitamanyConversaIdRouteImport.update({
-    id: '/conversa/$id',
-    path: '/conversa/$id',
-    getParentRoute: () => AuthenticatedQuitamanyRouteRoute,
+    id: '/quitamany/conversa/$id',
+    path: '/quitamany/conversa/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof AuthenticatedIndexRoute
   '/auth': typeof AuthRoute
-  '/publicador': typeof AuthenticatedPublicadorRouteRouteWithChildren
-  '/quitamany': typeof AuthenticatedQuitamanyRouteRouteWithChildren
+  '/agenda': typeof AuthenticatedAgendaRoute
+  '/ajustes': typeof AuthenticatedAjustesRoute
+  '/automacoes': typeof AuthenticatedAutomacoesRoute
+  '/contatos': typeof AuthenticatedContatosRoute
+  '/conversas': typeof AuthenticatedConversasRoute
+  '/historico': typeof AuthenticatedHistoricoRoute
+  '/novo': typeof AuthenticatedNovoRoute
+  '/conversa/$id': typeof AuthenticatedConversaIdRoute
   '/publicador/ajustes': typeof AuthenticatedPublicadorAjustesRoute
   '/publicador/historico': typeof AuthenticatedPublicadorHistoricoRoute
   '/publicador/novo': typeof AuthenticatedPublicadorNovoRoute
@@ -152,8 +192,16 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/webhook-instagram': typeof ApiPublicHooksWebhookInstagramRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/agenda': typeof AuthenticatedAgendaRoute
+  '/ajustes': typeof AuthenticatedAjustesRoute
+  '/automacoes': typeof AuthenticatedAutomacoesRoute
+  '/contatos': typeof AuthenticatedContatosRoute
+  '/conversas': typeof AuthenticatedConversasRoute
+  '/historico': typeof AuthenticatedHistoricoRoute
+  '/novo': typeof AuthenticatedNovoRoute
+  '/': typeof AuthenticatedIndexRoute
+  '/conversa/$id': typeof AuthenticatedConversaIdRoute
   '/publicador/ajustes': typeof AuthenticatedPublicadorAjustesRoute
   '/publicador/historico': typeof AuthenticatedPublicadorHistoricoRoute
   '/publicador/novo': typeof AuthenticatedPublicadorNovoRoute
@@ -170,11 +218,17 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
-  '/_authenticated/publicador': typeof AuthenticatedPublicadorRouteRouteWithChildren
-  '/_authenticated/quitamany': typeof AuthenticatedQuitamanyRouteRouteWithChildren
+  '/_authenticated/agenda': typeof AuthenticatedAgendaRoute
+  '/_authenticated/ajustes': typeof AuthenticatedAjustesRoute
+  '/_authenticated/automacoes': typeof AuthenticatedAutomacoesRoute
+  '/_authenticated/contatos': typeof AuthenticatedContatosRoute
+  '/_authenticated/conversas': typeof AuthenticatedConversasRoute
+  '/_authenticated/historico': typeof AuthenticatedHistoricoRoute
+  '/_authenticated/novo': typeof AuthenticatedNovoRoute
+  '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/conversa/$id': typeof AuthenticatedConversaIdRoute
   '/_authenticated/publicador/ajustes': typeof AuthenticatedPublicadorAjustesRoute
   '/_authenticated/publicador/historico': typeof AuthenticatedPublicadorHistoricoRoute
   '/_authenticated/publicador/novo': typeof AuthenticatedPublicadorNovoRoute
@@ -194,8 +248,14 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
-    | '/publicador'
-    | '/quitamany'
+    | '/agenda'
+    | '/ajustes'
+    | '/automacoes'
+    | '/contatos'
+    | '/conversas'
+    | '/historico'
+    | '/novo'
+    | '/conversa/$id'
     | '/publicador/ajustes'
     | '/publicador/historico'
     | '/publicador/novo'
@@ -211,8 +271,16 @@ export interface FileRouteTypes {
     | '/api/public/hooks/webhook-instagram'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
     | '/auth'
+    | '/agenda'
+    | '/ajustes'
+    | '/automacoes'
+    | '/contatos'
+    | '/conversas'
+    | '/historico'
+    | '/novo'
+    | '/'
+    | '/conversa/$id'
     | '/publicador/ajustes'
     | '/publicador/historico'
     | '/publicador/novo'
@@ -228,11 +296,17 @@ export interface FileRouteTypes {
     | '/api/public/hooks/webhook-instagram'
   id:
     | '__root__'
-    | '/'
     | '/_authenticated'
     | '/auth'
-    | '/_authenticated/publicador'
-    | '/_authenticated/quitamany'
+    | '/_authenticated/agenda'
+    | '/_authenticated/ajustes'
+    | '/_authenticated/automacoes'
+    | '/_authenticated/contatos'
+    | '/_authenticated/conversas'
+    | '/_authenticated/historico'
+    | '/_authenticated/novo'
+    | '/_authenticated/'
+    | '/_authenticated/conversa/$id'
     | '/_authenticated/publicador/ajustes'
     | '/_authenticated/publicador/historico'
     | '/_authenticated/publicador/novo'
@@ -249,7 +323,6 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   ApiPublicMetaCallbackRoute: typeof ApiPublicMetaCallbackRoute
@@ -274,40 +347,75 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
+    '/_authenticated/': {
+      id: '/_authenticated/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/quitamany': {
-      id: '/_authenticated/quitamany'
-      path: '/quitamany'
-      fullPath: '/quitamany'
-      preLoaderRoute: typeof AuthenticatedQuitamanyRouteRouteImport
+      preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/publicador': {
-      id: '/_authenticated/publicador'
-      path: '/publicador'
-      fullPath: '/publicador'
-      preLoaderRoute: typeof AuthenticatedPublicadorRouteRouteImport
+    '/_authenticated/novo': {
+      id: '/_authenticated/novo'
+      path: '/novo'
+      fullPath: '/novo'
+      preLoaderRoute: typeof AuthenticatedNovoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/historico': {
+      id: '/_authenticated/historico'
+      path: '/historico'
+      fullPath: '/historico'
+      preLoaderRoute: typeof AuthenticatedHistoricoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/conversas': {
+      id: '/_authenticated/conversas'
+      path: '/conversas'
+      fullPath: '/conversas'
+      preLoaderRoute: typeof AuthenticatedConversasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/contatos': {
+      id: '/_authenticated/contatos'
+      path: '/contatos'
+      fullPath: '/contatos'
+      preLoaderRoute: typeof AuthenticatedContatosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/automacoes': {
+      id: '/_authenticated/automacoes'
+      path: '/automacoes'
+      fullPath: '/automacoes'
+      preLoaderRoute: typeof AuthenticatedAutomacoesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/ajustes': {
+      id: '/_authenticated/ajustes'
+      path: '/ajustes'
+      fullPath: '/ajustes'
+      preLoaderRoute: typeof AuthenticatedAjustesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/agenda': {
+      id: '/_authenticated/agenda'
+      path: '/agenda'
+      fullPath: '/agenda'
+      preLoaderRoute: typeof AuthenticatedAgendaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/quitamany/': {
       id: '/_authenticated/quitamany/'
-      path: '/'
+      path: '/quitamany'
       fullPath: '/quitamany/'
       preLoaderRoute: typeof AuthenticatedQuitamanyIndexRouteImport
-      parentRoute: typeof AuthenticatedQuitamanyRouteRoute
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/publicador/': {
       id: '/_authenticated/publicador/'
-      path: '/'
+      path: '/publicador'
       fullPath: '/publicador/'
       preLoaderRoute: typeof AuthenticatedPublicadorIndexRouteImport
-      parentRoute: typeof AuthenticatedPublicadorRouteRoute
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/api/public/meta-callback': {
       id: '/api/public/meta-callback'
@@ -318,45 +426,52 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/quitamany/contatos': {
       id: '/_authenticated/quitamany/contatos'
-      path: '/contatos'
+      path: '/quitamany/contatos'
       fullPath: '/quitamany/contatos'
       preLoaderRoute: typeof AuthenticatedQuitamanyContatosRouteImport
-      parentRoute: typeof AuthenticatedQuitamanyRouteRoute
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/quitamany/automacoes': {
       id: '/_authenticated/quitamany/automacoes'
-      path: '/automacoes'
+      path: '/quitamany/automacoes'
       fullPath: '/quitamany/automacoes'
       preLoaderRoute: typeof AuthenticatedQuitamanyAutomacoesRouteImport
-      parentRoute: typeof AuthenticatedQuitamanyRouteRoute
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/quitamany/ajustes': {
       id: '/_authenticated/quitamany/ajustes'
-      path: '/ajustes'
+      path: '/quitamany/ajustes'
       fullPath: '/quitamany/ajustes'
       preLoaderRoute: typeof AuthenticatedQuitamanyAjustesRouteImport
-      parentRoute: typeof AuthenticatedQuitamanyRouteRoute
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/publicador/novo': {
       id: '/_authenticated/publicador/novo'
-      path: '/novo'
+      path: '/publicador/novo'
       fullPath: '/publicador/novo'
       preLoaderRoute: typeof AuthenticatedPublicadorNovoRouteImport
-      parentRoute: typeof AuthenticatedPublicadorRouteRoute
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/publicador/historico': {
       id: '/_authenticated/publicador/historico'
-      path: '/historico'
+      path: '/publicador/historico'
       fullPath: '/publicador/historico'
       preLoaderRoute: typeof AuthenticatedPublicadorHistoricoRouteImport
-      parentRoute: typeof AuthenticatedPublicadorRouteRoute
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/publicador/ajustes': {
       id: '/_authenticated/publicador/ajustes'
-      path: '/ajustes'
+      path: '/publicador/ajustes'
       fullPath: '/publicador/ajustes'
       preLoaderRoute: typeof AuthenticatedPublicadorAjustesRouteImport
-      parentRoute: typeof AuthenticatedPublicadorRouteRoute
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/conversa/$id': {
+      id: '/_authenticated/conversa/$id'
+      path: '/conversa/$id'
+      fullPath: '/conversa/$id'
+      preLoaderRoute: typeof AuthenticatedConversaIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/api/public/hooks/webhook-instagram': {
       id: '/api/public/hooks/webhook-instagram'
@@ -381,76 +496,60 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/quitamany/conversa/$id': {
       id: '/_authenticated/quitamany/conversa/$id'
-      path: '/conversa/$id'
+      path: '/quitamany/conversa/$id'
       fullPath: '/quitamany/conversa/$id'
       preLoaderRoute: typeof AuthenticatedQuitamanyConversaIdRouteImport
-      parentRoute: typeof AuthenticatedQuitamanyRouteRoute
+      parentRoute: typeof AuthenticatedRouteRoute
     }
   }
 }
 
-interface AuthenticatedPublicadorRouteRouteChildren {
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAgendaRoute: typeof AuthenticatedAgendaRoute
+  AuthenticatedAjustesRoute: typeof AuthenticatedAjustesRoute
+  AuthenticatedAutomacoesRoute: typeof AuthenticatedAutomacoesRoute
+  AuthenticatedContatosRoute: typeof AuthenticatedContatosRoute
+  AuthenticatedConversasRoute: typeof AuthenticatedConversasRoute
+  AuthenticatedHistoricoRoute: typeof AuthenticatedHistoricoRoute
+  AuthenticatedNovoRoute: typeof AuthenticatedNovoRoute
+  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedConversaIdRoute: typeof AuthenticatedConversaIdRoute
   AuthenticatedPublicadorAjustesRoute: typeof AuthenticatedPublicadorAjustesRoute
   AuthenticatedPublicadorHistoricoRoute: typeof AuthenticatedPublicadorHistoricoRoute
   AuthenticatedPublicadorNovoRoute: typeof AuthenticatedPublicadorNovoRoute
-  AuthenticatedPublicadorIndexRoute: typeof AuthenticatedPublicadorIndexRoute
-}
-
-const AuthenticatedPublicadorRouteRouteChildren: AuthenticatedPublicadorRouteRouteChildren =
-  {
-    AuthenticatedPublicadorAjustesRoute: AuthenticatedPublicadorAjustesRoute,
-    AuthenticatedPublicadorHistoricoRoute:
-      AuthenticatedPublicadorHistoricoRoute,
-    AuthenticatedPublicadorNovoRoute: AuthenticatedPublicadorNovoRoute,
-    AuthenticatedPublicadorIndexRoute: AuthenticatedPublicadorIndexRoute,
-  }
-
-const AuthenticatedPublicadorRouteRouteWithChildren =
-  AuthenticatedPublicadorRouteRoute._addFileChildren(
-    AuthenticatedPublicadorRouteRouteChildren,
-  )
-
-interface AuthenticatedQuitamanyRouteRouteChildren {
   AuthenticatedQuitamanyAjustesRoute: typeof AuthenticatedQuitamanyAjustesRoute
   AuthenticatedQuitamanyAutomacoesRoute: typeof AuthenticatedQuitamanyAutomacoesRoute
   AuthenticatedQuitamanyContatosRoute: typeof AuthenticatedQuitamanyContatosRoute
+  AuthenticatedPublicadorIndexRoute: typeof AuthenticatedPublicadorIndexRoute
   AuthenticatedQuitamanyIndexRoute: typeof AuthenticatedQuitamanyIndexRoute
   AuthenticatedQuitamanyConversaIdRoute: typeof AuthenticatedQuitamanyConversaIdRoute
 }
 
-const AuthenticatedQuitamanyRouteRouteChildren: AuthenticatedQuitamanyRouteRouteChildren =
-  {
-    AuthenticatedQuitamanyAjustesRoute: AuthenticatedQuitamanyAjustesRoute,
-    AuthenticatedQuitamanyAutomacoesRoute:
-      AuthenticatedQuitamanyAutomacoesRoute,
-    AuthenticatedQuitamanyContatosRoute: AuthenticatedQuitamanyContatosRoute,
-    AuthenticatedQuitamanyIndexRoute: AuthenticatedQuitamanyIndexRoute,
-    AuthenticatedQuitamanyConversaIdRoute:
-      AuthenticatedQuitamanyConversaIdRoute,
-  }
-
-const AuthenticatedQuitamanyRouteRouteWithChildren =
-  AuthenticatedQuitamanyRouteRoute._addFileChildren(
-    AuthenticatedQuitamanyRouteRouteChildren,
-  )
-
-interface AuthenticatedRouteRouteChildren {
-  AuthenticatedPublicadorRouteRoute: typeof AuthenticatedPublicadorRouteRouteWithChildren
-  AuthenticatedQuitamanyRouteRoute: typeof AuthenticatedQuitamanyRouteRouteWithChildren
-}
-
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedPublicadorRouteRoute:
-    AuthenticatedPublicadorRouteRouteWithChildren,
-  AuthenticatedQuitamanyRouteRoute:
-    AuthenticatedQuitamanyRouteRouteWithChildren,
+  AuthenticatedAgendaRoute: AuthenticatedAgendaRoute,
+  AuthenticatedAjustesRoute: AuthenticatedAjustesRoute,
+  AuthenticatedAutomacoesRoute: AuthenticatedAutomacoesRoute,
+  AuthenticatedContatosRoute: AuthenticatedContatosRoute,
+  AuthenticatedConversasRoute: AuthenticatedConversasRoute,
+  AuthenticatedHistoricoRoute: AuthenticatedHistoricoRoute,
+  AuthenticatedNovoRoute: AuthenticatedNovoRoute,
+  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedConversaIdRoute: AuthenticatedConversaIdRoute,
+  AuthenticatedPublicadorAjustesRoute: AuthenticatedPublicadorAjustesRoute,
+  AuthenticatedPublicadorHistoricoRoute: AuthenticatedPublicadorHistoricoRoute,
+  AuthenticatedPublicadorNovoRoute: AuthenticatedPublicadorNovoRoute,
+  AuthenticatedQuitamanyAjustesRoute: AuthenticatedQuitamanyAjustesRoute,
+  AuthenticatedQuitamanyAutomacoesRoute: AuthenticatedQuitamanyAutomacoesRoute,
+  AuthenticatedQuitamanyContatosRoute: AuthenticatedQuitamanyContatosRoute,
+  AuthenticatedPublicadorIndexRoute: AuthenticatedPublicadorIndexRoute,
+  AuthenticatedQuitamanyIndexRoute: AuthenticatedQuitamanyIndexRoute,
+  AuthenticatedQuitamanyConversaIdRoute: AuthenticatedQuitamanyConversaIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   ApiPublicMetaCallbackRoute: ApiPublicMetaCallbackRoute,

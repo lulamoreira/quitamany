@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 function redirectTo(origin: string, params: Record<string, string>) {
-  const u = new URL(`${origin}/quitamany/ajustes`);
+  const u = new URL(`${origin}/ajustes`);
   Object.entries(params).forEach(([k, v]) => u.searchParams.set(k, v));
   return new Response(null, { status: 302, headers: { Location: u.toString() } });
 }

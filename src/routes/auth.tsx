@@ -28,7 +28,7 @@ function AuthPage() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/publicador" });
+      if (data.session) navigate({ to: "/" });
     });
   }, [navigate]);
 
@@ -49,7 +49,7 @@ function AuthPage() {
     setLoading(true);
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: window.location.origin + "/publicador" },
+      options: { emailRedirectTo: window.location.origin + "/" },
     });
     setLoading(false);
     if (error) return toast.error(error.message);
@@ -65,12 +65,12 @@ function AuthPage() {
         : await supabase.auth.signUp({
             email,
             password,
-            options: { emailRedirectTo: window.location.origin + "/publicador" },
+            options: { emailRedirectTo: window.location.origin + "/" },
           });
     setLoading(false);
     if (error) return toast.error(error.message);
     if (mode === "signup") toast.success("Conta criada! Aguarde aprovação do administrador.");
-    navigate({ to: "/publicador" });
+    navigate({ to: "/" });
   };
 
   return (
