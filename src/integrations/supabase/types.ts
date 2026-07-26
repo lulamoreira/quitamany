@@ -21,6 +21,8 @@ export type Database = {
           id: string
           ig_user_id: string
           token_gerado_em: string
+          ultima_execucao_motor: string | null
+          ultima_execucao_resultado: Json | null
           updated_at: string
         }
         Insert: {
@@ -29,6 +31,8 @@ export type Database = {
           id?: string
           ig_user_id: string
           token_gerado_em?: string
+          ultima_execucao_motor?: string | null
+          ultima_execucao_resultado?: Json | null
           updated_at?: string
         }
         Update: {
@@ -37,6 +41,8 @@ export type Database = {
           id?: string
           ig_user_id?: string
           token_gerado_em?: string
+          ultima_execucao_motor?: string | null
+          ultima_execucao_resultado?: Json | null
           updated_at?: string
         }
         Relationships: []
