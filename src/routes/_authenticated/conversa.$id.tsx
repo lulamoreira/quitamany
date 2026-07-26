@@ -32,15 +32,15 @@ function ConversaPage() {
   const [sending, setSending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const { data: conversa } = useQuery({
+  const { data: conversa, isLoading: loadingConversa } = useQuery({
     queryKey: ["qm-conversa", id],
     queryFn: async () => {
       const { data } = await (supabase as any)
         .from("conversas")
         .select("*, contatos(*)")
         .eq("id", id)
-        .single();
-      return data as any;
+        .maybeSingle();
+      return (data as any) ?? null;
     },
   });
 
