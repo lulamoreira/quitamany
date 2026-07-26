@@ -1,14 +1,16 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, PlusCircle } from "lucide-react";
+import { CalendarDays, PlusCircle, FileDown } from "lucide-react";
 import { format, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
+import { calendarioEditorial } from "@/lib/calendario-editorial";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/publicador/")({
   head: () => ({
