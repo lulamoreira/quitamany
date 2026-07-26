@@ -150,7 +150,7 @@ function ConversaPage() {
                     ) : null}
                     <span className="whitespace-pre-wrap">{m.texto}</span>
                     <div className={cn("mt-1 text-[10px]", isOut ? "text-white/70" : "text-muted-foreground")}>
-                      {formatDistanceToNow(new Date(m.criado_em), { locale: ptBR, addSuffix: true })}
+                      {formatRelative(m.criado_em, { addSuffix: true })}
                     </div>
                   </div>
                 </div>
@@ -251,7 +251,7 @@ function ConversaPage() {
                 ) : null}
                 <span className="whitespace-pre-wrap">{m.texto}</span>
                 <div className={cn("mt-1 text-[10px]", isOut ? "text-white/70" : "text-muted-foreground")}>
-                  {formatDistanceToNow(new Date(m.criado_em), { locale: ptBR, addSuffix: true })}
+                  {formatRelative(m.criado_em, { addSuffix: true })}
                 </div>
               </div>
             </div>
@@ -378,7 +378,7 @@ function ConversaSidebarList({ activeId }: { activeId: string }) {
                     </p>
                     {c.ultima_msg_em && (
                       <span className="ml-auto shrink-0 text-[10px] text-muted-foreground">
-                        {formatDistanceToNow(new Date(c.ultima_msg_em), { locale: ptBR, addSuffix: false })}
+                        {formatRelative(c.ultima_msg_em, { addSuffix: false })}
                       </span>
                     )}
                   </div>
@@ -525,7 +525,7 @@ function ContatoPanelDesktop({
               <li key={a.id} className="rounded-lg bg-accent/40 p-2">
                 <p className="line-clamp-2 text-[11px] font-medium">{a.texto}</p>
                 <p className="mt-0.5 text-[10px] text-muted-foreground">
-                  {formatDistanceToNow(new Date(a.criado_em), { locale: ptBR, addSuffix: true })}
+                  {formatRelative(a.criado_em, { addSuffix: true })}
                 </p>
               </li>
             ))}

@@ -7,8 +7,6 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Users, Search, LayoutList, LayoutGrid } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { useIsDesktop, useSavedView } from "@/hooks/use-desktop";
 import { DesktopPageHeader } from "@/components/desktop-shell";
