@@ -1,0 +1,2 @@
+ALTER TABLE public.eventos_webhook ADD COLUMN IF NOT EXISTS evento_id TEXT;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_eventos_webhook_evento_id ON public.eventos_webhook(evento_id) WHERE evento_id IS NOT NULL;

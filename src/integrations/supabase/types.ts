@@ -152,6 +152,7 @@ export type Database = {
         Row: {
           criado_em: string
           erro: string | null
+          evento_id: string | null
           id: string
           payload: Json | null
           processado: boolean
@@ -160,6 +161,7 @@ export type Database = {
         Insert: {
           criado_em?: string
           erro?: string | null
+          evento_id?: string | null
           id?: string
           payload?: Json | null
           processado?: boolean
@@ -168,6 +170,7 @@ export type Database = {
         Update: {
           criado_em?: string
           erro?: string | null
+          evento_id?: string | null
           id?: string
           payload?: Json | null
           processado?: boolean
