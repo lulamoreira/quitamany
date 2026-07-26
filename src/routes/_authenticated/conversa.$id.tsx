@@ -431,7 +431,7 @@ function ContatoPanelDesktop({
   onChanged: () => void;
 }) {
   const [novaTag, setNovaTag] = useState("");
-  const [notas, setNotas] = useState(contato.notas ?? "");
+  const [notas, setNotas] = useState(contato?.notas ?? "");
   const [savingNotes, setSavingNotes] = useState(false);
 
   // histórico de automações disparadas nesta conversa
@@ -449,40 +449,42 @@ function ContatoPanelDesktop({
     },
   });
 
-  const addTag = async () => {
+    if (!contato?.id) return null;
+
+const addTag = async () => {
     if (!novaTag.trim()) return;
-    const atuais: string[] = contato.etiquetas ?? [];
+    const atuais: string[] = contato?.etiquetas ?? [];
     if (atuais.includes(novaTag.trim())) return;
-    await (supabase as any).from("contatos").update({ etiquetas: [...atuais, novaTag.trim()] }).eq("id", contato.id);
+    await (supabase as any).from("contatos").update({ etiquetas: [...atuais, novaTag.trim()] }).eq("id", contato?.id);
     setNovaTag("");
     onChanged();
   };
   const removeTag = async (t: string) => {
-    const atuais: string[] = contato.etiquetas ?? [];
-    await (supabase as any).from("contatos").update({ etiquetas: atuais.filter((x) => x !== t) }).eq("id", contato.id);
+    const atuais: string[] = contato?.etiquetas ?? [];
+    await (supabase as any).from("contatos").update({ etiquetas: atuais.filter((x) => x !== t) }).eq("id", contato?.id);
     onChanged();
   };
   const salvarNotas = async () => {
     setSavingNotes(true);
-    await (supabase as any).from("contatos").update({ notas }).eq("id", contato.id);
+    await (supabase as any).from("contatos").update({ notas }).eq("id", contato?.id);
     setSavingNotes(false);
     toast.success("Notas salvas");
     onChanged();
   };
 
-  const nome = contato.nome || contato.username || "Contato";
+  const nome = contato?.nome || contato?.username || "Contato";
   const inicial = (nome[0] ?? "?").toUpperCase();
 
   return (
     <div className="space-y-5">
       <div className="text-center">
         <Avatar className="mx-auto h-16 w-16">
-          {contato.foto_url ? <AvatarImage src={contato.foto_url} alt={nome} /> : null}
+          {contato?.foto_url ? <AvatarImage src={contato?.foto_url} alt={nome} /> : null}
           <AvatarFallback className="bg-primary/10 text-primary text-lg font-bold">{inicial}</AvatarFallback>
         </Avatar>
-        <p className="mt-2 text-sm font-bold">{contato.username ? `@${contato.username}` : nome}</p>
-        {contato.nome && contato.username && (
-          <p className="text-xs text-muted-foreground">{contato.nome}</p>
+        <p className="mt-2 text-sm font-bold">{contato?.username ? `@${contato?.username}` : nome}</p>
+        {contato?.nome && contato?.username && (
+          <p className="text-xs text-muted-foreground">{contato?.nome}</p>
         )}
       </div>
 
@@ -491,7 +493,7 @@ function ContatoPanelDesktop({
           <Tag className="h-3 w-3" /> Etiquetas
         </p>
         <div className="mb-2 flex flex-wrap gap-1">
-          {(contato.etiquetas ?? []).map((t: string) => (
+          {(contato?.etiquetas ?? []).map((t: string) => (
             <button
               key={t}
               onClick={() => removeTag(t)}
@@ -500,7 +502,7 @@ function ContatoPanelDesktop({
               {t} ×
             </button>
           ))}
-          {(contato.etiquetas ?? []).length === 0 && (
+          {(contato?.etiquetas ?? []).length === 0 && (
             <p className="text-[11px] text-muted-foreground">Sem etiquetas.</p>
           )}
         </div>
@@ -558,26 +560,28 @@ function ContatoPanelDesktop({
 /** Painel do contato — versão mobile (colapsável). */
 function ContatoPanel({ contato, onChanged }: { contato: any; onChanged: () => void }) {
   const [novaTag, setNovaTag] = useState("");
-  const [notas, setNotas] = useState(contato.notas ?? "");
+  const [notas, setNotas] = useState(contato?.notas ?? "");
   const [savingNotes, setSavingNotes] = useState(false);
   const [open, setOpen] = useState(false);
 
-  const addTag = async () => {
+    if (!contato?.id) return null;
+
+const addTag = async () => {
     if (!novaTag.trim()) return;
-    const atuais: string[] = contato.etiquetas ?? [];
+    const atuais: string[] = contato?.etiquetas ?? [];
     if (atuais.includes(novaTag.trim())) return;
-    await (supabase as any).from("contatos").update({ etiquetas: [...atuais, novaTag.trim()] }).eq("id", contato.id);
+    await (supabase as any).from("contatos").update({ etiquetas: [...atuais, novaTag.trim()] }).eq("id", contato?.id);
     setNovaTag("");
     onChanged();
   };
   const removeTag = async (t: string) => {
-    const atuais: string[] = contato.etiquetas ?? [];
-    await (supabase as any).from("contatos").update({ etiquetas: atuais.filter((x) => x !== t) }).eq("id", contato.id);
+    const atuais: string[] = contato?.etiquetas ?? [];
+    await (supabase as any).from("contatos").update({ etiquetas: atuais.filter((x) => x !== t) }).eq("id", contato?.id);
     onChanged();
   };
   const salvarNotas = async () => {
     setSavingNotes(true);
-    await (supabase as any).from("contatos").update({ notas }).eq("id", contato.id);
+    await (supabase as any).from("contatos").update({ notas }).eq("id", contato?.id);
     setSavingNotes(false);
     toast.success("Notas salvas");
     onChanged();
@@ -593,7 +597,7 @@ function ContatoPanel({ contato, onChanged }: { contato: any; onChanged: () => v
           <div>
             <p className="text-xs font-medium text-muted-foreground">Etiquetas</p>
             <div className="mt-1 flex flex-wrap gap-1">
-              {(contato.etiquetas ?? []).map((t: string) => (
+              {(contato?.etiquetas ?? []).map((t: string) => (
                 <button key={t} onClick={() => removeTag(t)} className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary hover:bg-primary/20">
                   {t} ×
                 </button>
