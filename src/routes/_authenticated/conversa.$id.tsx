@@ -10,9 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { ArrowLeft, Send, Bot, UserCheck, Tag, StickyNote, Loader2, Search, Zap } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { formatRelative } from "@/lib/format-date";
 import { enviarMensagem, alterarModo, marcarLida } from "@/lib/quitamany.functions";
 import { useIsDesktop } from "@/hooks/use-desktop";
 
