@@ -30,6 +30,52 @@ const statusColor: Record<string, string> = {
 function AgendaPage() {
   const navigate = useNavigate();
   const [month] = useState(new Date());
+  const [importando, setImportando] = useState(false);
+  const queryClient = useQueryClient();
+
+  async function importarCalendario() {
+    setImportando(true);
+    try {
+      const { data: userData, error: userErr } = await supabase.auth.getUser();
+      if (userErr || !userData.user) throw userErr ?? new Error("Sem usuário");
+      const userId = userData.user.id;
+
+      const titulos = calendarioEditorial.map((c) => c.titulo);
+      const { data: existentes, error: exErr } = await supabase
+        .from("posts_agendados")
+        .select("titulo")
+        .eq("status", "rascunho")
+        .in("titulo", titulos);
+      if (exErr) throw exErr;
+      const jaExistem = new Set((existentes ?? []).map((r) => r.titulo));
+
+      const novos = calendarioEditorial
+        .filter((c) => !jaExistem.has(c.titulo))
+        .map((c) => ({
+          titulo: c.titulo,
+          legenda: c.legenda,
+          hashtags: c.hashtags,
+          status: "rascunho" as const,
+          criado_por: userId,
+        }));
+
+      if (novos.length === 0) {
+        toast.info("Todos os posts do calendário já estão como rascunho.");
+        return;
+      }
+
+      const { error: insErr } = await supabase.from("posts_agendados").insert(novos);
+      if (insErr) throw insErr;
+
+      toast.success(`${novos.length} rascunho(s) importado(s) do calendário editorial.`);
+      queryClient.invalidateQueries({ queryKey: ["posts-agendados"] });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Erro ao importar calendário");
+    } finally {
+      setImportando(false);
+    }
+  }
+
 
   const { data: posts = [], isLoading } = useQuery({
     queryKey: ["posts-agendados"],
