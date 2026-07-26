@@ -148,7 +148,7 @@ function NovoPost() {
 
       <Card>
         <CardContent className="space-y-4 p-4">
-          <Label>Vídeo (MP4, até 100 MB)</Label>
+          <Label>Vídeo (MP4, MOV ou WebM — convertemos automaticamente)</Label>
           {videoUrl ? (
             <div className="space-y-2">
               <video src={videoUrl} controls className="max-h-64 w-full rounded-md bg-black" />
@@ -171,16 +171,23 @@ function NovoPost() {
                 <Upload className="h-6 w-6 text-muted-foreground" />
               )}
               <span className="text-sm text-muted-foreground">
-                {uploading ? "Enviando..." : "Toque para escolher um vídeo"}
+                {uploading ? (progresso ?? "Enviando…") : "Toque para escolher um vídeo"}
               </span>
+              {!uploading && (
+                <span className="text-[11px] text-muted-foreground">
+                  Aceita MP4, MOV, WebM, MKV. Até 200 MB (converte para MP4 aqui mesmo).
+                </span>
+              )}
               <input
                 type="file"
-                accept="video/mp4"
+                accept="video/*,.webm,.mkv,.mov"
                 className="hidden"
+                disabled={uploading}
                 onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])}
               />
             </label>
           )}
+
         </CardContent>
       </Card>
 
