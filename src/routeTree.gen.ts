@@ -16,6 +16,7 @@ import { Route as AuthenticatedQuitamanyRouteRouteImport } from './routes/_authe
 import { Route as AuthenticatedPublicadorRouteRouteImport } from './routes/_authenticated/publicador/route'
 import { Route as AuthenticatedQuitamanyIndexRouteImport } from './routes/_authenticated/quitamany/index'
 import { Route as AuthenticatedPublicadorIndexRouteImport } from './routes/_authenticated/publicador/index'
+import { Route as ApiPublicMetaCallbackRouteImport } from './routes/api/public/meta-callback'
 import { Route as AuthenticatedQuitamanyContatosRouteImport } from './routes/_authenticated/quitamany/contatos'
 import { Route as AuthenticatedQuitamanyAutomacoesRouteImport } from './routes/_authenticated/quitamany/automacoes'
 import { Route as AuthenticatedQuitamanyAjustesRouteImport } from './routes/_authenticated/quitamany/ajustes'
@@ -23,6 +24,7 @@ import { Route as AuthenticatedPublicadorNovoRouteImport } from './routes/_authe
 import { Route as AuthenticatedPublicadorHistoricoRouteImport } from './routes/_authenticated/publicador/historico'
 import { Route as AuthenticatedPublicadorAjustesRouteImport } from './routes/_authenticated/publicador/ajustes'
 import { Route as ApiPublicHooksWebhookInstagramRouteImport } from './routes/api/public/hooks/webhook-instagram'
+import { Route as ApiPublicHooksRenovarTokensRouteImport } from './routes/api/public/hooks/renovar-tokens'
 import { Route as ApiPublicHooksPublicarPostsRouteImport } from './routes/api/public/hooks/publicar-posts'
 import { Route as AuthenticatedQuitamanyConversaIdRouteImport } from './routes/_authenticated/quitamany/conversa.$id'
 
@@ -64,6 +66,11 @@ const AuthenticatedPublicadorIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedPublicadorRouteRoute,
   } as any)
+const ApiPublicMetaCallbackRoute = ApiPublicMetaCallbackRouteImport.update({
+  id: '/api/public/meta-callback',
+  path: '/api/public/meta-callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedQuitamanyContatosRoute =
   AuthenticatedQuitamanyContatosRouteImport.update({
     id: '/contatos',
@@ -106,6 +113,12 @@ const ApiPublicHooksWebhookInstagramRoute =
     path: '/api/public/hooks/webhook-instagram',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksRenovarTokensRoute =
+  ApiPublicHooksRenovarTokensRouteImport.update({
+    id: '/api/public/hooks/renovar-tokens',
+    path: '/api/public/hooks/renovar-tokens',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksPublicarPostsRoute =
   ApiPublicHooksPublicarPostsRouteImport.update({
     id: '/api/public/hooks/publicar-posts',
@@ -130,10 +143,12 @@ export interface FileRoutesByFullPath {
   '/quitamany/ajustes': typeof AuthenticatedQuitamanyAjustesRoute
   '/quitamany/automacoes': typeof AuthenticatedQuitamanyAutomacoesRoute
   '/quitamany/contatos': typeof AuthenticatedQuitamanyContatosRoute
+  '/api/public/meta-callback': typeof ApiPublicMetaCallbackRoute
   '/publicador/': typeof AuthenticatedPublicadorIndexRoute
   '/quitamany/': typeof AuthenticatedQuitamanyIndexRoute
   '/quitamany/conversa/$id': typeof AuthenticatedQuitamanyConversaIdRoute
   '/api/public/hooks/publicar-posts': typeof ApiPublicHooksPublicarPostsRoute
+  '/api/public/hooks/renovar-tokens': typeof ApiPublicHooksRenovarTokensRoute
   '/api/public/hooks/webhook-instagram': typeof ApiPublicHooksWebhookInstagramRoute
 }
 export interface FileRoutesByTo {
@@ -145,10 +160,12 @@ export interface FileRoutesByTo {
   '/quitamany/ajustes': typeof AuthenticatedQuitamanyAjustesRoute
   '/quitamany/automacoes': typeof AuthenticatedQuitamanyAutomacoesRoute
   '/quitamany/contatos': typeof AuthenticatedQuitamanyContatosRoute
+  '/api/public/meta-callback': typeof ApiPublicMetaCallbackRoute
   '/publicador': typeof AuthenticatedPublicadorIndexRoute
   '/quitamany': typeof AuthenticatedQuitamanyIndexRoute
   '/quitamany/conversa/$id': typeof AuthenticatedQuitamanyConversaIdRoute
   '/api/public/hooks/publicar-posts': typeof ApiPublicHooksPublicarPostsRoute
+  '/api/public/hooks/renovar-tokens': typeof ApiPublicHooksRenovarTokensRoute
   '/api/public/hooks/webhook-instagram': typeof ApiPublicHooksWebhookInstagramRoute
 }
 export interface FileRoutesById {
@@ -164,10 +181,12 @@ export interface FileRoutesById {
   '/_authenticated/quitamany/ajustes': typeof AuthenticatedQuitamanyAjustesRoute
   '/_authenticated/quitamany/automacoes': typeof AuthenticatedQuitamanyAutomacoesRoute
   '/_authenticated/quitamany/contatos': typeof AuthenticatedQuitamanyContatosRoute
+  '/api/public/meta-callback': typeof ApiPublicMetaCallbackRoute
   '/_authenticated/publicador/': typeof AuthenticatedPublicadorIndexRoute
   '/_authenticated/quitamany/': typeof AuthenticatedQuitamanyIndexRoute
   '/_authenticated/quitamany/conversa/$id': typeof AuthenticatedQuitamanyConversaIdRoute
   '/api/public/hooks/publicar-posts': typeof ApiPublicHooksPublicarPostsRoute
+  '/api/public/hooks/renovar-tokens': typeof ApiPublicHooksRenovarTokensRoute
   '/api/public/hooks/webhook-instagram': typeof ApiPublicHooksWebhookInstagramRoute
 }
 export interface FileRouteTypes {
@@ -183,10 +202,12 @@ export interface FileRouteTypes {
     | '/quitamany/ajustes'
     | '/quitamany/automacoes'
     | '/quitamany/contatos'
+    | '/api/public/meta-callback'
     | '/publicador/'
     | '/quitamany/'
     | '/quitamany/conversa/$id'
     | '/api/public/hooks/publicar-posts'
+    | '/api/public/hooks/renovar-tokens'
     | '/api/public/hooks/webhook-instagram'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -198,10 +219,12 @@ export interface FileRouteTypes {
     | '/quitamany/ajustes'
     | '/quitamany/automacoes'
     | '/quitamany/contatos'
+    | '/api/public/meta-callback'
     | '/publicador'
     | '/quitamany'
     | '/quitamany/conversa/$id'
     | '/api/public/hooks/publicar-posts'
+    | '/api/public/hooks/renovar-tokens'
     | '/api/public/hooks/webhook-instagram'
   id:
     | '__root__'
@@ -216,10 +239,12 @@ export interface FileRouteTypes {
     | '/_authenticated/quitamany/ajustes'
     | '/_authenticated/quitamany/automacoes'
     | '/_authenticated/quitamany/contatos'
+    | '/api/public/meta-callback'
     | '/_authenticated/publicador/'
     | '/_authenticated/quitamany/'
     | '/_authenticated/quitamany/conversa/$id'
     | '/api/public/hooks/publicar-posts'
+    | '/api/public/hooks/renovar-tokens'
     | '/api/public/hooks/webhook-instagram'
   fileRoutesById: FileRoutesById
 }
@@ -227,7 +252,9 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiPublicMetaCallbackRoute: typeof ApiPublicMetaCallbackRoute
   ApiPublicHooksPublicarPostsRoute: typeof ApiPublicHooksPublicarPostsRoute
+  ApiPublicHooksRenovarTokensRoute: typeof ApiPublicHooksRenovarTokensRoute
   ApiPublicHooksWebhookInstagramRoute: typeof ApiPublicHooksWebhookInstagramRoute
 }
 
@@ -282,6 +309,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPublicadorIndexRouteImport
       parentRoute: typeof AuthenticatedPublicadorRouteRoute
     }
+    '/api/public/meta-callback': {
+      id: '/api/public/meta-callback'
+      path: '/api/public/meta-callback'
+      fullPath: '/api/public/meta-callback'
+      preLoaderRoute: typeof ApiPublicMetaCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/quitamany/contatos': {
       id: '/_authenticated/quitamany/contatos'
       path: '/contatos'
@@ -329,6 +363,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/hooks/webhook-instagram'
       fullPath: '/api/public/hooks/webhook-instagram'
       preLoaderRoute: typeof ApiPublicHooksWebhookInstagramRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/renovar-tokens': {
+      id: '/api/public/hooks/renovar-tokens'
+      path: '/api/public/hooks/renovar-tokens'
+      fullPath: '/api/public/hooks/renovar-tokens'
+      preLoaderRoute: typeof ApiPublicHooksRenovarTokensRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/hooks/publicar-posts': {
@@ -412,7 +453,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiPublicMetaCallbackRoute: ApiPublicMetaCallbackRoute,
   ApiPublicHooksPublicarPostsRoute: ApiPublicHooksPublicarPostsRoute,
+  ApiPublicHooksRenovarTokensRoute: ApiPublicHooksRenovarTokensRoute,
   ApiPublicHooksWebhookInstagramRoute: ApiPublicHooksWebhookInstagramRoute,
 }
 export const routeTree = rootRouteImport
