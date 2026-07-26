@@ -9,6 +9,8 @@ const META_OAUTH_SCOPES = [
   "instagram_manage_comments",
   "pages_show_list",
   "pages_read_engagement",
+  "pages_messaging",
+  "pages_manage_metadata",
 ].join(",");
 
 async function assertAdmin(supabase: any, userId: string) {
