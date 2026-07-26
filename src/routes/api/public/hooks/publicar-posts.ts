@@ -75,30 +75,39 @@ async function faseB(supabaseAdmin: any, cfg: any) {
       break;
     }
     const code = statusBody.status_code;
-    if (code === "FINISHED") {
-      const pubResp = await fetch(
-        `${GRAPH}/${cfg.ig_user_id}/media_publish?creation_id=${p.container_id}&access_token=${encodeURIComponent(cfg.access_token)}`,
-        { method: "POST" },
-      );
-      const pubBody: any = await pubResp.json();
-      if (!pubResp.ok || pubBody.error) {
-        await supabaseAdmin
-          .from("posts_agendados")
-          .update({ status: "erro", erro_msg: pubBody.error?.message || "Falha ao publicar" })
-          .eq("id", p.id);
-        continue;
+    if (code === "FINISHED" || code === "PUBLISHED") {
+      let mediaId = p.media_id as string | null;
+      // Só publica se ainda não foi publicado (FINISHED = pronto para publicar)
+      if (code === "FINISHED") {
+        const pubResp = await fetch(
+          `${GRAPH}/${cfg.ig_user_id}/media_publish?creation_id=${p.container_id}&access_token=${encodeURIComponent(cfg.access_token)}`,
+          { method: "POST" },
+        );
+        const pubBody: any = await pubResp.json();
+        if (!pubResp.ok || pubBody.error) {
+          await supabaseAdmin
+            .from("posts_agendados")
+            .update({ status: "erro", erro_msg: pubBody.error?.message || "Falha ao publicar" })
+            .eq("id", p.id);
+          continue;
+        }
+        mediaId = pubBody.id;
       }
-      // permalink
-      const linkResp = await fetch(
-        `${GRAPH}/${pubBody.id}?fields=permalink&access_token=${encodeURIComponent(cfg.access_token)}`,
-      );
-      const linkBody: any = await linkResp.json();
+      // Busca permalink
+      let permalink: string | null = null;
+      if (mediaId) {
+        const linkResp = await fetch(
+          `${GRAPH}/${mediaId}?fields=permalink&access_token=${encodeURIComponent(cfg.access_token)}`,
+        );
+        const linkBody: any = await linkResp.json();
+        permalink = linkBody.permalink || null;
+      }
       await supabaseAdmin
         .from("posts_agendados")
         .update({
           status: "publicado",
-          media_id: pubBody.id,
-          permalink: linkBody.permalink || null,
+          media_id: mediaId,
+          permalink,
           publicado_em: new Date().toISOString(),
         })
         .eq("id", p.id);
@@ -109,25 +118,45 @@ async function faseB(supabaseAdmin: any, cfg: any) {
         .update({ status: "erro", erro_msg: "Instagram rejeitou o vídeo" })
         .eq("id", p.id);
     }
-    // caso IN_PROGRESS/PUBLISHED, deixa para próxima rodada
+    // IN_PROGRESS: deixa para próxima rodada
   }
   return { publicados, tokenExpired };
+}
+
+export async function executarMotorPublicacao() {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: cfg } = await supabaseAdmin.from("ig_config").select("*").limit(1).maybeSingle();
+  if (!cfg) {
+    const result = { ok: false as const, msg: "Sem configuração Meta" };
+    return result;
+  }
+  const a = await faseA(supabaseAdmin, cfg);
+  const b = await faseB(supabaseAdmin, cfg);
+  const result = { ok: true as const, a, b, executado_em: new Date().toISOString() };
+  await supabaseAdmin
+    .from("ig_config")
+    .update({
+      ultima_execucao_motor: result.executado_em,
+      ultima_execucao_resultado: result as any,
+    })
+    .eq("id", (cfg as any).id);
+  return result;
 }
 
 export const Route = createFileRoute("/api/public/hooks/publicar-posts")({
   server: {
     handlers: {
-      POST: async () => {
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const { data: cfg } = await supabaseAdmin.from("ig_config").select("*").limit(1).single();
-        if (!cfg) {
-          return new Response(JSON.stringify({ ok: false, msg: "Sem configuração Meta" }), {
+      POST: async ({ request }) => {
+        const secret = process.env.CRON_SECRET;
+        const header = request.headers.get("x-cron-secret");
+        if (!secret || header !== secret) {
+          return new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), {
+            status: 401,
             headers: { "content-type": "application/json" },
           });
         }
-        const a = await faseA(supabaseAdmin, cfg);
-        const b = await faseB(supabaseAdmin, cfg);
-        return new Response(JSON.stringify({ ok: true, a, b }), {
+        const result = await executarMotorPublicacao();
+        return new Response(JSON.stringify(result), {
           headers: { "content-type": "application/json" },
         });
       },
