@@ -18,8 +18,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Eye, EyeOff, LogOut, RefreshCw, CheckCircle2, ExternalLink } from "lucide-react";
-import { testarConexao, renovarToken } from "@/lib/publicador.functions";
+import { Eye, EyeOff, LogOut, RefreshCw, CheckCircle2, ExternalLink, Play, Activity } from "lucide-react";
+import { testarConexao, renovarToken, executarMotorAgora } from "@/lib/publicador.functions";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -45,6 +45,7 @@ function AjustesPage() {
       {role === "admin" && (
         <>
           <ConexaoMeta />
+          <MotorPublicacao />
           <Equipe />
         </>
       )}
@@ -58,6 +59,83 @@ function AjustesPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+function MotorPublicacao() {
+  const qc = useQueryClient();
+  const executar = useServerFn(executarMotorAgora);
+  const [running, setRunning] = useState(false);
+  const [lastResult, setLastResult] = useState<any>(null);
+
+  const { data: cfg } = useQuery({
+    queryKey: ["ig-config-motor"],
+    queryFn: async () => {
+      const { data } = await supabase.from("ig_config").select("*").limit(1).maybeSingle();
+      return data as any;
+    },
+    refetchInterval: 30_000,
+  });
+
+  const ultima = (cfg as any)?.ultima_execucao_motor as string | undefined;
+  const minutosAtras = ultima
+    ? Math.floor((Date.now() - new Date(ultima).getTime()) / 60_000)
+    : null;
+
+  const statusCron =
+    minutosAtras === null
+      ? { label: "Nenhuma execução automática registrada ainda", color: "text-muted-foreground" }
+      : minutosAtras <= 6
+        ? { label: `Última execução automática há ${minutosAtras} min · cron ativo`, color: "text-green-600 dark:text-green-400" }
+        : minutosAtras <= 15
+          ? { label: `Última execução automática há ${minutosAtras} min`, color: "text-yellow-600 dark:text-yellow-500" }
+          : { label: `Última execução automática há ${minutosAtras} min · verifique o cron`, color: "text-red-600 dark:text-red-400" };
+
+  const handleExecutar = async () => {
+    setRunning(true);
+    try {
+      const res: any = await executar({});
+      setLastResult(res);
+      if (res?.ok) {
+        toast.success(
+          `Motor executado: ${res.a?.processados ?? 0} enviados, ${res.b?.publicados ?? 0} publicados`,
+        );
+      } else {
+        toast.error(res?.error || "Falha ao executar motor");
+      }
+      qc.invalidateQueries({ queryKey: ["ig-config-motor"] });
+      qc.invalidateQueries({ queryKey: ["posts"] });
+    } catch (e: any) {
+      toast.error(e?.message || "Erro inesperado");
+    } finally {
+      setRunning(false);
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Motor de publicação</CardTitle>
+        <CardDescription>
+          Publica automaticamente os posts agendados a cada 5 minutos.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="flex items-center gap-2 rounded-lg border bg-muted/30 p-3">
+          <Activity className={`h-4 w-4 ${statusCron.color}`} />
+          <span className={`text-sm ${statusCron.color}`}>{statusCron.label}</span>
+        </div>
+        <Button onClick={handleExecutar} disabled={running} className="w-full">
+          <Play className="mr-2 h-4 w-4" />
+          {running ? "Executando…" : "Executar agora"}
+        </Button>
+        {lastResult && (
+          <pre className="max-h-48 overflow-auto rounded-lg border bg-muted/30 p-3 text-xs">
+{JSON.stringify(lastResult, null, 2)}
+          </pre>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 

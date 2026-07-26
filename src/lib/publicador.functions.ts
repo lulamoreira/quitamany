@@ -68,3 +68,12 @@ export const publicarAgora = createServerFn({ method: "POST" })
     if (error) return { ok: false as const, error: error.message };
     return { ok: true as const };
   });
+
+// Executa o motor manualmente (só admin). Reutiliza o mesmo pipeline do cron.
+export const executarMotorAgora = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { executarMotor } = await import("./motor-publicacao.server");
+    return await executarMotor();
+  });
