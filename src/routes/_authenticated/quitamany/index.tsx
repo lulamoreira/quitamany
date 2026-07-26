@@ -45,12 +45,11 @@ function InboxPage() {
   });
 
   useEffect(() => {
-    const ch = supabase
-      .channel("qm-conversas")
-      .on("postgres_changes", { event: "*", schema: "public", table: "conversas" }, () => {
-        qc.invalidateQueries({ queryKey: ["quitamany-conversas"] });
-      })
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "mensagens" }, () => {
+    const ch = supabase.channel(`qm-conversas-${Math.random().toString(36).slice(2)}`);
+    ch.on("postgres_changes" as any, { event: "*", schema: "public", table: "conversas" }, () => {
+      qc.invalidateQueries({ queryKey: ["quitamany-conversas"] });
+    })
+      .on("postgres_changes" as any, { event: "INSERT", schema: "public", table: "mensagens" }, () => {
         qc.invalidateQueries({ queryKey: ["quitamany-conversas"] });
       })
       .subscribe();
