@@ -82,5 +82,120 @@ export const obterWebhookInfo = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     await assertAdmin(context.supabase, context.userId);
     const token = process.env.WEBHOOK_VERIFY_TOKEN;
-    return { ok: true as const, verify_token: token ?? "" };
+    const { data: cfg } = await (context.supabase as any)
+      .from("ig_config")
+      .select("page_id, ig_user_id, conta_username")
+      .limit(1)
+      .maybeSingle();
+    return {
+      ok: true as const,
+      verify_token: token ?? "",
+      page_id: cfg?.page_id ?? "",
+      ig_user_id: cfg?.ig_user_id ?? "",
+      conta_username: cfg?.conta_username ?? "",
+    };
+  });
+
+export const salvarPageId = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { page_id: string }) => d)
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const sb: any = context.supabase;
+    const { data: cfg } = await sb.from("ig_config").select("id").limit(1).maybeSingle();
+    if (!cfg) return { ok: false as const, error: "Configure a conexão Meta antes." };
+    const { error } = await sb.from("ig_config").update({ page_id: data.page_id }).eq("id", cfg.id);
+    if (error) return { ok: false as const, error: error.message };
+    return { ok: true as const };
+  });
+
+const GRAPH_V25 = "https://graph.facebook.com/v25.0";
+
+async function metaFetch(url: string, init?: RequestInit) {
+  const r = await fetch(url, init);
+  const j = await r.json().catch(() => ({}));
+  return { ok: r.ok, status: r.status, json: j };
+}
+
+export const configurarWebhookMeta = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { callback_url: string }) => d)
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const sb: any = context.supabase;
+
+    const appId = process.env.META_APP_ID;
+    const appSecret = process.env.META_APP_SECRET;
+    const verifyToken = process.env.WEBHOOK_VERIFY_TOKEN;
+    if (!appId || !appSecret) return { ok: false as const, error: "META_APP_ID/META_APP_SECRET não configurados." };
+    if (!verifyToken) return { ok: false as const, error: "WEBHOOK_VERIFY_TOKEN não configurado." };
+
+    const { data: cfg } = await sb.from("ig_config").select("page_id, access_token").limit(1).maybeSingle();
+    if (!cfg?.page_id) return { ok: false as const, error: "Preencha o Page ID em Ajustes antes de configurar." };
+    if (!cfg?.access_token) return { ok: false as const, error: "Conexão Meta não configurada." };
+
+    const appToken = `${appId}|${appSecret}`;
+
+    // Etapa 1: registrar webhook no app
+    const subUrl = new URL(`${GRAPH_V25}/${appId}/subscriptions`);
+    subUrl.searchParams.set("object", "instagram");
+    subUrl.searchParams.set("callback_url", data.callback_url);
+    subUrl.searchParams.set("verify_token", verifyToken);
+    subUrl.searchParams.set("fields", "messages,comments");
+    subUrl.searchParams.set("access_token", appToken);
+    const r1 = await metaFetch(subUrl.toString(), { method: "POST" });
+    const etapa1 = r1.ok && (r1.json?.success === true || r1.json?.success === undefined)
+      ? { ok: true as const, msg: "Webhook registrado no app (instagram: messages, comments)." }
+      : { ok: false as const, msg: r1.json?.error?.message || `Falha (${r1.status})` };
+
+    // Etapa 2: page access token + subscribed_apps
+    let etapa2: { ok: boolean; msg: string };
+    const tokUrl = `${GRAPH_V25}/${cfg.page_id}?fields=access_token&access_token=${encodeURIComponent(cfg.access_token)}`;
+    const rTok = await metaFetch(tokUrl);
+    if (!rTok.ok || !rTok.json?.access_token) {
+      etapa2 = { ok: false, msg: rTok.json?.error?.message || "Não foi possível obter o page access token." };
+    } else {
+      const pageToken = rTok.json.access_token as string;
+      const subAppUrl = `${GRAPH_V25}/${cfg.page_id}/subscribed_apps?subscribed_fields=messages&access_token=${encodeURIComponent(pageToken)}`;
+      const r2 = await metaFetch(subAppUrl, { method: "POST" });
+      etapa2 = r2.ok && r2.json?.success !== false
+        ? { ok: true, msg: "Página inscrita no app (subscribed_fields: messages)." }
+        : { ok: false, msg: r2.json?.error?.message || `Falha (${r2.status})` };
+    }
+
+    return { ok: true as const, etapa1, etapa2 };
+  });
+
+export const verificarStatusWebhook = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const sb: any = context.supabase;
+
+    const appId = process.env.META_APP_ID;
+    const appSecret = process.env.META_APP_SECRET;
+    if (!appId || !appSecret) return { ok: false as const, error: "META_APP_ID/META_APP_SECRET não configurados." };
+
+    const { data: cfg } = await sb.from("ig_config").select("page_id, access_token").limit(1).maybeSingle();
+    const appToken = `${appId}|${appSecret}`;
+
+    const rSub = await metaFetch(`${GRAPH_V25}/${appId}/subscriptions?access_token=${encodeURIComponent(appToken)}`);
+    const app_subscriptions = rSub.ok
+      ? { ok: true as const, data: rSub.json?.data ?? [] }
+      : { ok: false as const, error: rSub.json?.error?.message || `Falha (${rSub.status})` };
+
+    let page_subscribed: any = { ok: false, error: "Page ID não configurado." };
+    if (cfg?.page_id && cfg?.access_token) {
+      const rTok = await metaFetch(`${GRAPH_V25}/${cfg.page_id}?fields=access_token&access_token=${encodeURIComponent(cfg.access_token)}`);
+      if (rTok.ok && rTok.json?.access_token) {
+        const rApps = await metaFetch(`${GRAPH_V25}/${cfg.page_id}/subscribed_apps?access_token=${encodeURIComponent(rTok.json.access_token)}`);
+        page_subscribed = rApps.ok
+          ? { ok: true, data: rApps.json?.data ?? [] }
+          : { ok: false, error: rApps.json?.error?.message || `Falha (${rApps.status})` };
+      } else {
+        page_subscribed = { ok: false, error: rTok.json?.error?.message || "Falha ao obter page token." };
+      }
+    }
+
+    return { ok: true as const, app_subscriptions, page_subscribed };
   });
