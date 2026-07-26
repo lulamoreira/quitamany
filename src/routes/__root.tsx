@@ -79,12 +79,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Publicador · Agendador de Reels" },
-      { name: "description", content: "Agende e publique Reels no Instagram @quitanda3d." },
-      { property: "og:title", content: "Publicador · Agendador de Reels" },
-      { property: "og:description", content: "Agende e publique Reels no Instagram @quitanda3d." },
+      { title: "QuitaMany · Agendador" },
+      { name: "description", content: "Agende e publique" },
+      { property: "og:title", content: "QuitaMany · Agendador" },
+      { property: "og:description", content: "Agende e publique" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "QuitaMany · Agendador" },
+      { name: "twitter:description", content: "Agende e publique" },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/385a3e1f-e59a-4d05-842e-7beeb29df667/id-preview-bb392726--f9d6cc4c-7749-4209-9603-8b93ab1f910d.lovable.app-1785034132224.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/385a3e1f-e59a-4d05-842e-7beeb29df667/id-preview-bb392726--f9d6cc4c-7749-4209-9603-8b93ab1f910d.lovable.app-1785034132224.png" },
     ],
     links: [
       {
