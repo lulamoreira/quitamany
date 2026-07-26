@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { formatRelative } from "@/lib/format-date";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,8 +7,6 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Users, Search, LayoutList, LayoutGrid } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { useIsDesktop, useSavedView } from "@/hooks/use-desktop";
 import { DesktopPageHeader } from "@/components/desktop-shell";
@@ -155,7 +154,7 @@ function ContatosPage() {
                           </div>
                         </td>
                         <td className="px-4 py-2.5 text-xs text-muted-foreground">
-                          {formatDistanceToNow(new Date(c.ultima_interacao), { locale: ptBR, addSuffix: true })}
+                          {formatRelative(c.ultima_interacao, { addSuffix: true })}
                         </td>
                       </tr>
                     );
@@ -230,7 +229,7 @@ function ContatosPage() {
                   </div>
                 </div>
                 <span className="shrink-0 text-[11px] text-muted-foreground">
-                  {formatDistanceToNow(new Date(c.ultima_interacao), { locale: ptBR, addSuffix: true })}
+                  {formatRelative(c.ultima_interacao, { addSuffix: true })}
                 </span>
               </Card>
             );

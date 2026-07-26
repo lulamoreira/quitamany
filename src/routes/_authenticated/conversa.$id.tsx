@@ -10,9 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { ArrowLeft, Send, Bot, UserCheck, Tag, StickyNote, Loader2, Search, Zap } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { formatRelative } from "@/lib/format-date";
 import { enviarMensagem, alterarModo, marcarLida } from "@/lib/quitamany.functions";
 import { useIsDesktop } from "@/hooks/use-desktop";
 
@@ -33,15 +32,15 @@ function ConversaPage() {
   const [sending, setSending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const { data: conversa } = useQuery({
+  const { data: conversa, isLoading: loadingConversa } = useQuery({
     queryKey: ["qm-conversa", id],
     queryFn: async () => {
       const { data } = await (supabase as any)
         .from("conversas")
         .select("*, contatos(*)")
         .eq("id", id)
-        .single();
-      return data as any;
+        .maybeSingle();
+      return (data as any) ?? null;
     },
   });
 
@@ -75,11 +74,11 @@ function ConversaPage() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [mensagens]);
 
-  const contato = conversa?.contatos;
+  const contato = conversa?.contatos ?? null;
   const nome = contato?.nome || contato?.username || "Contato";
-  const inicial = (nome[0] ?? "?").toUpperCase();
+  const inicial = ((nome?.[0] ?? "?") as string).toUpperCase();
   const janelaExpirou =
-    conversa?.janela_expira_em && new Date(conversa.janela_expira_em).getTime() < Date.now();
+    !!conversa?.janela_expira_em && new Date(conversa.janela_expira_em).getTime() < Date.now();
 
   const handleEnviar = async () => {
     if (!texto.trim() || sending) return;
@@ -101,6 +100,25 @@ function ConversaPage() {
       qc.invalidateQueries({ queryKey: ["qm-conversa", id] });
     }
   };
+
+  // Loading / not-found guards — evitar TypeError antes das queries carregarem
+  if (loadingConversa) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+  if (!conversa) {
+    return (
+      <div className="flex h-[60vh] flex-col items-center justify-center gap-3 text-center">
+        <p className="text-sm text-muted-foreground">Conversa não encontrada.</p>
+        <Button variant="outline" onClick={() => navigate({ to: "/conversas" })}>
+          <ArrowLeft className="mr-1 h-4 w-4" /> Voltar para conversas
+        </Button>
+      </div>
+    );
+  }
 
   // ---- Desktop: 3 colunas (lista | chat | painel do contato) ----
   if (isDesktop) {
@@ -151,7 +169,7 @@ function ConversaPage() {
                     ) : null}
                     <span className="whitespace-pre-wrap">{m.texto}</span>
                     <div className={cn("mt-1 text-[10px]", isOut ? "text-white/70" : "text-muted-foreground")}>
-                      {formatDistanceToNow(new Date(m.criado_em), { locale: ptBR, addSuffix: true })}
+                      {formatRelative(m.criado_em, { addSuffix: true })}
                     </div>
                   </div>
                 </div>
@@ -252,7 +270,7 @@ function ConversaPage() {
                 ) : null}
                 <span className="whitespace-pre-wrap">{m.texto}</span>
                 <div className={cn("mt-1 text-[10px]", isOut ? "text-white/70" : "text-muted-foreground")}>
-                  {formatDistanceToNow(new Date(m.criado_em), { locale: ptBR, addSuffix: true })}
+                  {formatRelative(m.criado_em, { addSuffix: true })}
                 </div>
               </div>
             </div>
@@ -379,7 +397,7 @@ function ConversaSidebarList({ activeId }: { activeId: string }) {
                     </p>
                     {c.ultima_msg_em && (
                       <span className="ml-auto shrink-0 text-[10px] text-muted-foreground">
-                        {formatDistanceToNow(new Date(c.ultima_msg_em), { locale: ptBR, addSuffix: false })}
+                        {formatRelative(c.ultima_msg_em, { addSuffix: false })}
                       </span>
                     )}
                   </div>
@@ -413,7 +431,7 @@ function ContatoPanelDesktop({
   onChanged: () => void;
 }) {
   const [novaTag, setNovaTag] = useState("");
-  const [notas, setNotas] = useState(contato.notas ?? "");
+  const [notas, setNotas] = useState(contato?.notas ?? "");
   const [savingNotes, setSavingNotes] = useState(false);
 
   // histórico de automações disparadas nesta conversa
@@ -431,40 +449,42 @@ function ContatoPanelDesktop({
     },
   });
 
-  const addTag = async () => {
+    if (!contato?.id) return null;
+
+const addTag = async () => {
     if (!novaTag.trim()) return;
-    const atuais: string[] = contato.etiquetas ?? [];
+    const atuais: string[] = contato?.etiquetas ?? [];
     if (atuais.includes(novaTag.trim())) return;
-    await (supabase as any).from("contatos").update({ etiquetas: [...atuais, novaTag.trim()] }).eq("id", contato.id);
+    await (supabase as any).from("contatos").update({ etiquetas: [...atuais, novaTag.trim()] }).eq("id", contato?.id);
     setNovaTag("");
     onChanged();
   };
   const removeTag = async (t: string) => {
-    const atuais: string[] = contato.etiquetas ?? [];
-    await (supabase as any).from("contatos").update({ etiquetas: atuais.filter((x) => x !== t) }).eq("id", contato.id);
+    const atuais: string[] = contato?.etiquetas ?? [];
+    await (supabase as any).from("contatos").update({ etiquetas: atuais.filter((x) => x !== t) }).eq("id", contato?.id);
     onChanged();
   };
   const salvarNotas = async () => {
     setSavingNotes(true);
-    await (supabase as any).from("contatos").update({ notas }).eq("id", contato.id);
+    await (supabase as any).from("contatos").update({ notas }).eq("id", contato?.id);
     setSavingNotes(false);
     toast.success("Notas salvas");
     onChanged();
   };
 
-  const nome = contato.nome || contato.username || "Contato";
+  const nome = contato?.nome || contato?.username || "Contato";
   const inicial = (nome[0] ?? "?").toUpperCase();
 
   return (
     <div className="space-y-5">
       <div className="text-center">
         <Avatar className="mx-auto h-16 w-16">
-          {contato.foto_url ? <AvatarImage src={contato.foto_url} alt={nome} /> : null}
+          {contato?.foto_url ? <AvatarImage src={contato?.foto_url} alt={nome} /> : null}
           <AvatarFallback className="bg-primary/10 text-primary text-lg font-bold">{inicial}</AvatarFallback>
         </Avatar>
-        <p className="mt-2 text-sm font-bold">{contato.username ? `@${contato.username}` : nome}</p>
-        {contato.nome && contato.username && (
-          <p className="text-xs text-muted-foreground">{contato.nome}</p>
+        <p className="mt-2 text-sm font-bold">{contato?.username ? `@${contato?.username}` : nome}</p>
+        {contato?.nome && contato?.username && (
+          <p className="text-xs text-muted-foreground">{contato?.nome}</p>
         )}
       </div>
 
@@ -473,7 +493,7 @@ function ContatoPanelDesktop({
           <Tag className="h-3 w-3" /> Etiquetas
         </p>
         <div className="mb-2 flex flex-wrap gap-1">
-          {(contato.etiquetas ?? []).map((t: string) => (
+          {(contato?.etiquetas ?? []).map((t: string) => (
             <button
               key={t}
               onClick={() => removeTag(t)}
@@ -482,7 +502,7 @@ function ContatoPanelDesktop({
               {t} ×
             </button>
           ))}
-          {(contato.etiquetas ?? []).length === 0 && (
+          {(contato?.etiquetas ?? []).length === 0 && (
             <p className="text-[11px] text-muted-foreground">Sem etiquetas.</p>
           )}
         </div>
@@ -526,7 +546,7 @@ function ContatoPanelDesktop({
               <li key={a.id} className="rounded-lg bg-accent/40 p-2">
                 <p className="line-clamp-2 text-[11px] font-medium">{a.texto}</p>
                 <p className="mt-0.5 text-[10px] text-muted-foreground">
-                  {formatDistanceToNow(new Date(a.criado_em), { locale: ptBR, addSuffix: true })}
+                  {formatRelative(a.criado_em, { addSuffix: true })}
                 </p>
               </li>
             ))}
@@ -540,26 +560,28 @@ function ContatoPanelDesktop({
 /** Painel do contato — versão mobile (colapsável). */
 function ContatoPanel({ contato, onChanged }: { contato: any; onChanged: () => void }) {
   const [novaTag, setNovaTag] = useState("");
-  const [notas, setNotas] = useState(contato.notas ?? "");
+  const [notas, setNotas] = useState(contato?.notas ?? "");
   const [savingNotes, setSavingNotes] = useState(false);
   const [open, setOpen] = useState(false);
 
-  const addTag = async () => {
+    if (!contato?.id) return null;
+
+const addTag = async () => {
     if (!novaTag.trim()) return;
-    const atuais: string[] = contato.etiquetas ?? [];
+    const atuais: string[] = contato?.etiquetas ?? [];
     if (atuais.includes(novaTag.trim())) return;
-    await (supabase as any).from("contatos").update({ etiquetas: [...atuais, novaTag.trim()] }).eq("id", contato.id);
+    await (supabase as any).from("contatos").update({ etiquetas: [...atuais, novaTag.trim()] }).eq("id", contato?.id);
     setNovaTag("");
     onChanged();
   };
   const removeTag = async (t: string) => {
-    const atuais: string[] = contato.etiquetas ?? [];
-    await (supabase as any).from("contatos").update({ etiquetas: atuais.filter((x) => x !== t) }).eq("id", contato.id);
+    const atuais: string[] = contato?.etiquetas ?? [];
+    await (supabase as any).from("contatos").update({ etiquetas: atuais.filter((x) => x !== t) }).eq("id", contato?.id);
     onChanged();
   };
   const salvarNotas = async () => {
     setSavingNotes(true);
-    await (supabase as any).from("contatos").update({ notas }).eq("id", contato.id);
+    await (supabase as any).from("contatos").update({ notas }).eq("id", contato?.id);
     setSavingNotes(false);
     toast.success("Notas salvas");
     onChanged();
@@ -575,7 +597,7 @@ function ContatoPanel({ contato, onChanged }: { contato: any; onChanged: () => v
           <div>
             <p className="text-xs font-medium text-muted-foreground">Etiquetas</p>
             <div className="mt-1 flex flex-wrap gap-1">
-              {(contato.etiquetas ?? []).map((t: string) => (
+              {(contato?.etiquetas ?? []).map((t: string) => (
                 <button key={t} onClick={() => removeTag(t)} className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary hover:bg-primary/20">
                   {t} ×
                 </button>

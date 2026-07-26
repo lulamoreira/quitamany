@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { formatRelative } from "@/lib/format-date";
 import {
   DndContext,
   DragOverlay,
@@ -14,8 +15,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { formatDistanceToNow } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { usePrefersReducedMotion } from "@/hooks/use-desktop";
 import { Sparkles, User2, FileText, ShoppingBag, HelpCircle } from "lucide-react";
@@ -201,7 +200,7 @@ function ContatoCardVisual({ c, elevated }: { c: Contato; elevated?: boolean }) 
         <div className="min-w-0 flex-1">
           <p className="truncate text-xs font-semibold">{c.username ? `@${c.username}` : nome}</p>
           <p className="truncate text-[10px] text-muted-foreground">
-            {formatDistanceToNow(new Date(c.ultima_interacao), { locale: ptBR, addSuffix: true })}
+            {formatRelative(c.ultima_interacao, { addSuffix: true })}
           </p>
         </div>
       </div>

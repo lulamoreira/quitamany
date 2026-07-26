@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { formatRelative } from "@/lib/format-date";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,8 +7,6 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MessageCircle, Bot, UserCheck, Clock, Search } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { useIsDesktop } from "@/hooks/use-desktop";
 import { DesktopPageHeader } from "@/components/desktop-shell";
@@ -177,7 +176,7 @@ function ConversaRow({ c }: { c: ConversaComContato }) {
               </p>
               {c.ultima_msg_em && (
                 <span className="ml-auto shrink-0 text-[10px] text-muted-foreground">
-                  {formatDistanceToNow(new Date(c.ultima_msg_em), { locale: ptBR, addSuffix: false })}
+                  {formatRelative(c.ultima_msg_em, { addSuffix: false })}
                 </span>
               )}
             </div>
@@ -224,7 +223,7 @@ function ConversaCard({ c }: { c: ConversaComContato }) {
         <div className="flex flex-col items-end gap-1">
           {c.ultima_msg_em ? (
             <span className="text-[11px] text-muted-foreground">
-              {formatDistanceToNow(new Date(c.ultima_msg_em), { locale: ptBR, addSuffix: false })}
+              {formatRelative(c.ultima_msg_em, { addSuffix: false })}
             </span>
           ) : null}
           {c.nao_lidas > 0 ? (
