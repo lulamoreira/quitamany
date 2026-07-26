@@ -36,7 +36,9 @@ function NovoPost() {
   const [videoPath, setVideoPath] = useState<string>("");
   const [agendadoPara, setAgendadoPara] = useState<string>("");
   const [uploading, setUploading] = useState(false);
+  const [progresso, setProgresso] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
 
   useEffect(() => {
     if (!editId) return;
@@ -59,27 +61,53 @@ function NovoPost() {
       });
   }, [editId]);
 
-  const handleUpload = async (file: File) => {
-    if (file.size > 100 * 1024 * 1024) {
-      toast.error("O vídeo precisa ter até 100 MB");
+  const handleUpload = async (fileOriginal: File) => {
+    if (fileOriginal.size > 200 * 1024 * 1024) {
+      toast.error("O vídeo precisa ter até 200 MB (antes da conversão)");
       return;
     }
     setUploading(true);
-    const path = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
-    const { error } = await supabase.storage.from("videos-instagram").upload(path, file, {
-      contentType: file.type,
-      upsert: false,
-    });
-    if (error) {
+    setProgresso(null);
+    try {
+      let file = fileOriginal;
+      const nome = fileOriginal.name.toLowerCase();
+      const precisaConverter = !(fileOriginal.type === "video/mp4" || nome.endsWith(".mp4"));
+      if (precisaConverter) {
+        const { garantirMp4 } = await import("@/lib/video-converter");
+        setProgresso("Preparando conversor…");
+        file = await garantirMp4(fileOriginal, ({ ratio, note }) => {
+          if (note) setProgresso(note);
+          else setProgresso(`Convertendo para MP4… ${Math.round(ratio * 100)}%`);
+        });
+        setProgresso("Enviando MP4…");
+      }
+      if (file.size > 100 * 1024 * 1024) {
+        setUploading(false);
+        setProgresso(null);
+        toast.error("Depois da conversão o vídeo ainda passou de 100 MB — reduza a duração ou qualidade");
+        return;
+      }
+      const path = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+      const { error } = await supabase.storage.from("videos-instagram").upload(path, file, {
+        contentType: "video/mp4",
+        upsert: false,
+      });
+      if (error) {
+        toast.error("Falha no upload: " + error.message);
+        return;
+      }
+      const { data } = supabase.storage.from("videos-instagram").getPublicUrl(path);
+      setVideoPath(path);
+      setVideoUrl(data.publicUrl);
+      toast.success(precisaConverter ? "Vídeo convertido e enviado!" : "Vídeo enviado!");
+    } catch (e: any) {
+      toast.error("Falha ao processar vídeo: " + (e?.message ?? "erro desconhecido"));
+    } finally {
       setUploading(false);
-      return toast.error("Falha no upload: " + error.message);
+      setProgresso(null);
     }
-    const { data } = supabase.storage.from("videos-instagram").getPublicUrl(path);
-    setVideoPath(path);
-    setVideoUrl(data.publicUrl);
-    setUploading(false);
-    toast.success("Vídeo enviado!");
   };
+
 
   const setAtalho = (hora: number) => {
     const d = new Date();
@@ -120,7 +148,7 @@ function NovoPost() {
 
       <Card>
         <CardContent className="space-y-4 p-4">
-          <Label>Vídeo (MP4, até 100 MB)</Label>
+          <Label>Vídeo (MP4, MOV ou WebM — convertemos automaticamente)</Label>
           {videoUrl ? (
             <div className="space-y-2">
               <video src={videoUrl} controls className="max-h-64 w-full rounded-md bg-black" />
@@ -143,16 +171,23 @@ function NovoPost() {
                 <Upload className="h-6 w-6 text-muted-foreground" />
               )}
               <span className="text-sm text-muted-foreground">
-                {uploading ? "Enviando..." : "Toque para escolher um vídeo"}
+                {uploading ? (progresso ?? "Enviando…") : "Toque para escolher um vídeo"}
               </span>
+              {!uploading && (
+                <span className="text-[11px] text-muted-foreground">
+                  Aceita MP4, MOV, WebM, MKV. Até 200 MB (converte para MP4 aqui mesmo).
+                </span>
+              )}
               <input
                 type="file"
-                accept="video/mp4"
+                accept="video/*,.webm,.mkv,.mov"
                 className="hidden"
+                disabled={uploading}
                 onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])}
               />
             </label>
           )}
+
         </CardContent>
       </Card>
 
