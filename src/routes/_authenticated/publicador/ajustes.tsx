@@ -18,8 +18,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Eye, EyeOff, LogOut, RefreshCw, CheckCircle2, ExternalLink } from "lucide-react";
-import { testarConexao, renovarToken } from "@/lib/publicador.functions";
+import { Eye, EyeOff, LogOut, RefreshCw, CheckCircle2, ExternalLink, Play, Activity } from "lucide-react";
+import { testarConexao, renovarToken, executarMotorAgora } from "@/lib/publicador.functions";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -45,6 +45,7 @@ function AjustesPage() {
       {role === "admin" && (
         <>
           <ConexaoMeta />
+          <MotorPublicacao />
           <Equipe />
         </>
       )}
