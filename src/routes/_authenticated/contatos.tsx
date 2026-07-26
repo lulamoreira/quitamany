@@ -13,7 +13,7 @@ import { useIsDesktop, useSavedView } from "@/hooks/use-desktop";
 import { DesktopPageHeader } from "@/components/desktop-shell";
 import { FunilContatos } from "@/components/contatos/funil-contatos";
 
-export const Route = createFileRoute("/_authenticated/quitamany/contatos")({
+export const Route = createFileRoute("/_authenticated/contatos")({
   head: () => ({ meta: [{ title: "Contatos · QuitaMany" }] }),
   component: ContatosPage,
 });
@@ -67,7 +67,7 @@ function ContatosPage() {
       .order("ultima_msg_em", { ascending: false })
       .limit(1)
       .maybeSingle();
-    if (data?.id) navigate({ to: "/quitamany/conversa/$id", params: { id: data.id } });
+    if (data?.id) navigate({ to: "/conversa/$id", params: { id: data.id } });
   };
 
   if (isDesktop) {

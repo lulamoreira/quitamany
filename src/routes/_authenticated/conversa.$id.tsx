@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 import { enviarMensagem, alterarModo, marcarLida } from "@/lib/quitamany.functions";
 import { useIsDesktop } from "@/hooks/use-desktop";
 
-export const Route = createFileRoute("/_authenticated/quitamany/conversa/$id")({
+export const Route = createFileRoute("/_authenticated/conversa/$id")({
   head: () => ({ meta: [{ title: "Conversa · QuitaMany" }] }),
   component: ConversaPage,
 });
@@ -208,7 +208,7 @@ function ConversaPage() {
   return (
     <div className="flex h-[calc(100vh-9rem)] flex-col">
       <Card className="mb-3 flex items-center gap-3 border-transparent p-3 shadow-[var(--shadow-card)]">
-        <Button variant="ghost" size="icon" onClick={() => navigate({ to: "/quitamany" })}>
+        <Button variant="ghost" size="icon" onClick={() => navigate({ to: "/conversas" })}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <Avatar className="h-10 w-10">
@@ -361,7 +361,7 @@ function ConversaSidebarList({ activeId }: { activeId: string }) {
           const inicial = (nome[0] ?? "?").toUpperCase();
           const active = c.id === activeId;
           return (
-            <Link key={c.id} to="/quitamany/conversa/$id" params={{ id: c.id }}>
+            <Link key={c.id} to="/conversa/$id" params={{ id: c.id }}>
               <div
                 className={cn(
                   "flex cursor-pointer items-center gap-3 border-b px-3 py-2.5 transition-colors",

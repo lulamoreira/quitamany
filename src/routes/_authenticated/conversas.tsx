@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 import { useIsDesktop } from "@/hooks/use-desktop";
 import { DesktopPageHeader } from "@/components/desktop-shell";
 
-export const Route = createFileRoute("/_authenticated/quitamany/")({
+export const Route = createFileRoute("/_authenticated/conversas")({
   head: () => ({ meta: [{ title: "Conversas · QuitaMany" }] }),
   component: InboxPage,
 });
@@ -158,7 +158,7 @@ function ConversaRow({ c }: { c: ConversaComContato }) {
   const nome = c.contatos?.nome || c.contatos?.username || "Sem nome";
   const inicial = (nome[0] ?? "?").toUpperCase();
   return (
-    <Link to="/quitamany/conversa/$id" params={{ id: c.id }}>
+    <Link to="/conversa/$id" params={{ id: c.id }}>
       {({ isActive }: any) => (
         <div
           className={cn(
@@ -203,7 +203,7 @@ function ConversaCard({ c }: { c: ConversaComContato }) {
     new Date(c.janela_expira_em).getTime() > Date.now();
 
   return (
-    <Link to="/quitamany/conversa/$id" params={{ id: c.id }}>
+    <Link to="/conversa/$id" params={{ id: c.id }}>
       <Card className="flex items-center gap-3 border-transparent p-3 shadow-[var(--shadow-card)] transition hover:border-primary/20">
         <Avatar className="h-12 w-12 shrink-0">
           {c.contatos?.foto_url ? <AvatarImage src={c.contatos.foto_url} alt={nome} /> : null}

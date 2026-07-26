@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import { Plus, X, Zap, MessageSquare, Sparkles, Trash2, Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/_authenticated/quitamany/automacoes")({
+export const Route = createFileRoute("/_authenticated/automacoes")({
   head: () => ({ meta: [{ title: "Automações · QuitaMany" }] }),
   component: AutomacoesPage,
 });

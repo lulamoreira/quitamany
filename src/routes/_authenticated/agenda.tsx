@@ -16,7 +16,7 @@ import { DesktopPageHeader } from "@/components/desktop-shell";
 import { AgendaKanban } from "@/components/agenda/agenda-kanban";
 import { AgendaCalendarDesktop } from "@/components/agenda/agenda-calendar";
 
-export const Route = createFileRoute("/_authenticated/publicador/")({
+export const Route = createFileRoute("/_authenticated/agenda")({
   head: () => ({
     meta: [{ title: "Agenda · Publicador" }],
   }),
@@ -131,7 +131,7 @@ function AgendaPage() {
                 <FileDown className="mr-1.5 h-3.5 w-3.5" />
                 {importando ? "Importando…" : "Importar calendário"}
               </Button>
-              <Button size="sm" onClick={() => navigate({ to: "/publicador/novo" })}>
+              <Button size="sm" onClick={() => navigate({ to: "/novo" })}>
                 <PlusCircle className="mr-1.5 h-3.5 w-3.5" /> Novo post
               </Button>
             </>
@@ -223,7 +223,7 @@ function AgendaPage() {
               <p className="text-sm text-muted-foreground">
                 Nenhum post agendado ainda — que tal criar o primeiro?
               </p>
-              <Button onClick={() => navigate({ to: "/publicador/novo" })}>
+              <Button onClick={() => navigate({ to: "/novo" })}>
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Criar post
               </Button>
@@ -235,7 +235,7 @@ function AgendaPage() {
               <Card
                 key={p.id}
                 className="cursor-pointer transition-colors hover:bg-accent/40"
-                onClick={() => navigate({ to: "/publicador/novo", search: { id: p.id } as any })}
+                onClick={() => navigate({ to: "/novo", search: { id: p.id } as any })}
               >
                 <CardContent className="flex gap-3 p-3">
                   {p.video_url ? (

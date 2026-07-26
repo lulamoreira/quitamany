@@ -141,7 +141,7 @@ export function AgendaCalendarDesktop({ posts }: { posts: Post[] }) {
               currentMonth={month}
               posts={byDay[format(d, "yyyy-MM-dd")] ?? []}
               activeId={activeId}
-              onCreate={() => navigate({ to: "/publicador/novo" })}
+              onCreate={() => navigate({ to: "/novo" })}
             />
           ))}
         </div>

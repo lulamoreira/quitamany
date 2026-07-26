@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { Loader2, Upload, Video } from "lucide-react";
 import { format } from "date-fns";
 
-export const Route = createFileRoute("/_authenticated/publicador/novo")({
+export const Route = createFileRoute("/_authenticated/novo")({
   validateSearch: (s: Record<string, unknown>) => ({ id: (s.id as string) || undefined }),
   head: () => ({ meta: [{ title: "Novo post · Publicador" }] }),
   component: NovoPost,
@@ -136,7 +136,7 @@ function NovoPost() {
     setSaving(false);
     if (res.error) return toast.error(res.error.message);
     toast.success(status === "agendado" ? "Post agendado!" : "Rascunho salvo");
-    navigate({ to: "/publicador" });
+    navigate({ to: "/agenda" });
   };
 
   return (
