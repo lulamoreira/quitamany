@@ -34,12 +34,12 @@ function PublicadorLayout() {
   if (role === "pendente") return <PendingApproval />;
 
   const path = location.pathname;
-  const tabs = [
+  const tabs: Array<{ to: string; label: string; icon: typeof CalendarDays; exact?: boolean }> = [
     { to: "/publicador", label: "Agenda", icon: CalendarDays, exact: true },
     { to: "/publicador/novo", label: "Novo", icon: PlusCircle },
     { to: "/publicador/historico", label: "Histórico", icon: Clock },
     { to: "/publicador/ajustes", label: "Ajustes", icon: Settings },
-  ] as const;
+  ];
 
   return (
     <>
