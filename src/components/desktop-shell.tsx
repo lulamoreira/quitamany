@@ -1,0 +1,265 @@
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import {
+  CalendarDays,
+  PlusCircle,
+  Clock,
+  Settings,
+  MessageCircle,
+  Zap,
+  Users,
+  LogOut,
+  ChevronLeft,
+  ChevronRight,
+  Sparkles,
+} from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useMyRole } from "@/hooks/use-role";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+
+type Item = { to: string; label: string; icon: typeof CalendarDays; exact?: boolean };
+
+const SECTIONS: Array<{ title: string; items: Item[] }> = [
+  {
+    title: "Publicador",
+    items: [
+      { to: "/publicador", label: "Agenda", icon: CalendarDays, exact: true },
+      { to: "/publicador/novo", label: "Novo post", icon: PlusCircle },
+      { to: "/publicador/historico", label: "Histórico", icon: Clock },
+    ],
+  },
+  {
+    title: "QuitaMany",
+    items: [
+      { to: "/quitamany", label: "Conversas", icon: MessageCircle, exact: true },
+      { to: "/quitamany/automacoes", label: "Automações", icon: Zap },
+      { to: "/quitamany/contatos", label: "Contatos", icon: Users },
+    ],
+  },
+];
+
+const BOTTOM_ITEMS: Item[] = [
+  { to: "/publicador/ajustes", label: "Ajustes Publicador", icon: Settings },
+  { to: "/quitamany/ajustes", label: "Ajustes QuitaMany", icon: Settings },
+];
+
+/**
+ * Layout desktop: sidebar fixa 240px (recolhível para 64px) + área de conteúdo.
+ * Persistência do estado colapsado em localStorage. Atalho [ para toggle.
+ */
+export function DesktopShell({ children }: { children: React.ReactNode }) {
+  const [collapsed, setCollapsed] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem("desktop-sidebar-collapsed") === "1";
+  });
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { data: role } = useMyRole();
+  const [email, setEmail] = useState<string>("");
+
+  useEffect(() => {
+    supabase.auth.getUser().then((res) => setEmail(res.data.user?.email ?? ""));
+  }, []);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem("desktop-sidebar-collapsed", collapsed ? "1" : "0");
+    } catch { /* ignore */ }
+  }, [collapsed]);
+
+  // Atalho [ para toggle
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || (e.target as HTMLElement)?.isContentEditable) return;
+      if (e.key === "[") {
+        e.preventDefault();
+        setCollapsed((c) => !c);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  const isActive = (item: Item) =>
+    item.exact ? location.pathname === item.to : location.pathname.startsWith(item.to);
+
+  const sair = async () => {
+    await supabase.auth.signOut();
+    toast.success("Até logo!");
+    navigate({ to: "/auth", replace: true });
+  };
+
+  const inicial = (email[0] ?? "?").toUpperCase();
+
+  return (
+    <div className="flex min-h-screen bg-background">
+      <aside
+        className={cn(
+          "sticky top-0 z-30 flex h-screen flex-col border-r border-border bg-sidebar text-sidebar-foreground transition-[width] duration-200",
+          collapsed ? "w-16" : "w-60",
+        )}
+      >
+        {/* Logo */}
+        <div className={cn("flex h-16 items-center gap-2 border-b border-border/60 px-3", collapsed && "justify-center px-0")}>
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+            <Sparkles className="h-5 w-5" />
+          </div>
+          {!collapsed && (
+            <div className="min-w-0">
+              <p className="truncate text-sm font-bold tracking-tight">QuitaMany</p>
+              <p className="truncate text-[10px] text-muted-foreground">@quitanda3d</p>
+            </div>
+          )}
+        </div>
+
+        {/* Nav sections */}
+        <nav className="flex-1 space-y-4 overflow-y-auto px-2 py-4">
+          {SECTIONS.map((sec) => (
+            <div key={sec.title}>
+              {!collapsed && (
+                <p className="mb-1 px-3 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  {sec.title}
+                </p>
+              )}
+              <ul className="space-y-0.5">
+                {sec.items.map((it) => {
+                  const active = isActive(it);
+                  const Icon = it.icon;
+                  return (
+                    <li key={it.to}>
+                      <Link
+                        to={it.to}
+                        title={collapsed ? it.label : undefined}
+                        className={cn(
+                          "relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                          active
+                            ? "bg-primary/10 text-primary"
+                            : "text-sidebar-foreground/80 hover:bg-accent hover:text-foreground",
+                          collapsed && "justify-center px-0",
+                        )}
+                      >
+                        {active && (
+                          <span className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r-full bg-primary" />
+                        )}
+                        <Icon className={cn("h-4 w-4 shrink-0", active && "text-primary")} />
+                        {!collapsed && <span className="truncate">{it.label}</span>}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
+        </nav>
+
+        {/* Ajustes + user */}
+        <div className="border-t border-border/60 p-2">
+          <ul className="mb-2 space-y-0.5">
+            {BOTTOM_ITEMS.map((it) => {
+              const active = isActive(it);
+              const Icon = it.icon;
+              return (
+                <li key={it.to}>
+                  <Link
+                    to={it.to}
+                    title={collapsed ? it.label : undefined}
+                    className={cn(
+                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                      active
+                        ? "bg-primary/10 text-primary"
+                        : "text-sidebar-foreground/80 hover:bg-accent hover:text-foreground",
+                      collapsed && "justify-center px-0",
+                    )}
+                  >
+                    <Icon className="h-4 w-4 shrink-0" />
+                    {!collapsed && <span className="truncate">{it.label}</span>}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+
+          {/* User card */}
+          <div
+            className={cn(
+              "flex items-center gap-2 rounded-xl bg-accent/40 p-2",
+              collapsed && "justify-center bg-transparent p-0",
+            )}
+          >
+            <Avatar className="h-9 w-9 shrink-0">
+              <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                {inicial}
+              </AvatarFallback>
+            </Avatar>
+            {!collapsed && (
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-xs font-semibold">{email || "—"}</p>
+                <p className="truncate text-[10px] uppercase tracking-wider text-muted-foreground">
+                  {role || "…"}
+                </p>
+              </div>
+            )}
+            {!collapsed && (
+              <button
+                onClick={sair}
+                title="Sair"
+                className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+
+          {/* Toggle */}
+          <button
+            onClick={() => setCollapsed((c) => !c)}
+            title="Recolher sidebar ( [ )"
+            className={cn(
+              "mt-2 flex w-full items-center justify-center gap-1 rounded-lg py-1.5 text-[11px] font-medium text-muted-foreground hover:bg-accent hover:text-foreground",
+            )}
+          >
+            {collapsed ? <ChevronRight className="h-3.5 w-3.5" /> : (<><ChevronLeft className="h-3.5 w-3.5" /> Recolher</>)}
+          </button>
+        </div>
+      </aside>
+
+      {/* Conteúdo */}
+      <div className="flex min-w-0 flex-1 flex-col">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Header padrão de páginas desktop: título, subtítulo, breadcrumb e ações.
+ */
+export function DesktopPageHeader({
+  breadcrumb,
+  title,
+  subtitle,
+  actions,
+}: {
+  breadcrumb?: React.ReactNode;
+  title: string;
+  subtitle?: string;
+  actions?: React.ReactNode;
+}) {
+  return (
+    <header className="sticky top-0 z-20 border-b border-border/60 bg-background/95 px-8 py-4 backdrop-blur">
+      <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4">
+        <div className="min-w-0">
+          {breadcrumb && (
+            <div className="mb-1 text-[11px] font-medium text-muted-foreground">{breadcrumb}</div>
+          )}
+          <h1 className="truncate text-xl font-bold tracking-tight">{title}</h1>
+          {subtitle && <p className="mt-0.5 truncate text-sm text-muted-foreground">{subtitle}</p>}
+        </div>
+        {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
+      </div>
+    </header>
+  );
+}
