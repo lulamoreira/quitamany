@@ -74,8 +74,9 @@ function AuthPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-background via-background to-muted px-4 py-8">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-background via-background to-muted px-4 py-8">
       <Card className="w-full max-w-md shadow-xl">
+
         <CardHeader className="text-center">
           <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
             <Instagram className="h-7 w-7" />
@@ -174,6 +175,17 @@ function AuthPage() {
           </Tabs>
         </CardContent>
       </Card>
+
+      <footer className="mt-6 flex items-center justify-center gap-4 text-xs text-muted-foreground">
+        <a href="/privacidade" className="hover:text-foreground hover:underline">
+          Privacidade
+        </a>
+        <span aria-hidden>·</span>
+        <a href="/exclusao-de-dados" className="hover:text-foreground hover:underline">
+          Exclusão de dados
+        </a>
+      </footer>
     </div>
   );
 }
+
