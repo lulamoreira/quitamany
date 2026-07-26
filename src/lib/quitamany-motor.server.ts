@@ -266,10 +266,9 @@ async function handleMensagem(igUserId: string, token: string, sender: string, t
         await incAutomacao(a.id);
         return;
       }
-      if (send.body?.error?.code === 190) {
-        await logEvento("token_expirado", send.body, "Token expirado");
-        return;
-      }
+      const errMsg = send.body?.error?.message ?? "Falha ao enviar DM";
+      await logEvento("erro_envio_dm", send.body, errMsg);
+      if (send.body?.error?.code === 190) return;
     }
   }
 
@@ -282,6 +281,9 @@ async function handleMensagem(igUserId: string, token: string, sender: string, t
       await updateConversaAfterSend(conv.id, a.resposta_dm);
       if (a.etiqueta_aplicar) await aplicarEtiqueta(contato.id, a.etiqueta_aplicar);
       await incAutomacao(a.id);
+    } else {
+      const errMsg = send.body?.error?.message ?? "Falha ao enviar DM";
+      await logEvento("erro_envio_dm", send.body, errMsg);
     }
     break;
   }
