@@ -46,12 +46,12 @@ function QuitaManyLayout() {
   }
 
   const path = location.pathname;
-  const tabs = [
+  const tabs: Array<{ to: string; label: string; icon: typeof MessageCircle; exact?: boolean }> = [
     { to: "/quitamany", label: "Conversas", icon: MessageCircle, exact: true },
     { to: "/quitamany/automacoes", label: "Automações", icon: Zap },
     { to: "/quitamany/contatos", label: "Contatos", icon: Users },
     { to: "/quitamany/ajustes", label: "Ajustes", icon: Settings },
-  ] as const;
+  ];
 
   return (
     <>
