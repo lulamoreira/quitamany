@@ -74,8 +74,9 @@ function AuthPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-background via-background to-muted px-4 py-8">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-background via-background to-muted px-4 py-8">
       <Card className="w-full max-w-md shadow-xl">
+
         <CardHeader className="text-center">
           <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
             <Instagram className="h-7 w-7" />
