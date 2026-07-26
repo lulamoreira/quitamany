@@ -14,6 +14,167 @@ export type Database = {
   }
   public: {
     Tables: {
+      automacoes: {
+        Row: {
+          ativa: boolean
+          botoes: Json
+          criado_em: string
+          etiqueta_aplicar: string | null
+          execucoes: number
+          id: string
+          nome: string
+          palavras: string[]
+          post_ig_id: string | null
+          resposta_comentario: string | null
+          resposta_dm: string
+          tipo: Database["public"]["Enums"]["automacao_tipo"]
+          updated_at: string
+        }
+        Insert: {
+          ativa?: boolean
+          botoes?: Json
+          criado_em?: string
+          etiqueta_aplicar?: string | null
+          execucoes?: number
+          id?: string
+          nome: string
+          palavras?: string[]
+          post_ig_id?: string | null
+          resposta_comentario?: string | null
+          resposta_dm?: string
+          tipo: Database["public"]["Enums"]["automacao_tipo"]
+          updated_at?: string
+        }
+        Update: {
+          ativa?: boolean
+          botoes?: Json
+          criado_em?: string
+          etiqueta_aplicar?: string | null
+          execucoes?: number
+          id?: string
+          nome?: string
+          palavras?: string[]
+          post_ig_id?: string | null
+          resposta_comentario?: string | null
+          resposta_dm?: string
+          tipo?: Database["public"]["Enums"]["automacao_tipo"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      contatos: {
+        Row: {
+          criado_em: string
+          etiquetas: string[]
+          foto_url: string | null
+          id: string
+          ig_id: string
+          nome: string | null
+          notas: string
+          primeira_interacao: string
+          ultima_interacao: string
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          criado_em?: string
+          etiquetas?: string[]
+          foto_url?: string | null
+          id?: string
+          ig_id: string
+          nome?: string | null
+          notas?: string
+          primeira_interacao?: string
+          ultima_interacao?: string
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          criado_em?: string
+          etiquetas?: string[]
+          foto_url?: string | null
+          id?: string
+          ig_id?: string
+          nome?: string | null
+          notas?: string
+          primeira_interacao?: string
+          ultima_interacao?: string
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      conversas: {
+        Row: {
+          contato_id: string
+          criado_em: string
+          id: string
+          janela_expira_em: string | null
+          modo: Database["public"]["Enums"]["conversa_modo"]
+          nao_lidas: number
+          ultima_mensagem: string | null
+          ultima_msg_em: string | null
+          updated_at: string
+        }
+        Insert: {
+          contato_id: string
+          criado_em?: string
+          id?: string
+          janela_expira_em?: string | null
+          modo?: Database["public"]["Enums"]["conversa_modo"]
+          nao_lidas?: number
+          ultima_mensagem?: string | null
+          ultima_msg_em?: string | null
+          updated_at?: string
+        }
+        Update: {
+          contato_id?: string
+          criado_em?: string
+          id?: string
+          janela_expira_em?: string | null
+          modo?: Database["public"]["Enums"]["conversa_modo"]
+          nao_lidas?: number
+          ultima_mensagem?: string | null
+          ultima_msg_em?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversas_contato_id_fkey"
+            columns: ["contato_id"]
+            isOneToOne: true
+            referencedRelation: "contatos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      eventos_webhook: {
+        Row: {
+          criado_em: string
+          erro: string | null
+          id: string
+          payload: Json | null
+          processado: boolean
+          tipo: string
+        }
+        Insert: {
+          criado_em?: string
+          erro?: string | null
+          id?: string
+          payload?: Json | null
+          processado?: boolean
+          tipo: string
+        }
+        Update: {
+          criado_em?: string
+          erro?: string | null
+          id?: string
+          payload?: Json | null
+          processado?: boolean
+          tipo?: string
+        }
+        Relationships: []
+      }
       ig_config: {
         Row: {
           access_token: string
@@ -46,6 +207,44 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      mensagens: {
+        Row: {
+          conversa_id: string
+          criado_em: string
+          direcao: Database["public"]["Enums"]["msg_direcao"]
+          enviada_por: Database["public"]["Enums"]["msg_autor"] | null
+          id: string
+          payload_bruto: Json | null
+          texto: string
+        }
+        Insert: {
+          conversa_id: string
+          criado_em?: string
+          direcao: Database["public"]["Enums"]["msg_direcao"]
+          enviada_por?: Database["public"]["Enums"]["msg_autor"] | null
+          id?: string
+          payload_bruto?: Json | null
+          texto?: string
+        }
+        Update: {
+          conversa_id?: string
+          criado_em?: string
+          direcao?: Database["public"]["Enums"]["msg_direcao"]
+          enviada_por?: Database["public"]["Enums"]["msg_autor"] | null
+          id?: string
+          payload_bruto?: Json | null
+          texto?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mensagens_conversa_id_fkey"
+            columns: ["conversa_id"]
+            isOneToOne: false
+            referencedRelation: "conversas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       posts_agendados: {
         Row: {
@@ -144,6 +343,10 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "editor" | "pendente"
+      automacao_tipo: "gatilho_comentario" | "palavra_chave_dm" | "boas_vindas"
+      conversa_modo: "automatico" | "humano"
+      msg_autor: "robo" | "humano"
+      msg_direcao: "recebida" | "enviada"
       post_status:
         | "rascunho"
         | "agendado"
@@ -278,6 +481,10 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "editor", "pendente"],
+      automacao_tipo: ["gatilho_comentario", "palavra_chave_dm", "boas_vindas"],
+      conversa_modo: ["automatico", "humano"],
+      msg_autor: ["robo", "humano"],
+      msg_direcao: ["recebida", "enviada"],
       post_status: ["rascunho", "agendado", "processando", "publicado", "erro"],
     },
   },
