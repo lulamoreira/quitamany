@@ -74,11 +74,11 @@ function ConversaPage() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [mensagens]);
 
-  const contato = conversa?.contatos;
+  const contato = conversa?.contatos ?? null;
   const nome = contato?.nome || contato?.username || "Contato";
-  const inicial = (nome[0] ?? "?").toUpperCase();
+  const inicial = ((nome?.[0] ?? "?") as string).toUpperCase();
   const janelaExpirou =
-    conversa?.janela_expira_em && new Date(conversa.janela_expira_em).getTime() < Date.now();
+    !!conversa?.janela_expira_em && new Date(conversa.janela_expira_em).getTime() < Date.now();
 
   const handleEnviar = async () => {
     if (!texto.trim() || sending) return;
