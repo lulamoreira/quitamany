@@ -14,16 +14,136 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      ig_config: {
+        Row: {
+          access_token: string
+          conta_username: string | null
+          id: string
+          ig_user_id: string
+          token_gerado_em: string
+          updated_at: string
+        }
+        Insert: {
+          access_token: string
+          conta_username?: string | null
+          id?: string
+          ig_user_id: string
+          token_gerado_em?: string
+          updated_at?: string
+        }
+        Update: {
+          access_token?: string
+          conta_username?: string | null
+          id?: string
+          ig_user_id?: string
+          token_gerado_em?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      posts_agendados: {
+        Row: {
+          agendado_para: string | null
+          container_id: string | null
+          criado_em: string
+          criado_por: string | null
+          erro_msg: string | null
+          hashtags: string
+          id: string
+          legenda: string
+          media_id: string | null
+          permalink: string | null
+          publicado_em: string | null
+          status: Database["public"]["Enums"]["post_status"]
+          titulo: string | null
+          updated_at: string
+          video_path: string | null
+          video_url: string | null
+        }
+        Insert: {
+          agendado_para?: string | null
+          container_id?: string | null
+          criado_em?: string
+          criado_por?: string | null
+          erro_msg?: string | null
+          hashtags?: string
+          id?: string
+          legenda?: string
+          media_id?: string | null
+          permalink?: string | null
+          publicado_em?: string | null
+          status?: Database["public"]["Enums"]["post_status"]
+          titulo?: string | null
+          updated_at?: string
+          video_path?: string | null
+          video_url?: string | null
+        }
+        Update: {
+          agendado_para?: string | null
+          container_id?: string | null
+          criado_em?: string
+          criado_por?: string | null
+          erro_msg?: string | null
+          hashtags?: string
+          id?: string
+          legenda?: string
+          media_id?: string | null
+          permalink?: string | null
+          publicado_em?: string | null
+          status?: Database["public"]["Enums"]["post_status"]
+          titulo?: string | null
+          updated_at?: string
+          video_path?: string | null
+          video_url?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          criado_em: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          criado_em?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          criado_em?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      current_role_of: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "editor" | "pendente"
+      post_status:
+        | "rascunho"
+        | "agendado"
+        | "processando"
+        | "publicado"
+        | "erro"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +270,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "editor", "pendente"],
+      post_status: ["rascunho", "agendado", "processando", "publicado", "erro"],
+    },
   },
 } as const
