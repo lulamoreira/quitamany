@@ -101,6 +101,25 @@ function ConversaPage() {
     }
   };
 
+  // Loading / not-found guards — evitar TypeError antes das queries carregarem
+  if (loadingConversa) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+  if (!conversa) {
+    return (
+      <div className="flex h-[60vh] flex-col items-center justify-center gap-3 text-center">
+        <p className="text-sm text-muted-foreground">Conversa não encontrada.</p>
+        <Button variant="outline" onClick={() => navigate({ to: "/conversas" })}>
+          <ArrowLeft className="mr-1 h-4 w-4" /> Voltar para conversas
+        </Button>
+      </div>
+    );
+  }
+
   // ---- Desktop: 3 colunas (lista | chat | painel do contato) ----
   if (isDesktop) {
     return (
