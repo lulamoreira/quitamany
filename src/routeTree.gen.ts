@@ -9,38 +9,141 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedPublicadorRouteRouteImport } from './routes/_authenticated/publicador/route'
+import { Route as AuthenticatedPublicadorIndexRouteImport } from './routes/_authenticated/publicador/index'
+import { Route as AuthenticatedPublicadorNovoRouteImport } from './routes/_authenticated/publicador/novo'
+import { Route as AuthenticatedPublicadorHistoricoRouteImport } from './routes/_authenticated/publicador/historico'
+import { Route as ApiPublicHooksPublicarPostsRouteImport } from './routes/api/public/hooks/publicar-posts'
 
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedPublicadorRouteRoute =
+  AuthenticatedPublicadorRouteRouteImport.update({
+    id: '/publicador',
+    path: '/publicador',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPublicadorIndexRoute =
+  AuthenticatedPublicadorIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedPublicadorRouteRoute,
+  } as any)
+const AuthenticatedPublicadorNovoRoute =
+  AuthenticatedPublicadorNovoRouteImport.update({
+    id: '/novo',
+    path: '/novo',
+    getParentRoute: () => AuthenticatedPublicadorRouteRoute,
+  } as any)
+const AuthenticatedPublicadorHistoricoRoute =
+  AuthenticatedPublicadorHistoricoRouteImport.update({
+    id: '/historico',
+    path: '/historico',
+    getParentRoute: () => AuthenticatedPublicadorRouteRoute,
+  } as any)
+const ApiPublicHooksPublicarPostsRoute =
+  ApiPublicHooksPublicarPostsRouteImport.update({
+    id: '/api/public/hooks/publicar-posts',
+    path: '/api/public/hooks/publicar-posts',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/publicador': typeof AuthenticatedPublicadorRouteRouteWithChildren
+  '/publicador/historico': typeof AuthenticatedPublicadorHistoricoRoute
+  '/publicador/novo': typeof AuthenticatedPublicadorNovoRoute
+  '/publicador/': typeof AuthenticatedPublicadorIndexRoute
+  '/api/public/hooks/publicar-posts': typeof ApiPublicHooksPublicarPostsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/publicador/historico': typeof AuthenticatedPublicadorHistoricoRoute
+  '/publicador/novo': typeof AuthenticatedPublicadorNovoRoute
+  '/publicador': typeof AuthenticatedPublicadorIndexRoute
+  '/api/public/hooks/publicar-posts': typeof ApiPublicHooksPublicarPostsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/_authenticated/publicador': typeof AuthenticatedPublicadorRouteRouteWithChildren
+  '/_authenticated/publicador/historico': typeof AuthenticatedPublicadorHistoricoRoute
+  '/_authenticated/publicador/novo': typeof AuthenticatedPublicadorNovoRoute
+  '/_authenticated/publicador/': typeof AuthenticatedPublicadorIndexRoute
+  '/api/public/hooks/publicar-posts': typeof ApiPublicHooksPublicarPostsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/publicador'
+    | '/publicador/historico'
+    | '/publicador/novo'
+    | '/publicador/'
+    | '/api/public/hooks/publicar-posts'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/publicador/historico'
+    | '/publicador/novo'
+    | '/publicador'
+    | '/api/public/hooks/publicar-posts'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/_authenticated/publicador'
+    | '/_authenticated/publicador/historico'
+    | '/_authenticated/publicador/novo'
+    | '/_authenticated/publicador/'
+    | '/api/public/hooks/publicar-posts'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
+  ApiPublicHooksPublicarPostsRoute: typeof ApiPublicHooksPublicarPostsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +151,80 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/publicador': {
+      id: '/_authenticated/publicador'
+      path: '/publicador'
+      fullPath: '/publicador'
+      preLoaderRoute: typeof AuthenticatedPublicadorRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/publicador/': {
+      id: '/_authenticated/publicador/'
+      path: '/'
+      fullPath: '/publicador/'
+      preLoaderRoute: typeof AuthenticatedPublicadorIndexRouteImport
+      parentRoute: typeof AuthenticatedPublicadorRouteRoute
+    }
+    '/_authenticated/publicador/novo': {
+      id: '/_authenticated/publicador/novo'
+      path: '/novo'
+      fullPath: '/publicador/novo'
+      preLoaderRoute: typeof AuthenticatedPublicadorNovoRouteImport
+      parentRoute: typeof AuthenticatedPublicadorRouteRoute
+    }
+    '/_authenticated/publicador/historico': {
+      id: '/_authenticated/publicador/historico'
+      path: '/historico'
+      fullPath: '/publicador/historico'
+      preLoaderRoute: typeof AuthenticatedPublicadorHistoricoRouteImport
+      parentRoute: typeof AuthenticatedPublicadorRouteRoute
+    }
+    '/api/public/hooks/publicar-posts': {
+      id: '/api/public/hooks/publicar-posts'
+      path: '/api/public/hooks/publicar-posts'
+      fullPath: '/api/public/hooks/publicar-posts'
+      preLoaderRoute: typeof ApiPublicHooksPublicarPostsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
+interface AuthenticatedPublicadorRouteRouteChildren {
+  AuthenticatedPublicadorHistoricoRoute: typeof AuthenticatedPublicadorHistoricoRoute
+  AuthenticatedPublicadorNovoRoute: typeof AuthenticatedPublicadorNovoRoute
+  AuthenticatedPublicadorIndexRoute: typeof AuthenticatedPublicadorIndexRoute
+}
+
+const AuthenticatedPublicadorRouteRouteChildren: AuthenticatedPublicadorRouteRouteChildren =
+  {
+    AuthenticatedPublicadorHistoricoRoute:
+      AuthenticatedPublicadorHistoricoRoute,
+    AuthenticatedPublicadorNovoRoute: AuthenticatedPublicadorNovoRoute,
+    AuthenticatedPublicadorIndexRoute: AuthenticatedPublicadorIndexRoute,
+  }
+
+const AuthenticatedPublicadorRouteRouteWithChildren =
+  AuthenticatedPublicadorRouteRoute._addFileChildren(
+    AuthenticatedPublicadorRouteRouteChildren,
+  )
+
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedPublicadorRouteRoute: typeof AuthenticatedPublicadorRouteRouteWithChildren
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedPublicadorRouteRoute:
+    AuthenticatedPublicadorRouteRouteWithChildren,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
+  ApiPublicHooksPublicarPostsRoute: ApiPublicHooksPublicarPostsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
