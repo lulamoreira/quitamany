@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -123,7 +123,9 @@ function ConexaoMeta() {
               Token válido até {format(new Date(new Date(cfg.token_gerado_em).getTime() + 60 * 24 * 3600 * 1000), "dd/MM/yyyy", { locale: ptBR })}
               {" · "}{diasRestantes} dias restantes
             </p>
-            <Progress value={percent} className="mt-2 h-2" indicatorClassName={tokenColor} />
+            <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-muted">
+              <div className={`h-full ${tokenColor}`} style={{ width: `${percent}%` }} />
+            </div>
             <Button size="sm" variant="outline" onClick={handleRenovar} className="mt-3">
               <RefreshCw className="mr-2 h-3 w-3" />
               Renovar token

@@ -16,6 +16,7 @@ import { Route as AuthenticatedPublicadorRouteRouteImport } from './routes/_auth
 import { Route as AuthenticatedPublicadorIndexRouteImport } from './routes/_authenticated/publicador/index'
 import { Route as AuthenticatedPublicadorNovoRouteImport } from './routes/_authenticated/publicador/novo'
 import { Route as AuthenticatedPublicadorHistoricoRouteImport } from './routes/_authenticated/publicador/historico'
+import { Route as AuthenticatedPublicadorAjustesRouteImport } from './routes/_authenticated/publicador/ajustes'
 import { Route as ApiPublicHooksPublicarPostsRouteImport } from './routes/api/public/hooks/publicar-posts'
 
 const AuthRoute = AuthRouteImport.update({
@@ -56,6 +57,12 @@ const AuthenticatedPublicadorHistoricoRoute =
     path: '/historico',
     getParentRoute: () => AuthenticatedPublicadorRouteRoute,
   } as any)
+const AuthenticatedPublicadorAjustesRoute =
+  AuthenticatedPublicadorAjustesRouteImport.update({
+    id: '/ajustes',
+    path: '/ajustes',
+    getParentRoute: () => AuthenticatedPublicadorRouteRoute,
+  } as any)
 const ApiPublicHooksPublicarPostsRoute =
   ApiPublicHooksPublicarPostsRouteImport.update({
     id: '/api/public/hooks/publicar-posts',
@@ -67,6 +74,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/publicador': typeof AuthenticatedPublicadorRouteRouteWithChildren
+  '/publicador/ajustes': typeof AuthenticatedPublicadorAjustesRoute
   '/publicador/historico': typeof AuthenticatedPublicadorHistoricoRoute
   '/publicador/novo': typeof AuthenticatedPublicadorNovoRoute
   '/publicador/': typeof AuthenticatedPublicadorIndexRoute
@@ -75,6 +83,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/publicador/ajustes': typeof AuthenticatedPublicadorAjustesRoute
   '/publicador/historico': typeof AuthenticatedPublicadorHistoricoRoute
   '/publicador/novo': typeof AuthenticatedPublicadorNovoRoute
   '/publicador': typeof AuthenticatedPublicadorIndexRoute
@@ -86,6 +95,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/publicador': typeof AuthenticatedPublicadorRouteRouteWithChildren
+  '/_authenticated/publicador/ajustes': typeof AuthenticatedPublicadorAjustesRoute
   '/_authenticated/publicador/historico': typeof AuthenticatedPublicadorHistoricoRoute
   '/_authenticated/publicador/novo': typeof AuthenticatedPublicadorNovoRoute
   '/_authenticated/publicador/': typeof AuthenticatedPublicadorIndexRoute
@@ -97,6 +107,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/publicador'
+    | '/publicador/ajustes'
     | '/publicador/historico'
     | '/publicador/novo'
     | '/publicador/'
@@ -105,6 +116,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/publicador/ajustes'
     | '/publicador/historico'
     | '/publicador/novo'
     | '/publicador'
@@ -115,6 +127,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/publicador'
+    | '/_authenticated/publicador/ajustes'
     | '/_authenticated/publicador/historico'
     | '/_authenticated/publicador/novo'
     | '/_authenticated/publicador/'
@@ -179,6 +192,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPublicadorHistoricoRouteImport
       parentRoute: typeof AuthenticatedPublicadorRouteRoute
     }
+    '/_authenticated/publicador/ajustes': {
+      id: '/_authenticated/publicador/ajustes'
+      path: '/ajustes'
+      fullPath: '/publicador/ajustes'
+      preLoaderRoute: typeof AuthenticatedPublicadorAjustesRouteImport
+      parentRoute: typeof AuthenticatedPublicadorRouteRoute
+    }
     '/api/public/hooks/publicar-posts': {
       id: '/api/public/hooks/publicar-posts'
       path: '/api/public/hooks/publicar-posts'
@@ -190,6 +210,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedPublicadorRouteRouteChildren {
+  AuthenticatedPublicadorAjustesRoute: typeof AuthenticatedPublicadorAjustesRoute
   AuthenticatedPublicadorHistoricoRoute: typeof AuthenticatedPublicadorHistoricoRoute
   AuthenticatedPublicadorNovoRoute: typeof AuthenticatedPublicadorNovoRoute
   AuthenticatedPublicadorIndexRoute: typeof AuthenticatedPublicadorIndexRoute
@@ -197,6 +218,7 @@ interface AuthenticatedPublicadorRouteRouteChildren {
 
 const AuthenticatedPublicadorRouteRouteChildren: AuthenticatedPublicadorRouteRouteChildren =
   {
+    AuthenticatedPublicadorAjustesRoute: AuthenticatedPublicadorAjustesRoute,
     AuthenticatedPublicadorHistoricoRoute:
       AuthenticatedPublicadorHistoricoRoute,
     AuthenticatedPublicadorNovoRoute: AuthenticatedPublicadorNovoRoute,
