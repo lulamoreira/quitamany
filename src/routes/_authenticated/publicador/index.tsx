@@ -4,13 +4,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, PlusCircle, FileDown } from "lucide-react";
+import { CalendarDays, PlusCircle, FileDown, LayoutGrid, LayoutList } from "lucide-react";
 import { format, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { calendarioEditorial } from "@/lib/calendario-editorial";
 import { toast } from "sonner";
+import { useIsDesktop, useSavedView } from "@/hooks/use-desktop";
+import { DesktopPageHeader } from "@/components/desktop-shell";
+import { AgendaKanban } from "@/components/agenda/agenda-kanban";
+import { AgendaCalendarDesktop } from "@/components/agenda/agenda-calendar";
 
 export const Route = createFileRoute("/_authenticated/publicador/")({
   head: () => ({
@@ -29,6 +33,8 @@ const statusColor: Record<string, string> = {
 
 function AgendaPage() {
   const navigate = useNavigate();
+  const isDesktop = useIsDesktop();
+  const [view, setView] = useSavedView<"kanban" | "calendario">("agenda-view", "kanban");
   const [month] = useState(new Date());
   const [importando, setImportando] = useState(false);
   const queryClient = useQueryClient();
@@ -76,29 +82,78 @@ function AgendaPage() {
     }
   }
 
-
+  // Desktop precisa de TODOS (inclui publicado e erro para o kanban).
+  // Mobile mantém filtro original.
   const { data: posts = [], isLoading } = useQuery({
-    queryKey: ["posts-agendados"],
+    queryKey: ["posts-agendados", isDesktop ? "all" : "mobile"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("posts_agendados")
-        .select("*")
-        .in("status", ["agendado", "processando", "rascunho"])
-        .order("agendado_para", { ascending: true, nullsFirst: false });
+      const q = supabase.from("posts_agendados").select("*");
+      const query = isDesktop
+        ? q
+        : q.in("status", ["agendado", "processando", "rascunho"]);
+      const { data, error } = await query.order("agendado_para", { ascending: true, nullsFirst: false });
       if (error) throw error;
       return data;
     },
   });
 
-  const daysWithPosts = useMemo(() => {
-    return new Set(
-      posts
-        .filter((p) => p.agendado_para)
-        .map((p) => format(new Date(p.agendado_para as string), "yyyy-MM-dd")),
+  // ---- Desktop ----
+  if (isDesktop) {
+    return (
+      <>
+        <DesktopPageHeader
+          breadcrumb="Publicador"
+          title="Agenda"
+          subtitle="Arraste os posts entre colunas para agendar, desagendar ou reprogramar."
+          actions={
+            <>
+              <div className="flex overflow-hidden rounded-lg border">
+                <button
+                  onClick={() => setView("kanban")}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors",
+                    view === "kanban" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-accent",
+                  )}
+                >
+                  <LayoutGrid className="h-3.5 w-3.5" /> Kanban
+                </button>
+                <button
+                  onClick={() => setView("calendario")}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors",
+                    view === "calendario" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-accent",
+                  )}
+                >
+                  <CalendarDays className="h-3.5 w-3.5" /> Calendário
+                </button>
+              </div>
+              <Button variant="outline" size="sm" onClick={importarCalendario} disabled={importando}>
+                <FileDown className="mr-1.5 h-3.5 w-3.5" />
+                {importando ? "Importando…" : "Importar calendário"}
+              </Button>
+              <Button size="sm" onClick={() => navigate({ to: "/publicador/novo" })}>
+                <PlusCircle className="mr-1.5 h-3.5 w-3.5" /> Novo post
+              </Button>
+            </>
+          }
+        />
+        <div className="mx-auto w-full max-w-[1600px] px-8 py-6">
+          {isLoading ? (
+            <p className="text-sm text-muted-foreground">Carregando…</p>
+          ) : view === "kanban" ? (
+            <AgendaKanban posts={posts as any} />
+          ) : (
+            <AgendaCalendarDesktop posts={posts as any} />
+          )}
+        </div>
+      </>
     );
-  }, [posts]);
+  }
 
-  // build calendar
+  // ---- Mobile (inalterado) ----
+  const daysWithPosts = new Set(
+    posts.filter((p) => p.agendado_para).map((p) => format(new Date(p.agendado_para as string), "yyyy-MM-dd")),
+  );
   const first = new Date(month.getFullYear(), month.getMonth(), 1);
   const last = new Date(month.getFullYear(), month.getMonth() + 1, 0);
   const startPad = first.getDay();
@@ -147,9 +202,7 @@ function AgendaPage() {
                   )}
                 >
                   {d.getDate()}
-                  {has && (
-                    <span className="absolute bottom-1 h-1 w-1 rounded-full bg-primary" />
-                  )}
+                  {has && <span className="absolute bottom-1 h-1 w-1 rounded-full bg-primary" />}
                 </div>
               );
             })}
@@ -186,11 +239,7 @@ function AgendaPage() {
               >
                 <CardContent className="flex gap-3 p-3">
                   {p.video_url ? (
-                    <video
-                      src={p.video_url}
-                      className="h-16 w-16 flex-shrink-0 rounded-md object-cover"
-                      muted
-                    />
+                    <video src={p.video_url} className="h-16 w-16 flex-shrink-0 rounded-md object-cover" muted />
                   ) : (
                     <div className="h-16 w-16 flex-shrink-0 rounded-md bg-muted" />
                   )}
@@ -203,10 +252,7 @@ function AgendaPage() {
                         ? format(new Date(p.agendado_para), "dd 'de' MMM 'às' HH:mm", { locale: ptBR })
                         : "Rascunho"}
                     </p>
-                    <Badge
-                      variant="outline"
-                      className={cn("mt-1 text-xs", statusColor[p.status] || "")}
-                    >
+                    <Badge variant="outline" className={cn("mt-1 text-xs", statusColor[p.status] || "")}>
                       {p.status}
                     </Badge>
                   </div>
