@@ -178,7 +178,7 @@ function ConversaRow({ c }: { c: ConversaComContato }) {
               </p>
               {c.ultima_msg_em && (
                 <span className="ml-auto shrink-0 text-[10px] text-muted-foreground">
-                  {formatDistanceToNow(new Date(c.ultima_msg_em), { locale: ptBR, addSuffix: false })}
+                  {formatRelative(c.ultima_msg_em, { addSuffix: false })}
                 </span>
               )}
             </div>
@@ -225,7 +225,7 @@ function ConversaCard({ c }: { c: ConversaComContato }) {
         <div className="flex flex-col items-end gap-1">
           {c.ultima_msg_em ? (
             <span className="text-[11px] text-muted-foreground">
-              {formatDistanceToNow(new Date(c.ultima_msg_em), { locale: ptBR, addSuffix: false })}
+              {formatRelative(c.ultima_msg_em, { addSuffix: false })}
             </span>
           ) : null}
           {c.nao_lidas > 0 ? (

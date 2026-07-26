@@ -202,7 +202,7 @@ function ContatoCardVisual({ c, elevated }: { c: Contato; elevated?: boolean }) 
         <div className="min-w-0 flex-1">
           <p className="truncate text-xs font-semibold">{c.username ? `@${c.username}` : nome}</p>
           <p className="truncate text-[10px] text-muted-foreground">
-            {formatDistanceToNow(new Date(c.ultima_interacao), { locale: ptBR, addSuffix: true })}
+            {formatRelative(c.ultima_interacao, { addSuffix: true })}
           </p>
         </div>
       </div>

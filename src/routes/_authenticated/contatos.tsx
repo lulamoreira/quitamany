@@ -156,7 +156,7 @@ function ContatosPage() {
                           </div>
                         </td>
                         <td className="px-4 py-2.5 text-xs text-muted-foreground">
-                          {formatDistanceToNow(new Date(c.ultima_interacao), { locale: ptBR, addSuffix: true })}
+                          {formatRelative(c.ultima_interacao, { addSuffix: true })}
                         </td>
                       </tr>
                     );
@@ -231,7 +231,7 @@ function ContatosPage() {
                   </div>
                 </div>
                 <span className="shrink-0 text-[11px] text-muted-foreground">
-                  {formatDistanceToNow(new Date(c.ultima_interacao), { locale: ptBR, addSuffix: true })}
+                  {formatRelative(c.ultima_interacao, { addSuffix: true })}
                 </span>
               </Card>
             );
