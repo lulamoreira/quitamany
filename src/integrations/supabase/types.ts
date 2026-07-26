@@ -252,6 +252,42 @@ export type Database = {
           },
         ]
       }
+      meta_oauth_states: {
+        Row: {
+          access_token: string | null
+          consumido_em: string | null
+          criado_em: string
+          criado_por: string
+          erro: string | null
+          paginas: Json | null
+          redirect_uri: string
+          state: string
+          status: string
+        }
+        Insert: {
+          access_token?: string | null
+          consumido_em?: string | null
+          criado_em?: string
+          criado_por: string
+          erro?: string | null
+          paginas?: Json | null
+          redirect_uri: string
+          state: string
+          status?: string
+        }
+        Update: {
+          access_token?: string | null
+          consumido_em?: string | null
+          criado_em?: string
+          criado_por?: string
+          erro?: string | null
+          paginas?: Json | null
+          redirect_uri?: string
+          state?: string
+          status?: string
+        }
+        Relationships: []
+      }
       posts_agendados: {
         Row: {
           agendado_para: string | null
