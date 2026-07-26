@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,12 +8,15 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Copy, LogOut, Webhook, CheckCircle2, AlertCircle, Zap, ChevronDown, Check, X, Loader2, RefreshCw } from "lucide-react";
+import { Copy, LogOut, Webhook, CheckCircle2, AlertCircle, Zap, ChevronDown, Check, X, Loader2, RefreshCw, Facebook, PartyPopper } from "lucide-react";
 import {
   obterWebhookInfo,
   salvarPageId,
   configurarWebhookMeta,
   verificarStatusWebhook,
+  iniciarConexaoMeta,
+  obterEstadoMeta,
+  escolherPaginaMeta,
 } from "@/lib/quitamany.functions";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -27,6 +30,7 @@ export const Route = createFileRoute("/_authenticated/quitamany/ajustes")({
 function AjustesPage() {
   const { data: role } = useMyRole();
   const navigate = useNavigate();
+  const [manualAberto, setManualAberto] = useState(false);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -37,10 +41,31 @@ function AjustesPage() {
     <div className="space-y-6">
       <header className="pt-2">
         <h1 className="text-2xl font-bold tracking-tight">Ajustes</h1>
-        <p className="text-sm text-muted-foreground">Conexão do webhook do Instagram.</p>
+        <p className="text-sm text-muted-foreground">Conexão com o Instagram via Facebook Login.</p>
       </header>
 
-      {role === "admin" && <WebhookSection />}
+      {role === "admin" && (
+        <>
+          <ConexaoFacebookSection />
+
+          <Card>
+            <button
+              className="flex w-full items-center justify-between p-4 text-sm font-semibold"
+              onClick={() => setManualAberto((v) => !v)}
+            >
+              <span className="flex items-center gap-2">
+                <Webhook className="h-4 w-4 text-muted-foreground" /> Configuração manual (avançado)
+              </span>
+              <ChevronDown className={cn("h-4 w-4 transition-transform", manualAberto && "rotate-180")} />
+            </button>
+            {manualAberto && (
+              <div className="border-t">
+                <WebhookSection />
+              </div>
+            )}
+          </Card>
+        </>
+      )}
 
       <Card>
         <CardContent className="p-4">
@@ -52,6 +77,211 @@ function AjustesPage() {
     </div>
   );
 }
+
+function ConexaoFacebookSection() {
+  const iniciar = useServerFn(iniciarConexaoMeta);
+  const obterEstado = useServerFn(obterEstadoMeta);
+  const escolher = useServerFn(escolherPaginaMeta);
+  const obter = useServerFn(obterWebhookInfo);
+
+  const [origem, setOrigem] = useState("");
+  const [conectando, setConectando] = useState(false);
+  const [estado, setEstado] = useState<null | {
+    status: "aguardando" | "escolher_pagina" | "conectado" | "erro";
+    erro: string | null;
+    paginas: any;
+  }>(null);
+  const [contaAtual, setContaAtual] = useState<{ username?: string; page_id?: string; ig_user_id?: string }>({});
+  const [escolhendo, setEscolhendo] = useState<string | null>(null);
+
+  const redirectUri = useMemo(() => (origem ? `${origem}/api/public/meta-callback` : ""), [origem]);
+
+  useEffect(() => {
+    setOrigem(window.location.origin);
+    obter({}).then((r: any) => {
+      if (r?.ok) setContaAtual({ username: r.conta_username, page_id: r.page_id, ig_user_id: r.ig_user_id });
+    });
+  }, [obter]);
+
+  // Ao voltar do callback, ler ?meta_state=
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const st = params.get("meta_state");
+    const err = params.get("meta_erro");
+    if (err) {
+      toast.error(err);
+      window.history.replaceState({}, "", window.location.pathname);
+      return;
+    }
+    if (!st) return;
+    let cancelled = false;
+    const poll = async () => {
+      const r: any = await obterEstado({ data: { state: st } });
+      if (cancelled) return;
+      if (!r?.ok) {
+        toast.error(r?.error || "Falha ao consultar estado");
+        return;
+      }
+      setEstado({ status: r.status, erro: r.erro, paginas: r.paginas });
+      if (r.status === "aguardando") {
+        setTimeout(poll, 1500);
+      } else if (r.status === "conectado") {
+        obter({}).then((r2: any) => {
+          if (r2?.ok) setContaAtual({ username: r2.conta_username, page_id: r2.page_id, ig_user_id: r2.ig_user_id });
+        });
+        toast.success("Conectado com sucesso!");
+      } else if (r.status === "erro") {
+        toast.error(r.erro || "Falha na conexão");
+      }
+    };
+    poll();
+    return () => {
+      cancelled = true;
+    };
+  }, [obterEstado, obter]);
+
+  const copiar = (v: string, label: string) => {
+    navigator.clipboard.writeText(v);
+    toast.success(`${label} copiado`);
+  };
+
+  const handleConectar = async () => {
+    setConectando(true);
+    try {
+      const r: any = await iniciar({ data: { origin: window.location.origin } });
+      if (!r?.ok) {
+        toast.error(r?.error || "Falha ao iniciar conexão");
+        return;
+      }
+      window.location.href = r.oauth_url;
+    } finally {
+      setConectando(false);
+    }
+  };
+
+  const handleEscolherPagina = async (state: string, page_id: string) => {
+    setEscolhendo(page_id);
+    try {
+      const r: any = await escolher({ data: { state, page_id } });
+      if (r?.ok) {
+        toast.success(`Conectado como @${r.username}`);
+        setEstado({ status: "conectado", erro: null, paginas: null });
+        obter({}).then((r2: any) => {
+          if (r2?.ok) setContaAtual({ username: r2.conta_username, page_id: r2.page_id, ig_user_id: r2.ig_user_id });
+        });
+      } else {
+        toast.error(r?.error || "Falha ao finalizar");
+      }
+    } finally {
+      setEscolhendo(null);
+    }
+  };
+
+  const stateParam = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("meta_state") : null;
+  const jaConectado = !!contaAtual.username && (!estado || estado.status === "conectado");
+
+  return (
+    <Card className="border-transparent shadow-[var(--shadow-card)]">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Facebook className="h-5 w-5 text-primary" /> Conexão com o Instagram
+        </CardTitle>
+        <CardDescription>
+          Faça login com o Facebook para conectar sua conta do Instagram e configurar o webhook em um clique.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {jaConectado ? (
+          <div className="rounded-2xl bg-success/10 border border-success/30 p-4 flex items-center gap-3">
+            <div className="rounded-full bg-success/20 p-2">
+              <PartyPopper className="h-5 w-5 text-success" />
+            </div>
+            <div className="flex-1">
+              <p className="font-semibold">Conectado como @{contaAtual.username}</p>
+              <p className="text-xs text-muted-foreground">Página: {contaAtual.page_id} · IG ID: {contaAtual.ig_user_id}</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={handleConectar} disabled={conectando}>
+              {conectando ? <Loader2 className="h-4 w-4 animate-spin" /> : "Reconectar"}
+            </Button>
+          </div>
+        ) : (
+          <Button
+            size="lg"
+            className="w-full h-14 text-base bg-[#1877F2] hover:bg-[#1877F2]/90 text-white"
+            onClick={handleConectar}
+            disabled={conectando || (estado?.status === "aguardando" && !!stateParam)}
+          >
+            {conectando ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Facebook className="mr-2 h-5 w-5" />}
+            Conectar com Facebook
+          </Button>
+        )}
+
+        {estado?.status === "escolher_pagina" && Array.isArray(estado.paginas) && (
+          <div className="rounded-2xl border p-4 space-y-2">
+            <p className="text-sm font-semibold">Escolha a Página que representa seu Instagram</p>
+            {estado.paginas.map((p: any) => (
+              <button
+                key={p.id}
+                onClick={() => stateParam && handleEscolherPagina(stateParam, p.id)}
+                disabled={escolhendo === p.id}
+                className="w-full flex items-center justify-between rounded-xl border p-3 text-left hover:bg-accent disabled:opacity-50"
+              >
+                <div>
+                  <p className="font-medium">{p.name ?? p.id}</p>
+                  <p className="text-xs text-muted-foreground">{p.id}</p>
+                </div>
+                {escolhendo === p.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <span className="text-primary text-sm font-medium">Escolher</span>}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {estado?.status === "conectado" && (
+          <div className="rounded-2xl border p-4 space-y-2 bg-success/5">
+            <p className="text-sm font-semibold">Tudo pronto! 🎉</p>
+            <ChecklistItem ok label="Token de longa duração obtido" />
+            <ChecklistItem ok label="Página do Facebook vinculada" />
+            <ChecklistItem ok label="Webhook do Instagram configurado" />
+          </div>
+        )}
+
+        {estado?.status === "erro" && (
+          <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-4 text-sm">
+            <p className="font-semibold text-destructive">Não deu certo</p>
+            <p className="text-muted-foreground mt-1">{estado.erro}</p>
+          </div>
+        )}
+
+        <div className="rounded-2xl border p-4 space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Passo único no painel da Meta
+          </p>
+          <p className="text-sm">
+            Cadastre esta URL em <b>Login do Facebook para Empresas → Configurações → URIs de redirecionamento do OAuth válidos</b>:
+          </p>
+          <div className="flex gap-2">
+            <Input readOnly value={redirectUri} className="font-mono text-xs" />
+            <Button size="icon" variant="outline" onClick={() => copiar(redirectUri, "URL")}>
+              <Copy className="h-4 w-4" />
+            </Button>
+          </div>
+          <p className="text-[11px] text-muted-foreground">Faça isso uma única vez — depois, toda conexão é um clique.</p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ChecklistItem({ ok, label }: { ok: boolean; label: string }) {
+  return (
+    <div className="flex items-center gap-2 text-sm">
+      {ok ? <Check className="h-4 w-4 text-success" /> : <X className="h-4 w-4 text-destructive" />}
+      <span>{label}</span>
+    </div>
+  );
+}
+
+
 
 function WebhookSection() {
   const obter = useServerFn(obterWebhookInfo);
