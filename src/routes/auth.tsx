@@ -174,6 +174,17 @@ function AuthPage() {
           </Tabs>
         </CardContent>
       </Card>
+
+      <footer className="mt-6 flex items-center justify-center gap-4 text-xs text-muted-foreground">
+        <a href="/privacidade" className="hover:text-foreground hover:underline">
+          Privacidade
+        </a>
+        <span aria-hidden>·</span>
+        <a href="/exclusao-de-dados" className="hover:text-foreground hover:underline">
+          Exclusão de dados
+        </a>
+      </footer>
     </div>
   );
 }
+
