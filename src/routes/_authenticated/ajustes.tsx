@@ -472,6 +472,20 @@ function WebhookSection() {
     refetchInterval: 30_000,
   });
 
+  const { data: ultimosErros } = useQuery({
+    queryKey: ["qm-ultimos-erros"],
+    queryFn: async () => {
+      const { data } = await (supabase as any)
+        .from("eventos_webhook")
+        .select("id, tipo, criado_em, erro")
+        .not("erro", "is", null)
+        .order("criado_em", { ascending: false })
+        .limit(10);
+      return (data ?? []) as Array<{ id: string; tipo: string; criado_em: string; erro: string }>;
+    },
+    refetchInterval: 30_000,
+  });
+
   const copiar = (v: string, label: string) => {
     navigator.clipboard.writeText(v);
     toast.success(`${label} copiado`);
