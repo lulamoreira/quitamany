@@ -215,9 +215,11 @@ async function handleComentario(value: any) {
       contato = await upsertContato(from.id, { username: info?.username ?? from.username, nome: info?.nome, foto_url: info?.foto_url });
     }
     const send = await sendDM(cfg.ig_user_id, cfg.access_token, { comment_id: commentId }, a.resposta_dm, a.botoes);
-    if (!send.ok && send.body?.error?.code === 190) {
-      await logEvento("token_expirado", send.body, "Token expirado");
-      return;
+    if (!send.ok) {
+      const errMsg = send.body?.error?.message ?? "Falha ao enviar DM";
+      await logEvento("erro_envio_dm", send.body, errMsg);
+      if (send.body?.error?.code === 190) return;
+      break;
     }
     if (contato) {
       const conv = await upsertConversa(contato.id);
@@ -264,10 +266,9 @@ async function handleMensagem(igUserId: string, token: string, sender: string, t
         await incAutomacao(a.id);
         return;
       }
-      if (send.body?.error?.code === 190) {
-        await logEvento("token_expirado", send.body, "Token expirado");
-        return;
-      }
+      const errMsg = send.body?.error?.message ?? "Falha ao enviar DM";
+      await logEvento("erro_envio_dm", send.body, errMsg);
+      if (send.body?.error?.code === 190) return;
     }
   }
 
@@ -280,6 +281,9 @@ async function handleMensagem(igUserId: string, token: string, sender: string, t
       await updateConversaAfterSend(conv.id, a.resposta_dm);
       if (a.etiqueta_aplicar) await aplicarEtiqueta(contato.id, a.etiqueta_aplicar);
       await incAutomacao(a.id);
+    } else {
+      const errMsg = send.body?.error?.message ?? "Falha ao enviar DM";
+      await logEvento("erro_envio_dm", send.body, errMsg);
     }
     break;
   }

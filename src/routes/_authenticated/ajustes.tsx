@@ -472,6 +472,20 @@ function WebhookSection() {
     refetchInterval: 30_000,
   });
 
+  const { data: ultimosErros } = useQuery({
+    queryKey: ["qm-ultimos-erros"],
+    queryFn: async () => {
+      const { data } = await (supabase as any)
+        .from("eventos_webhook")
+        .select("id, tipo, criado_em, erro")
+        .not("erro", "is", null)
+        .order("criado_em", { ascending: false })
+        .limit(10);
+      return (data ?? []) as Array<{ id: string; tipo: string; criado_em: string; erro: string }>;
+    },
+    refetchInterval: 30_000,
+  });
+
   const copiar = (v: string, label: string) => {
     navigator.clipboard.writeText(v);
     toast.success(`${label} copiado`);
@@ -593,6 +607,30 @@ function WebhookSection() {
               : "Nenhum evento ainda"}
           </p>
         </div>
+
+        <div className="rounded-xl border p-3">
+          <p className="text-xs font-medium text-muted-foreground">Últimos erros</p>
+          {!ultimosErros || ultimosErros.length === 0 ? (
+            <p className="mt-2 text-sm text-muted-foreground">Nenhum erro registrado.</p>
+          ) : (
+            <ul className="mt-2 divide-y">
+              {ultimosErros.map((e) => (
+                <li key={e.id} className="py-2 text-sm">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="rounded-md bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive">
+                      {e.tipo}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {format(new Date(e.criado_em), "dd/MM HH:mm", { locale: ptBR })}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground break-words">{e.erro}</p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
       </CardContent>
     </Card>
   );
