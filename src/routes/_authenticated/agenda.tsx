@@ -23,13 +23,6 @@ export const Route = createFileRoute("/_authenticated/agenda")({
   component: AgendaPage,
 });
 
-const statusColor: Record<string, string> = {
-  agendado: "bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30",
-  processando: "bg-yellow-500/15 text-yellow-700 dark:text-yellow-300 border-yellow-500/30",
-  publicado: "bg-green-500/15 text-green-700 dark:text-green-300 border-green-500/30",
-  erro: "bg-red-500/15 text-red-700 dark:text-red-300 border-red-500/30",
-  rascunho: "bg-muted text-muted-foreground border-border",
-};
 
 function AgendaPage() {
   const navigate = useNavigate();
