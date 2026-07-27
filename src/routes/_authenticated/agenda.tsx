@@ -86,13 +86,12 @@ function AgendaPage() {
   // Desktop precisa de TODOS (inclui publicado e erro para o kanban).
   // Mobile mantém filtro original.
   const { data: posts = [], isLoading } = useQuery({
-    queryKey: ["posts-agendados", isDesktop ? "all" : "mobile"],
+    queryKey: ["posts-agendados", "all"],
     queryFn: async () => {
-      const q = supabase.from("posts_agendados").select("*");
-      const query = isDesktop
-        ? q
-        : q.in("status", ["agendado", "processando", "rascunho"]);
-      const { data, error } = await query.order("agendado_para", { ascending: true, nullsFirst: false });
+      const { data, error } = await supabase
+        .from("posts_agendados")
+        .select("*")
+        .order("agendado_para", { ascending: true, nullsFirst: false });
       if (error) throw error;
       return data;
     },
