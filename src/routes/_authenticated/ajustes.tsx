@@ -30,7 +30,7 @@ import {
   EyeOff,
   ExternalLink,
 } from "lucide-react";
-import { testarConexao, renovarToken, executarMotorAgora } from "@/lib/publicador.functions";
+import { testarConexao, renovarToken, executarMotorAgora, recuperarPermalinks } from "@/lib/publicador.functions";
 import {
   obterWebhookInfo,
   salvarPageId,
