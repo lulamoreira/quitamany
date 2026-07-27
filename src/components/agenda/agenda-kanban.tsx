@@ -258,13 +258,30 @@ function DraggablePost({ post, dragging, isPublicado }: { post: Post; dragging: 
 
 function PostCardVisual({ post, elevated }: { post: Post; elevated?: boolean }) {
   const hashtags = (post.hashtags ?? "").split(/\s+/).filter((h) => h.startsWith("#")).slice(0, 3);
+  const igLink = post.status === "publicado" ? post.instagram_permalink : null;
   return (
     <Card
       className={cn(
-        "overflow-hidden border-border/60 bg-card p-2 shadow-[var(--shadow-card)] transition-shadow",
+        "relative overflow-hidden border-border/60 bg-card p-2 shadow-[var(--shadow-card)] transition-shadow",
         elevated && "rotate-1 scale-[1.02] shadow-xl ring-2 ring-primary/30",
       )}
     >
+      {igLink && (
+        <a
+          href={igLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.stopPropagation()}
+          title="Abrir no Instagram"
+          aria-label="Abrir no Instagram"
+          className="absolute right-1.5 top-1.5 z-10 flex h-6 w-6 items-center justify-center rounded-md bg-background/90 text-muted-foreground shadow-sm ring-1 ring-border hover:text-primary hover:ring-primary/50"
+        >
+          <ExternalLink className="h-3.5 w-3.5" />
+        </a>
+      )}
       <div className="flex gap-2">
         {post.video_url ? (
           <video src={post.video_url} muted className="h-14 w-14 shrink-0 rounded-lg object-cover" />
