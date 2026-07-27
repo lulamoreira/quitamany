@@ -264,8 +264,49 @@ async function handleMensagem(igUserId: string, token: string, sender: string, t
   const info = await fetchUserInfo(igUserId, token, sender);
   const contato = await upsertContato(sender, { username: info?.username, nome: info?.nome, foto_url: info?.foto_url });
   const conv = await upsertConversa(contato.id);
-  await saveMensagem(conv.id, "recebida", texto, null, payload);
+  const mid = payload?.message?.mid ?? null;
+  await saveMensagem(conv.id, "recebida", texto, null, payload, mid);
   await updateConversaAfterReceive(conv.id, texto);
+
+  // ---- Opt-out / retorno (antes de qualquer automação) ----
+  if (ehRetorno(texto)) {
+    await (supabaseAdmin as any)
+      .from("contatos")
+      .update({ opt_out: false, opt_out_em: null })
+      .eq("id", contato.id);
+    const send = await sendDM(igUserId, token, { id: sender }, "Pronto! Você voltou a receber nossas mensagens.");
+    if (send.ok) {
+      await saveMensagem(conv.id, "enviada", "Pronto! Você voltou a receber nossas mensagens.", "robo", send.body);
+      await updateConversaAfterSend(conv.id, "Pronto! Você voltou a receber nossas mensagens.");
+    } else {
+      await logEvento("erro_envio_dm", send.body, send.body?.error?.message ?? "Falha ao enviar DM (retorno)");
+    }
+    return;
+  }
+
+  if (ehParada(texto)) {
+    await (supabaseAdmin as any)
+      .from("contatos")
+      .update({ opt_out: true, opt_out_em: new Date().toISOString() })
+      .eq("id", contato.id);
+    const msg = "Você não receberá mais mensagens automáticas. Envie VOLTAR quando quiser retomar.";
+    const send = await sendDM(igUserId, token, { id: sender }, msg);
+    if (send.ok) {
+      await saveMensagem(conv.id, "enviada", msg, "robo", send.body);
+      await updateConversaAfterSend(conv.id, msg);
+    } else {
+      await logEvento("erro_envio_dm", send.body, send.body?.error?.message ?? "Falha ao enviar DM (parada)");
+    }
+    return;
+  }
+
+  // Se contato já estava em opt-out, robô não responde. Mensagem já foi gravada para atendimento humano.
+  const { data: contatoAtual } = await (supabaseAdmin as any)
+    .from("contatos")
+    .select("opt_out")
+    .eq("id", contato.id)
+    .maybeSingle();
+  if (contatoAtual?.opt_out === true) return;
 
   // Não responder se modo humano
   const { data: convAtual } = await (supabaseAdmin as any)
@@ -286,6 +327,10 @@ async function handleMensagem(igUserId: string, token: string, sender: string, t
     const bv = await getAutomacoes("boas_vindas");
     if (bv.length > 0) {
       const a = bv[0];
+      if (!(await dentroDaJanela(conv.id))) {
+        await logEvento("fora_da_janela", { conversa_id: conv.id, automacao_id: a.id, tipo: "boas_vindas" });
+        return;
+      }
       const send = await sendDM(igUserId, token, { id: sender }, a.resposta_dm, a.botoes);
       if (send.ok) {
         await saveMensagem(conv.id, "enviada", a.resposta_dm, "robo", send.body);
@@ -303,6 +348,10 @@ async function handleMensagem(igUserId: string, token: string, sender: string, t
   const kws = await getAutomacoes("palavra_chave_dm");
   for (const a of kws) {
     if (!matchPalavra(texto, a.palavras)) continue;
+    if (!(await dentroDaJanela(conv.id))) {
+      await logEvento("fora_da_janela", { conversa_id: conv.id, automacao_id: a.id, tipo: "palavra_chave_dm" });
+      break;
+    }
     const send = await sendDM(igUserId, token, { id: sender }, a.resposta_dm, a.botoes);
     if (send.ok) {
       await saveMensagem(conv.id, "enviada", a.resposta_dm, "robo", send.body);
@@ -314,6 +363,31 @@ async function handleMensagem(igUserId: string, token: string, sender: string, t
       await logEvento("erro_envio_dm", send.body, errMsg);
     }
     break;
+  }
+}
+
+async function handleUnsend(mid: string) {
+  const { data: msg } = await (supabaseAdmin as any)
+    .from("mensagens")
+    .select("id, conversa_id")
+    .eq("mid", mid)
+    .maybeSingle();
+  if (!msg) return;
+  await (supabaseAdmin as any).from("mensagens").update({ apagada: true }).eq("id", msg.id);
+
+  // Se era a última mensagem da conversa, ajusta ultima_mensagem
+  const { data: ultima } = await (supabaseAdmin as any)
+    .from("mensagens")
+    .select("id")
+    .eq("conversa_id", msg.conversa_id)
+    .order("criado_em", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (ultima?.id === msg.id) {
+    await (supabaseAdmin as any)
+      .from("conversas")
+      .update({ ultima_mensagem: "Mensagem apagada" })
+      .eq("id", msg.conversa_id);
   }
 }
 
