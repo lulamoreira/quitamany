@@ -2,12 +2,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, RotateCcw, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
+import { PostActions, StatusBadge } from "@/components/agenda/post-actions";
 
 export const Route = createFileRoute("/_authenticated/historico")({
   head: () => ({ meta: [{ title: "Histórico · Publicador" }] }),
@@ -74,23 +74,14 @@ function Historico() {
                         : format(new Date(p.criado_em), "dd/MM/yyyy", { locale: ptBR })}
                     </p>
                   </div>
-                  <Badge
-                    variant="outline"
-                    className={
-                      p.status === "publicado"
-                        ? "border-green-500/30 bg-green-500/15 text-green-700 dark:text-green-300"
-                        : "border-red-500/30 bg-red-500/15 text-red-700 dark:text-red-300"
-                    }
-                  >
-                    {p.status}
-                  </Badge>
+                  <StatusBadge status={p.status} />
                 </div>
                 {p.status === "erro" && p.erro_msg && (
                   <p className="rounded-md bg-red-500/10 p-2 text-xs text-red-700 dark:text-red-300">
                     {p.erro_msg}
                   </p>
                 )}
-                <div className="flex gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   {p.permalink && (
                     <Button asChild size="sm" variant="outline">
                       <a href={p.permalink} target="_blank" rel="noopener noreferrer">
@@ -105,6 +96,9 @@ function Historico() {
                       Tentar de novo
                     </Button>
                   )}
+                  <div className="ml-auto">
+                    <PostActions post={p as any} />
+                  </div>
                 </div>
               </CardContent>
             </Card>

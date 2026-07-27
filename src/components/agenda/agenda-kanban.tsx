@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { FileText, CalendarClock, CheckCircle2, AlertTriangle, Ban, Loader2, ExternalLink } from "lucide-react";
+import { PostActions, StatusBadge } from "./post-actions";
 import { format, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -291,14 +292,17 @@ function PostCardVisual({ post, elevated }: { post: Post; elevated?: boolean }) 
           </div>
         )}
         <div className="min-w-0 flex-1">
-          <p className="line-clamp-2 text-xs font-semibold leading-tight">
+          <div className="flex items-center gap-1.5">
+            <StatusBadge status={post.status} />
+            {post.agendado_para && (
+              <span className="text-[10px] text-muted-foreground">
+                {format(new Date(post.agendado_para), "dd MMM · HH:mm", { locale: ptBR })}
+              </span>
+            )}
+          </div>
+          <p className="mt-1 line-clamp-2 text-xs font-semibold leading-tight">
             {post.titulo || post.legenda?.slice(0, 60) || "Sem título"}
           </p>
-          {post.agendado_para && (
-            <p className="mt-1 text-[10px] text-muted-foreground">
-              {format(new Date(post.agendado_para), "dd MMM · HH:mm", { locale: ptBR })}
-            </p>
-          )}
           {post.status === "erro" && post.erro_msg && (
             <p className="mt-1 line-clamp-1 text-[10px] font-medium text-destructive">{post.erro_msg}</p>
           )}
@@ -313,6 +317,9 @@ function PostCardVisual({ post, elevated }: { post: Post; elevated?: boolean }) 
           ))}
         </div>
       )}
+      <div className="mt-2 flex justify-end border-t border-border/60 pt-1.5">
+        <PostActions post={post as any} compact />
+      </div>
     </Card>
   );
 }

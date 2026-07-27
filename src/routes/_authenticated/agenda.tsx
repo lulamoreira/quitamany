@@ -2,7 +2,6 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CalendarDays, PlusCircle, FileDown, LayoutGrid, LayoutList } from "lucide-react";
 import { format, isSameDay } from "date-fns";
@@ -15,6 +14,7 @@ import { useIsDesktop, useSavedView } from "@/hooks/use-desktop";
 import { DesktopPageHeader } from "@/components/desktop-shell";
 import { AgendaKanban } from "@/components/agenda/agenda-kanban";
 import { AgendaCalendarDesktop } from "@/components/agenda/agenda-calendar";
+import { PostActions, StatusBadge } from "@/components/agenda/post-actions";
 
 export const Route = createFileRoute("/_authenticated/agenda")({
   head: () => ({
@@ -23,13 +23,6 @@ export const Route = createFileRoute("/_authenticated/agenda")({
   component: AgendaPage,
 });
 
-const statusColor: Record<string, string> = {
-  agendado: "bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30",
-  processando: "bg-yellow-500/15 text-yellow-700 dark:text-yellow-300 border-yellow-500/30",
-  publicado: "bg-green-500/15 text-green-700 dark:text-green-300 border-green-500/30",
-  erro: "bg-red-500/15 text-red-700 dark:text-red-300 border-red-500/30",
-  rascunho: "bg-muted text-muted-foreground border-border",
-};
 
 function AgendaPage() {
   const navigate = useNavigate();
@@ -85,13 +78,12 @@ function AgendaPage() {
   // Desktop precisa de TODOS (inclui publicado e erro para o kanban).
   // Mobile mantém filtro original.
   const { data: posts = [], isLoading } = useQuery({
-    queryKey: ["posts-agendados", isDesktop ? "all" : "mobile"],
+    queryKey: ["posts-agendados", "all"],
     queryFn: async () => {
-      const q = supabase.from("posts_agendados").select("*");
-      const query = isDesktop
-        ? q
-        : q.in("status", ["agendado", "processando", "rascunho"]);
-      const { data, error } = await query.order("agendado_para", { ascending: true, nullsFirst: false });
+      const { data, error } = await supabase
+        .from("posts_agendados")
+        .select("*")
+        .order("agendado_para", { ascending: true, nullsFirst: false });
       if (error) throw error;
       return data;
     },
@@ -244,17 +236,25 @@ function AgendaPage() {
                     <div className="h-16 w-16 flex-shrink-0 rounded-md bg-muted" />
                   )}
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">
+                    <div className="flex items-center gap-1.5">
+                      <StatusBadge status={p.status} />
+                    </div>
+                    <p className="mt-1 truncate text-sm font-medium">
                       {p.titulo || p.legenda?.slice(0, 40) || "Sem título"}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {p.agendado_para
                         ? format(new Date(p.agendado_para), "dd 'de' MMM 'às' HH:mm", { locale: ptBR })
-                        : "Rascunho"}
+                        : p.publicado_em
+                          ? `Publicado em ${format(new Date(p.publicado_em), "dd 'de' MMM", { locale: ptBR })}`
+                          : "Rascunho"}
                     </p>
-                    <Badge variant="outline" className={cn("mt-1 text-xs", statusColor[p.status] || "")}>
-                      {p.status}
-                    </Badge>
+                    {p.status === "erro" && p.erro_msg && (
+                      <p className="mt-1 line-clamp-1 text-xs text-destructive">{p.erro_msg}</p>
+                    )}
+                    <div className="mt-2">
+                      <PostActions post={p as any} />
+                    </div>
                   </div>
                 </CardContent>
               </Card>
