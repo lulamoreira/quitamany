@@ -30,7 +30,7 @@ import {
   EyeOff,
   ExternalLink,
 } from "lucide-react";
-import { testarConexao, renovarToken, executarMotorAgora } from "@/lib/publicador.functions";
+import { testarConexao, renovarToken, executarMotorAgora, recuperarPermalinks } from "@/lib/publicador.functions";
 import {
   obterWebhookInfo,
   salvarPageId,
@@ -655,7 +655,9 @@ function ResultLine({ ok, label, msg }: { ok: boolean; label: string; msg?: stri
 function MotorPublicacao() {
   const qc = useQueryClient();
   const executar = useServerFn(executarMotorAgora);
+  const recuperar = useServerFn(recuperarPermalinks);
   const [running, setRunning] = useState(false);
+  const [recuperando, setRecuperando] = useState(false);
   const [lastResult, setLastResult] = useState<any>(null);
 
   const { data: cfg } = useQuery({
@@ -695,6 +697,23 @@ function MotorPublicacao() {
     }
   };
 
+  const handleRecuperar = async () => {
+    setRecuperando(true);
+    try {
+      const res: any = await recuperar({});
+      if (res?.ok) {
+        toast.success(`${res.atualizados} permalink(s) recuperado(s) · ${res.falhas} falha(s) de ${res.total}`);
+        qc.invalidateQueries({ queryKey: ["posts-agendados"] });
+      } else {
+        toast.error(res?.error || "Falha ao recuperar permalinks");
+      }
+    } catch (e: any) {
+      toast.error(e?.message || "Erro inesperado");
+    } finally {
+      setRecuperando(false);
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -709,6 +728,22 @@ function MotorPublicacao() {
         <Button onClick={handleExecutar} disabled={running} className="w-full">
           <Play className="mr-2 h-4 w-4" /> {running ? "Executando…" : "Executar agora"}
         </Button>
+        <div className="rounded-lg border p-3">
+          <p className="text-sm font-medium">Recuperar links do Instagram</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            Busca o permalink dos posts já publicados que ainda não têm o link salvo.
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRecuperar}
+            disabled={recuperando}
+            className="mt-2"
+          >
+            <ExternalLink className="mr-2 h-3.5 w-3.5" />
+            {recuperando ? "Buscando…" : "Recuperar permalinks"}
+          </Button>
+        </div>
         {lastResult && (
           <pre className="max-h-48 overflow-auto rounded-lg border bg-muted/30 p-3 text-xs">
             {JSON.stringify(lastResult, null, 2)}

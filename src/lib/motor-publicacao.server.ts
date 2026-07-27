@@ -93,11 +93,19 @@ async function faseB(supabaseAdmin: any, cfg: any) {
       }
       let permalink: string | null = null;
       if (mediaId) {
-        const linkResp = await fetch(
-          `${GRAPH}/${mediaId}?fields=permalink&access_token=${encodeURIComponent(cfg.access_token)}`,
-        );
-        const linkBody: any = await linkResp.json();
-        permalink = linkBody.permalink || null;
+        try {
+          const linkResp = await fetch(
+            `${GRAPH}/${mediaId}?fields=permalink&access_token=${encodeURIComponent(cfg.access_token)}`,
+          );
+          const linkBody: any = await linkResp.json();
+          if (linkResp.ok && !linkBody.error) {
+            permalink = linkBody.permalink || null;
+          } else {
+            console.error("Falha ao buscar permalink (publicação já concluída):", linkBody.error);
+          }
+        } catch (e) {
+          console.error("Erro ao buscar permalink (publicação já concluída):", e);
+        }
       }
       await supabaseAdmin
         .from("posts_agendados")
@@ -105,6 +113,8 @@ async function faseB(supabaseAdmin: any, cfg: any) {
           status: "publicado",
           media_id: mediaId,
           permalink,
+          instagram_media_id: mediaId,
+          instagram_permalink: permalink,
           publicado_em: new Date().toISOString(),
         })
         .eq("id", p.id);
