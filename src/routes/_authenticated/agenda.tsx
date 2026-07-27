@@ -15,6 +15,7 @@ import { useIsDesktop, useSavedView } from "@/hooks/use-desktop";
 import { DesktopPageHeader } from "@/components/desktop-shell";
 import { AgendaKanban } from "@/components/agenda/agenda-kanban";
 import { AgendaCalendarDesktop } from "@/components/agenda/agenda-calendar";
+import { PostActions, StatusBadge } from "@/components/agenda/post-actions";
 
 export const Route = createFileRoute("/_authenticated/agenda")({
   head: () => ({
