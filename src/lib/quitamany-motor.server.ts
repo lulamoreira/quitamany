@@ -401,12 +401,26 @@ export async function processarWebhook(body: any): Promise<{ ok: true }> {
     const messaging = entry.messaging ?? [];
     for (const m of messaging) {
       const senderId = m.sender?.id;
-      const recipientId = m.recipient?.id;
       const isEcho = m.message?.is_echo === true;
+      const isDeleted = m.message?.is_deleted === true;
       // Ignora ecos da própria conta
       if (isEcho) continue;
       if (!cfg) continue;
       if (senderId && senderId === cfg.ig_user_id) continue;
+
+      // Exclusão de mensagem pelo remetente (unsend) — não roda automação
+      if (isDeleted) {
+        const midDel = m.message?.mid;
+        if (midDel) {
+          try {
+            await handleUnsend(midDel);
+          } catch (e: any) {
+            await logEvento("erro_unsend", m, e?.message ?? String(e));
+          }
+        }
+        continue;
+      }
+
       const texto = m.message?.text ?? "";
       if (!texto || !senderId) continue;
       try {
