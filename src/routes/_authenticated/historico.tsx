@@ -81,7 +81,7 @@ function Historico() {
                     {p.erro_msg}
                   </p>
                 )}
-                <div className="flex gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   {p.permalink && (
                     <Button asChild size="sm" variant="outline">
                       <a href={p.permalink} target="_blank" rel="noopener noreferrer">
@@ -96,6 +96,9 @@ function Historico() {
                       Tentar de novo
                     </Button>
                   )}
+                  <div className="ml-auto">
+                    <PostActions post={p as any} />
+                  </div>
                 </div>
               </CardContent>
             </Card>
