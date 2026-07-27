@@ -77,3 +77,60 @@ export const executarMotorAgora = createServerFn({ method: "POST" })
     const { executarMotor } = await import("./motor-publicacao.server");
     return await executarMotor();
   });
+
+// Backfill único: busca permalink do Instagram para posts publicados que ainda não têm.
+export const recuperarPermalinks = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { data: cfg } = await context.supabase.from("ig_config").select("access_token").limit(1).maybeSingle();
+    if (!cfg?.access_token) return { ok: false as const, error: "Sem configuração Meta" };
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: posts, error } = await supabaseAdmin
+      .from("posts_agendados")
+      .select("id, media_id, instagram_media_id")
+      .eq("status", "publicado")
+      .is("instagram_permalink", null);
+    if (error) return { ok: false as const, error: error.message };
+
+    let atualizados = 0;
+    let falhas = 0;
+    const erros: string[] = [];
+    for (const p of posts ?? []) {
+      const mid = (p as any).instagram_media_id || (p as any).media_id;
+      if (!mid) {
+        falhas++;
+        continue;
+      }
+      try {
+        const resp = await fetch(
+          `${GRAPH}/${mid}?fields=permalink&access_token=${encodeURIComponent(cfg.access_token)}`,
+        );
+        const body: any = await resp.json();
+        if (!resp.ok || body.error || !body.permalink) {
+          falhas++;
+          if (body.error?.message) erros.push(body.error.message);
+          continue;
+        }
+        const { error: updErr } = await supabaseAdmin
+          .from("posts_agendados")
+          .update({
+            instagram_media_id: mid,
+            instagram_permalink: body.permalink,
+            permalink: body.permalink,
+          })
+          .eq("id", p.id);
+        if (updErr) {
+          falhas++;
+          erros.push(updErr.message);
+        } else {
+          atualizados++;
+        }
+      } catch (e: any) {
+        falhas++;
+        erros.push(e?.message || "erro desconhecido");
+      }
+    }
+    return { ok: true as const, total: posts?.length ?? 0, atualizados, falhas, erros: erros.slice(0, 5) };
+  });
