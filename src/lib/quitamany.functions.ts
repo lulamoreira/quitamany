@@ -248,10 +248,10 @@ export const configurarWebhookMeta = createServerFn({ method: "POST" })
       etapa2 = { ok: false, msg: rTok.json?.error?.message || "Não foi possível obter o page access token." };
     } else {
       const pageToken = rTok.json.access_token as string;
-      const subAppUrl = `${GRAPH_V25}/${cfg.page_id}/subscribed_apps?subscribed_fields=messages&access_token=${encodeURIComponent(pageToken)}`;
+      const subAppUrl = `${GRAPH_V25}/${cfg.page_id}/subscribed_apps?subscribed_fields=messages,comments&access_token=${encodeURIComponent(pageToken)}`;
       const r2 = await metaFetch(subAppUrl, { method: "POST" });
       etapa2 = r2.ok && r2.json?.success !== false
-        ? { ok: true, msg: "Página inscrita no app (subscribed_fields: messages)." }
+        ? { ok: true, msg: "Página inscrita no app (subscribed_fields: messages, comments)." }
         : { ok: false, msg: r2.json?.error?.message || `Falha (${r2.status})` };
     }
 
