@@ -20,6 +20,8 @@ import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/co
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { DesktopShell } from "@/components/desktop-shell";
+import { FooterLinks } from "@/components/footer-links";
+
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
