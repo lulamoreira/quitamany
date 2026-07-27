@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
@@ -177,14 +177,15 @@ function AuthPage() {
       </Card>
 
       <footer className="mt-6 flex items-center justify-center gap-4 text-xs text-muted-foreground">
-        <a href="/privacidade" className="hover:text-foreground hover:underline">
+        <Link to="/privacidade" className="hover:text-foreground hover:underline">
           Privacidade
-        </a>
+        </Link>
         <span aria-hidden>·</span>
-        <a href="/exclusao-de-dados" className="hover:text-foreground hover:underline">
+        <Link to="/exclusao-de-dados" className="hover:text-foreground hover:underline">
           Exclusão de dados
-        </a>
+        </Link>
       </footer>
+
     </div>
   );
 }

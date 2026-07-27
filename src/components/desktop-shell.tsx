@@ -19,6 +19,8 @@ import { useMyRole } from "@/hooks/use-role";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { FooterLinks } from "@/components/footer-links";
+
 
 type Item = { to: string; label: string; icon: typeof CalendarDays; exact?: boolean };
 
@@ -237,7 +239,11 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">{children}</div>
+      <div className="flex min-w-0 flex-1 flex-col">
+        {children}
+        <FooterLinks />
+      </div>
+
     </div>
   );
 }
