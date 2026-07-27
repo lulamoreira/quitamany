@@ -244,17 +244,25 @@ function AgendaPage() {
                     <div className="h-16 w-16 flex-shrink-0 rounded-md bg-muted" />
                   )}
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">
+                    <div className="flex items-center gap-1.5">
+                      <StatusBadge status={p.status} />
+                    </div>
+                    <p className="mt-1 truncate text-sm font-medium">
                       {p.titulo || p.legenda?.slice(0, 40) || "Sem título"}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {p.agendado_para
                         ? format(new Date(p.agendado_para), "dd 'de' MMM 'às' HH:mm", { locale: ptBR })
-                        : "Rascunho"}
+                        : p.publicado_em
+                          ? `Publicado em ${format(new Date(p.publicado_em), "dd 'de' MMM", { locale: ptBR })}`
+                          : "Rascunho"}
                     </p>
-                    <Badge variant="outline" className={cn("mt-1 text-xs", statusColor[p.status] || "")}>
-                      {p.status}
-                    </Badge>
+                    {p.status === "erro" && p.erro_msg && (
+                      <p className="mt-1 line-clamp-1 text-xs text-destructive">{p.erro_msg}</p>
+                    )}
+                    <div className="mt-2">
+                      <PostActions post={p as any} />
+                    </div>
                   </div>
                 </CardContent>
               </Card>
