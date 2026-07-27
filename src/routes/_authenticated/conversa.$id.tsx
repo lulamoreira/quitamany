@@ -172,7 +172,11 @@ function ConversaPage() {
                     {isOut && m.enviada_por === "robo" ? (
                       <span className="mr-1 text-[10px] opacity-75">🤖</span>
                     ) : null}
-                    <span className="whitespace-pre-wrap">{m.texto}</span>
+                    {m.apagada ? (
+                      <span className="italic opacity-60">Mensagem apagada</span>
+                    ) : (
+                      <span className="whitespace-pre-wrap">{m.texto}</span>
+                    )}
                     <div className={cn("mt-1 text-[10px]", isOut ? "text-white/70" : "text-muted-foreground")}>
                       {formatRelative(m.criado_em, { addSuffix: true })}
                     </div>
@@ -239,7 +243,12 @@ function ConversaPage() {
           <AvatarFallback className="bg-primary/10 text-primary">{inicial}</AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
-          <p className="truncate font-semibold">{contato?.username ? `@${contato.username}` : nome}</p>
+          <p className="truncate font-semibold">
+            {contato?.username ? `@${contato.username}` : nome}
+            {contato?.opt_out ? (
+              <span className="ml-2 rounded-full bg-destructive/10 px-1.5 py-0.5 text-[10px] font-semibold text-destructive">Opt-out</span>
+            ) : null}
+          </p>
           <p className="truncate text-xs text-muted-foreground">
             {conversa?.modo === "automatico" ? "Modo automático" : "Você está respondendo"}
           </p>
@@ -273,7 +282,11 @@ function ConversaPage() {
                 {isOut && m.enviada_por === "robo" ? (
                   <span className="mr-1 text-[10px] opacity-75">🤖</span>
                 ) : null}
-                <span className="whitespace-pre-wrap">{m.texto}</span>
+                {m.apagada ? (
+                  <span className="italic opacity-60">Mensagem apagada</span>
+                ) : (
+                  <span className="whitespace-pre-wrap">{m.texto}</span>
+                )}
                 <div className={cn("mt-1 text-[10px]", isOut ? "text-white/70" : "text-muted-foreground")}>
                   {formatRelative(m.criado_em, { addSuffix: true })}
                 </div>
