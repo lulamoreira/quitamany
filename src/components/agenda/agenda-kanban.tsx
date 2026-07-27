@@ -17,7 +17,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
-import { FileText, CalendarClock, CheckCircle2, AlertTriangle, Ban, Loader2 } from "lucide-react";
+import { FileText, CalendarClock, CheckCircle2, AlertTriangle, Ban, Loader2, ExternalLink } from "lucide-react";
 import { format, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -33,6 +33,7 @@ type Post = {
   video_url: string | null;
   erro_msg: string | null;
   permalink: string | null;
+  instagram_permalink: string | null;
 };
 
 type ColKey = "rascunho" | "agendado" | "publicado" | "erro";
