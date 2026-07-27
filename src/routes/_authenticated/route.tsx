@@ -68,8 +68,10 @@ function AuthenticatedLayout() {
         <main className="mx-auto max-w-2xl px-4 pt-4">
           <Outlet />
         </main>
+        <FooterLinks />
         <MobileBottomNav />
       </div>
+
     </>
   );
 }
