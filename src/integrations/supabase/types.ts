@@ -71,6 +71,8 @@ export type Database = {
           ig_id: string
           nome: string | null
           notas: string
+          opt_out: boolean
+          opt_out_em: string | null
           primeira_interacao: string
           ultima_interacao: string
           updated_at: string
@@ -84,6 +86,8 @@ export type Database = {
           ig_id: string
           nome?: string | null
           notas?: string
+          opt_out?: boolean
+          opt_out_em?: string | null
           primeira_interacao?: string
           ultima_interacao?: string
           updated_at?: string
@@ -97,6 +101,8 @@ export type Database = {
           ig_id?: string
           nome?: string | null
           notas?: string
+          opt_out?: boolean
+          opt_out_em?: string | null
           primeira_interacao?: string
           ultima_interacao?: string
           updated_at?: string
@@ -216,29 +222,35 @@ export type Database = {
       }
       mensagens: {
         Row: {
+          apagada: boolean
           conversa_id: string
           criado_em: string
           direcao: Database["public"]["Enums"]["msg_direcao"]
           enviada_por: Database["public"]["Enums"]["msg_autor"] | null
           id: string
+          mid: string | null
           payload_bruto: Json | null
           texto: string
         }
         Insert: {
+          apagada?: boolean
           conversa_id: string
           criado_em?: string
           direcao: Database["public"]["Enums"]["msg_direcao"]
           enviada_por?: Database["public"]["Enums"]["msg_autor"] | null
           id?: string
+          mid?: string | null
           payload_bruto?: Json | null
           texto?: string
         }
         Update: {
+          apagada?: boolean
           conversa_id?: string
           criado_em?: string
           direcao?: Database["public"]["Enums"]["msg_direcao"]
           enviada_por?: Database["public"]["Enums"]["msg_autor"] | null
           id?: string
+          mid?: string | null
           payload_bruto?: Json | null
           texto?: string
         }

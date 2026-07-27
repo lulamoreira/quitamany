@@ -24,6 +24,7 @@ type Contato = {
   foto_url: string | null;
   etiquetas: string[];
   ultima_interacao: string;
+  opt_out?: boolean;
 };
 
 function ContatosPage() {
@@ -142,6 +143,9 @@ function ContatosPage() {
                               <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-bold">{inicial}</AvatarFallback>
                             </Avatar>
                             <span className="font-medium">{c.username ? `@${c.username}` : nome}</span>
+                            {c.opt_out ? (
+                              <span className="rounded-full bg-destructive/10 px-1.5 py-0.5 text-[10px] font-semibold text-destructive">Opt-out</span>
+                            ) : null}
                           </div>
                         </td>
                         <td className="px-4 py-2.5">
@@ -221,7 +225,12 @@ function ContatosPage() {
                   <AvatarFallback className="bg-primary/10 text-primary">{inicial}</AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-semibold">{c.username ? `@${c.username}` : nome}</p>
+                  <p className="truncate font-semibold">
+                    {c.username ? `@${c.username}` : nome}
+                    {c.opt_out ? (
+                      <span className="ml-2 rounded-full bg-destructive/10 px-1.5 py-0.5 text-[10px] font-semibold text-destructive">Opt-out</span>
+                    ) : null}
+                  </p>
                   <div className="mt-0.5 flex flex-wrap gap-1">
                     {(c.etiquetas ?? []).map((t) => (
                       <span key={t} className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">{t}</span>

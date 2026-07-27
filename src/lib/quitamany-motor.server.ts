@@ -1,5 +1,6 @@
 // Server-only: processa eventos do webhook do Instagram
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { ehParada, ehRetorno } from "@/lib/opt-out";
 
 const GRAPH = "https://graph.facebook.com/v21.0";
 
@@ -122,14 +123,33 @@ async function replyToComment(commentId: string, token: string, text: string) {
   return { ok: r.ok, body: j };
 }
 
-async function saveMensagem(conversaId: string, direcao: "recebida" | "enviada", texto: string, enviadaPor: "robo" | "humano" | null, payload?: any) {
+async function saveMensagem(
+  conversaId: string,
+  direcao: "recebida" | "enviada",
+  texto: string,
+  enviadaPor: "robo" | "humano" | null,
+  payload?: any,
+  mid?: string | null,
+) {
   await (supabaseAdmin as any).from("mensagens").insert({
     conversa_id: conversaId,
     direcao,
     texto,
     enviada_por: enviadaPor,
     payload_bruto: payload ?? null,
+    mid: mid ?? null,
   });
+}
+
+async function dentroDaJanela(conversaId: string): Promise<boolean> {
+  const { data } = await (supabaseAdmin as any)
+    .from("conversas")
+    .select("janela_expira_em")
+    .eq("id", conversaId)
+    .maybeSingle();
+  const j = data?.janela_expira_em;
+  if (!j) return true;
+  return new Date(j).getTime() > Date.now();
 }
 
 async function updateConversaAfterReceive(conversaId: string, texto: string) {
@@ -208,12 +228,20 @@ async function handleComentario(value: any) {
       }
     }
 
-    // Private reply via DM
+    // Private reply via DM (não aplica checagem de janela de 24h; regra própria da Meta para comentários)
     const info = from?.id ? await fetchUserInfo(cfg.ig_user_id, cfg.access_token, from.id) : null;
     let contato: any = null;
     if (from?.id) {
       contato = await upsertContato(from.id, { username: info?.username ?? from.username, nome: info?.nome, foto_url: info?.foto_url });
     }
+
+    // Se o contato optou por sair, não envia a DM privada — mas o comentário público já foi respondido acima.
+    if (contato?.opt_out === true) {
+      await logEvento("opt_out_bloqueou_dm_comentario", { contato_id: contato.id, comment_id: commentId });
+      await incAutomacao(a.id);
+      break;
+    }
+
     const send = await sendDM(cfg.ig_user_id, cfg.access_token, { comment_id: commentId }, a.resposta_dm, a.botoes);
     if (!send.ok) {
       const errMsg = send.body?.error?.message ?? "Falha ao enviar DM";
@@ -236,8 +264,49 @@ async function handleMensagem(igUserId: string, token: string, sender: string, t
   const info = await fetchUserInfo(igUserId, token, sender);
   const contato = await upsertContato(sender, { username: info?.username, nome: info?.nome, foto_url: info?.foto_url });
   const conv = await upsertConversa(contato.id);
-  await saveMensagem(conv.id, "recebida", texto, null, payload);
+  const mid = payload?.message?.mid ?? null;
+  await saveMensagem(conv.id, "recebida", texto, null, payload, mid);
   await updateConversaAfterReceive(conv.id, texto);
+
+  // ---- Opt-out / retorno (antes de qualquer automação) ----
+  if (ehRetorno(texto)) {
+    await (supabaseAdmin as any)
+      .from("contatos")
+      .update({ opt_out: false, opt_out_em: null })
+      .eq("id", contato.id);
+    const send = await sendDM(igUserId, token, { id: sender }, "Pronto! Você voltou a receber nossas mensagens.");
+    if (send.ok) {
+      await saveMensagem(conv.id, "enviada", "Pronto! Você voltou a receber nossas mensagens.", "robo", send.body);
+      await updateConversaAfterSend(conv.id, "Pronto! Você voltou a receber nossas mensagens.");
+    } else {
+      await logEvento("erro_envio_dm", send.body, send.body?.error?.message ?? "Falha ao enviar DM (retorno)");
+    }
+    return;
+  }
+
+  if (ehParada(texto)) {
+    await (supabaseAdmin as any)
+      .from("contatos")
+      .update({ opt_out: true, opt_out_em: new Date().toISOString() })
+      .eq("id", contato.id);
+    const msg = "Você não receberá mais mensagens automáticas. Envie VOLTAR quando quiser retomar.";
+    const send = await sendDM(igUserId, token, { id: sender }, msg);
+    if (send.ok) {
+      await saveMensagem(conv.id, "enviada", msg, "robo", send.body);
+      await updateConversaAfterSend(conv.id, msg);
+    } else {
+      await logEvento("erro_envio_dm", send.body, send.body?.error?.message ?? "Falha ao enviar DM (parada)");
+    }
+    return;
+  }
+
+  // Se contato já estava em opt-out, robô não responde. Mensagem já foi gravada para atendimento humano.
+  const { data: contatoAtual } = await (supabaseAdmin as any)
+    .from("contatos")
+    .select("opt_out")
+    .eq("id", contato.id)
+    .maybeSingle();
+  if (contatoAtual?.opt_out === true) return;
 
   // Não responder se modo humano
   const { data: convAtual } = await (supabaseAdmin as any)
@@ -258,6 +327,10 @@ async function handleMensagem(igUserId: string, token: string, sender: string, t
     const bv = await getAutomacoes("boas_vindas");
     if (bv.length > 0) {
       const a = bv[0];
+      if (!(await dentroDaJanela(conv.id))) {
+        await logEvento("fora_da_janela", { conversa_id: conv.id, automacao_id: a.id, tipo: "boas_vindas" });
+        return;
+      }
       const send = await sendDM(igUserId, token, { id: sender }, a.resposta_dm, a.botoes);
       if (send.ok) {
         await saveMensagem(conv.id, "enviada", a.resposta_dm, "robo", send.body);
@@ -275,6 +348,10 @@ async function handleMensagem(igUserId: string, token: string, sender: string, t
   const kws = await getAutomacoes("palavra_chave_dm");
   for (const a of kws) {
     if (!matchPalavra(texto, a.palavras)) continue;
+    if (!(await dentroDaJanela(conv.id))) {
+      await logEvento("fora_da_janela", { conversa_id: conv.id, automacao_id: a.id, tipo: "palavra_chave_dm" });
+      break;
+    }
     const send = await sendDM(igUserId, token, { id: sender }, a.resposta_dm, a.botoes);
     if (send.ok) {
       await saveMensagem(conv.id, "enviada", a.resposta_dm, "robo", send.body);
@@ -289,6 +366,31 @@ async function handleMensagem(igUserId: string, token: string, sender: string, t
   }
 }
 
+async function handleUnsend(mid: string) {
+  const { data: msg } = await (supabaseAdmin as any)
+    .from("mensagens")
+    .select("id, conversa_id")
+    .eq("mid", mid)
+    .maybeSingle();
+  if (!msg) return;
+  await (supabaseAdmin as any).from("mensagens").update({ apagada: true }).eq("id", msg.id);
+
+  // Se era a última mensagem da conversa, ajusta ultima_mensagem
+  const { data: ultima } = await (supabaseAdmin as any)
+    .from("mensagens")
+    .select("id")
+    .eq("conversa_id", msg.conversa_id)
+    .order("criado_em", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (ultima?.id === msg.id) {
+    await (supabaseAdmin as any)
+      .from("conversas")
+      .update({ ultima_mensagem: "Mensagem apagada" })
+      .eq("id", msg.conversa_id);
+  }
+}
+
 export async function processarWebhook(body: any): Promise<{ ok: true }> {
   const cfg = await getIgConfig();
   await logEvento("webhook_recebido", body);
@@ -299,12 +401,26 @@ export async function processarWebhook(body: any): Promise<{ ok: true }> {
     const messaging = entry.messaging ?? [];
     for (const m of messaging) {
       const senderId = m.sender?.id;
-      const recipientId = m.recipient?.id;
       const isEcho = m.message?.is_echo === true;
+      const isDeleted = m.message?.is_deleted === true;
       // Ignora ecos da própria conta
       if (isEcho) continue;
       if (!cfg) continue;
       if (senderId && senderId === cfg.ig_user_id) continue;
+
+      // Exclusão de mensagem pelo remetente (unsend) — não roda automação
+      if (isDeleted) {
+        const midDel = m.message?.mid;
+        if (midDel) {
+          try {
+            await handleUnsend(midDel);
+          } catch (e: any) {
+            await logEvento("erro_unsend", m, e?.message ?? String(e));
+          }
+        }
+        continue;
+      }
+
       const texto = m.message?.text ?? "";
       if (!texto || !senderId) continue;
       try {

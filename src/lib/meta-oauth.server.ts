@@ -30,11 +30,11 @@ export async function configurarWebhookServerSide(pageId: string, pageAccessToke
     : { ok: false, msg: r1.json?.error?.message || `Falha (${r1.status})` };
 
   const r2 = await jfetch(
-    `${GRAPH_V25}/${pageId}/subscribed_apps?subscribed_fields=messages&access_token=${encodeURIComponent(pageAccessToken)}`,
+    `${GRAPH_V25}/${pageId}/subscribed_apps?subscribed_fields=messages,comments&access_token=${encodeURIComponent(pageAccessToken)}`,
     { method: "POST" },
   );
   const etapa2 = r2.ok
-    ? { ok: true, msg: "Página inscrita no app" }
+    ? { ok: true, msg: "Página inscrita no app (subscribed_fields: messages, comments)." }
     : { ok: false, msg: r2.json?.error?.message || `Falha (${r2.status})` };
 
   return { etapa1, etapa2 };
