@@ -59,7 +59,7 @@ function ConversaPage() {
   useEffect(() => {
     marcar({ data: { conversa_id: id } }).catch(() => {});
     const ch = supabase
-      .channel(`qm-conv-${id}`)
+      .channel(`qm-conv-${id}-${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "mensagens", filter: `conversa_id=eq.${id}` }, () => {
         qc.invalidateQueries({ queryKey: ["qm-mensagens", id] });
       })
