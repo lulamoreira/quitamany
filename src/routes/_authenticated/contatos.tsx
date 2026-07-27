@@ -24,6 +24,7 @@ type Contato = {
   foto_url: string | null;
   etiquetas: string[];
   ultima_interacao: string;
+  opt_out?: boolean;
 };
 
 function ContatosPage() {
