@@ -239,7 +239,11 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">{children}</div>
+      <div className="flex min-w-0 flex-1 flex-col">
+        {children}
+        <FooterLinks />
+      </div>
+
     </div>
   );
 }
