@@ -123,14 +123,33 @@ async function replyToComment(commentId: string, token: string, text: string) {
   return { ok: r.ok, body: j };
 }
 
-async function saveMensagem(conversaId: string, direcao: "recebida" | "enviada", texto: string, enviadaPor: "robo" | "humano" | null, payload?: any) {
+async function saveMensagem(
+  conversaId: string,
+  direcao: "recebida" | "enviada",
+  texto: string,
+  enviadaPor: "robo" | "humano" | null,
+  payload?: any,
+  mid?: string | null,
+) {
   await (supabaseAdmin as any).from("mensagens").insert({
     conversa_id: conversaId,
     direcao,
     texto,
     enviada_por: enviadaPor,
     payload_bruto: payload ?? null,
+    mid: mid ?? null,
   });
+}
+
+async function dentroDaJanela(conversaId: string): Promise<boolean> {
+  const { data } = await (supabaseAdmin as any)
+    .from("conversas")
+    .select("janela_expira_em")
+    .eq("id", conversaId)
+    .maybeSingle();
+  const j = data?.janela_expira_em;
+  if (!j) return true;
+  return new Date(j).getTime() > Date.now();
 }
 
 async function updateConversaAfterReceive(conversaId: string, texto: string) {
