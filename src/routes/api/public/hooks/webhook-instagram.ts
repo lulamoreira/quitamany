@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { createHmac, timingSafeEqual } from "crypto";
 
 function extrairEventoIds(body: any): string[] {
   const ids: string[] = [];
@@ -17,6 +18,34 @@ function extrairEventoIds(body: any): string[] {
   return ids;
 }
 
+/**
+ * Valida assinatura X-Hub-Signature-256 enviada pela Meta.
+ * O header deve estar no formato "sha256=<hex>".
+ * Retorna true apenas se META_APP_SECRET estiver configurado e o HMAC bater.
+ */
+function validarAssinaturaMeta(rawBody: string, signatureHeader: string | null): boolean {
+  const secret = process.env.META_APP_SECRET;
+  if (!secret) {
+    console.error("[webhook-instagram] META_APP_SECRET ausente — webhook inseguro");
+    return false;
+  }
+  if (!signatureHeader || !signatureHeader.startsWith("sha256=")) {
+    console.error("[webhook-instagram] X-Hub-Signature-256 ausente ou mal formatado");
+    return false;
+  }
+
+  const expected = signatureHeader.slice(7); // remove "sha256="
+  const computed = createHmac("sha256", secret).update(rawBody, "utf8").digest("hex");
+
+  try {
+    return timingSafeEqual(Buffer.from(computed, "hex"), Buffer.from(expected, "hex"));
+  } catch {
+    // tamanhos diferentes ou hex inválido
+    console.error("[webhook-instagram] Falha na comparação de assinatura");
+    return false;
+  }
+}
+
 export const Route = createFileRoute("/api/public/hooks/webhook-instagram")({
   server: {
     handlers: {
@@ -32,9 +61,20 @@ export const Route = createFileRoute("/api/public/hooks/webhook-instagram")({
         return new Response("forbidden", { status: 403 });
       },
       POST: async ({ request }) => {
+        // 1) Ler corpo BRUTO para validação de assinatura
+        const rawBody = await request.text();
+        const signature = request.headers.get("X-Hub-Signature-256") ?? request.headers.get("x-hub-signature-256");
+
+        // 2) Validar assinatura antes de qualquer processamento
+        if (!validarAssinaturaMeta(rawBody, signature)) {
+          console.error("[webhook-instagram] Tentativa de POST com assinatura inválida ou ausente rejeitada");
+          return new Response("invalid signature", { status: 403 });
+        }
+
+        // 3) Somente após validar, fazer o parse JSON
         let body: any = null;
         try {
-          body = await request.json();
+          body = JSON.parse(rawBody);
         } catch {
           return new Response("bad json", { status: 400 });
         }
@@ -44,7 +84,7 @@ export const Route = createFileRoute("/api/public/hooks/webhook-instagram")({
         try {
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-          // 1) Gravar SEMPRE o evento bruto recebido (auditoria)
+          // 4) Gravar SEMPRE o evento bruto recebido (auditoria)
           const insertedIds: string[] = [];
           if (eventoIds.length > 0) {
             // Deduplicação: verifica quais já existem
@@ -94,12 +134,12 @@ export const Route = createFileRoute("/api/public/hooks/webhook-instagram")({
             });
           }
 
-          // 2) Processar com await (serverless encerra após a resposta)
+          // 5) Processar com await (serverless encerra após a resposta)
           try {
             const { processarWebhook } = await import("@/lib/quitamany-motor.server");
             await processarWebhook(body);
 
-            // 3) Marcar como processado
+            // 6) Marcar como processado
             if (insertedIds.length > 0) {
               await (supabaseAdmin as any)
                 .from("eventos_webhook")
