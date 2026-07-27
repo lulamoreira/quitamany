@@ -74,16 +74,7 @@ function Historico() {
                         : format(new Date(p.criado_em), "dd/MM/yyyy", { locale: ptBR })}
                     </p>
                   </div>
-                  <Badge
-                    variant="outline"
-                    className={
-                      p.status === "publicado"
-                        ? "border-green-500/30 bg-green-500/15 text-green-700 dark:text-green-300"
-                        : "border-red-500/30 bg-red-500/15 text-red-700 dark:text-red-300"
-                    }
-                  >
-                    {p.status}
-                  </Badge>
+                  <StatusBadge status={p.status} />
                 </div>
                 {p.status === "erro" && p.erro_msg && (
                   <p className="rounded-md bg-red-500/10 p-2 text-xs text-red-700 dark:text-red-300">
