@@ -297,6 +297,8 @@ export type Database = {
           erro_msg: string | null
           hashtags: string
           id: string
+          instagram_media_id: string | null
+          instagram_permalink: string | null
           legenda: string
           media_id: string | null
           permalink: string | null
@@ -315,6 +317,8 @@ export type Database = {
           erro_msg?: string | null
           hashtags?: string
           id?: string
+          instagram_media_id?: string | null
+          instagram_permalink?: string | null
           legenda?: string
           media_id?: string | null
           permalink?: string | null
@@ -333,6 +337,8 @@ export type Database = {
           erro_msg?: string | null
           hashtags?: string
           id?: string
+          instagram_media_id?: string | null
+          instagram_permalink?: string | null
           legenda?: string
           media_id?: string | null
           permalink?: string | null
