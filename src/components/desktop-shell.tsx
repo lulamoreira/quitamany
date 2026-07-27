@@ -19,6 +19,8 @@ import { useMyRole } from "@/hooks/use-role";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { FooterLinks } from "@/components/footer-links";
+
 
 type Item = { to: string; label: string; icon: typeof CalendarDays; exact?: boolean };
 
