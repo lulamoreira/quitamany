@@ -7,12 +7,12 @@ export const Route = createFileRoute("/privacidade")({
       {
         name: "description",
         content:
-          "Política de Privacidade do QuitaMany: quais dados tratamos, finalidade e contato do responsável.",
+          "Política de Privacidade do QuitaMany: dados do Instagram, armazenamento, exclusão e contato.",
       },
       { property: "og:title", content: "Política de Privacidade · QuitaMany" },
       {
         property: "og:description",
-        content: "Como o QuitaMany trata dados de conta Instagram, mensagens e contatos.",
+        content: "Como o QuitaMany acessa, armazena e protege dados da conta Instagram comercial.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -30,71 +30,114 @@ function PrivacidadePage() {
             Política de Privacidade
           </h1>
           <p className="text-sm text-muted-foreground">
-            QuitaMany · Última atualização: 26/07/2026
+            QuitaMany · Última atualização: 27/07/2026
           </p>
         </header>
 
         <section className="space-y-3 text-sm leading-relaxed text-foreground">
           <p>
-            O QuitaMany é uma ferramenta de automação de atendimento e agendamento de
-            publicações no Instagram, utilizada pelo próprio negócio conectado. Esta
-            política explica quais dados tratamos e para quê.
+            O QuitaMany é uma ferramenta de automação de publicações e atendimento
+            para contas comerciais do Instagram. Ao conectar sua conta do Instagram
+            ao nosso aplicativo, você nos autoriza a acessar determinados dados
+            essenciais para o funcionamento do serviço.
           </p>
 
-          <h2 className="pt-2 text-lg font-semibold">1. Dados que tratamos</h2>
+          <h2 className="pt-2 text-lg font-semibold">1. Dados que acessamos</h2>
+          <p>Quando você conecta sua conta comercial do Instagram, o QuitaMany acessa:</p>
           <ul className="list-disc space-y-1 pl-5">
             <li>
-              Informações da conta Instagram conectada (nome de usuário, ID da página
-              vinculada e token de acesso emitido pela Meta).
+              <strong>Informações do perfil comercial:</strong> nome de usuário
+              (@quitanda3d, por exemplo), nome da página, ID da página e foto do
+              perfil.
             </li>
             <li>
-              Mensagens diretas e comentários recebidos por meio da API oficial da Meta
-              (Instagram Graph API).
+              <strong>Mensagens diretas (DMs):</strong> mensagens recebidas e
+              enviadas pelo Instagram Direct, incluindo remetente, texto e
+              identificador da conversa.
             </li>
-            <li>Contatos que interagem com a conta e etiquetas atribuídas manualmente.</li>
             <li>
-              Conteúdos criados pelo próprio usuário do sistema (posts agendados,
-              legendas, mídias).
+              <strong>Comentários:</strong> comentários publicados nas publicações
+              da página conectada, nome do autor do comentário e o texto do
+              comentário.
+            </li>
+            <li>
+              <strong>Publicações:</strong> identificadores de posts, reels e mídias
+              publicadas, necessários para agendamento e publicação automática.
+            </li>
+            <li>
+              <strong>Token de acesso:</strong> token emitido pela Meta (Facebook /
+              Instagram) para ler mensagens, comentários e publicar conteúdo em seu
+              nome.
             </li>
           </ul>
 
-          <h2 className="pt-2 text-lg font-semibold">2. Finalidade</h2>
+          <h2 className="pt-2 text-lg font-semibold">2. Dados que armazenamos</h2>
+          <p>Armazenamos apenas o que é necessário para operar o serviço:</p>
+          <ul className="list-disc space-y-1 pl-5">
+            <li>
+              Dados da conta conectada (nome de usuário, ID da página, token de
+              acesso e data de renovação do token).
+            </li>
+            <li>
+              Contatos que interagem com a página (nome de exibição do Instagram,
+              ID do contato e etiquetas atribuídas por você).
+            </li>
+            <li>
+              Conversas e mensagens trocadas pelo Direct e comentários capturados
+              para atendimento.
+            </li>
+            <li>
+              Conteúdos criados por você no aplicativo (rascunhos, legendas,
+              hashtags, vídeos enviados para agendamento e histórico de publicações).
+            </li>
+          </ul>
+
+          <h2 className="pt-2 text-lg font-semibold">3. Tempo de armazenamento</h2>
           <p>
-            Os dados são usados exclusivamente para automação de atendimento e
-            agendamento de publicações do próprio negócio conectado. Não realizamos
-            perfilamento para terceiros nem venda de dados.
+            Os dados são mantidos enquanto sua conta estiver ativa e conectada ao
+            QuitaMany. Se você desconectar sua página do Instagram, excluir sua
+            conta ou solicitar a remoção dos dados, os registros correspondentes são
+            apagados em até <strong>30 dias</strong>. Logs técnicos e registros de
+            webhook podem ser conservados por até 30 dias para fins de segurança e
+            diagnóstico.
           </p>
 
-          <h2 className="pt-2 text-lg font-semibold">3. Armazenamento e segurança</h2>
+          <h2 className="pt-2 text-lg font-semibold">4. Compartilhamento com terceiros</h2>
           <p>
-            Os dados ficam armazenados em infraestrutura em nuvem com criptografia em
-            trânsito e em repouso, com acesso restrito por autenticação e políticas de
-            segurança em nível de linha (RLS). Tokens da Meta são renovados
-            periodicamente e mantidos protegidos.
+            <strong>Não vendemos, alugamos nem compartilhamos seus dados com
+            terceiros.</strong> A única transferência de informações ocorre com a
+            Meta (Facebook / Instagram), por meio da API oficial, e apenas para
+            viabilizar as funcionalidades do aplicativo: receber mensagens,
+            comentários e publicar conteúdo na página conectada.
           </p>
 
-          <h2 className="pt-2 text-lg font-semibold">4. Compartilhamento</h2>
+          <h2 className="pt-2 text-lg font-semibold">5. Segurança</h2>
           <p>
-            Não compartilhamos dados com terceiros. A comunicação com a Meta ocorre
-            apenas para viabilizar as funcionalidades do produto (receber mensagens,
-            publicar conteúdo).
+            Os dados são armazenados em infraestrutura em nuvem com criptografia em
+            trânsito e em repouso. O acesso é restrito por autenticação e políticas
+            de segurança em nível de linha (RLS), que garantem que cada usuário só
+            veja o que lhe pertence. Tokens de acesso da Meta são renovados
+            periodicamente e mantidos fora do alcance do frontend.
           </p>
 
-          <h2 className="pt-2 text-lg font-semibold">5. Direitos do titular</h2>
+          <h2 className="pt-2 text-lg font-semibold">6. Como solicitar exclusão</h2>
           <p>
-            Você pode solicitar acesso, correção ou exclusão dos seus dados. Consulte
-            também as{" "}
+            Você pode pedir a remoção completa dos seus dados a qualquer momento. O
+            procedimento está detalhado na página{" "}
             <Link to="/exclusao-de-dados" className="text-primary underline">
-              instruções de exclusão de dados
+              Exclusão de Dados
             </Link>
             .
           </p>
 
-          <h2 className="pt-2 text-lg font-semibold">6. Contato do responsável</h2>
+          <h2 className="pt-2 text-lg font-semibold">7. Contato do responsável</h2>
           <p>
-            Dúvidas ou solicitações:{" "}
-            <a href="mailto:lula1973@gmail.com" className="text-primary underline">
-              lula1973@gmail.com
+            Dúvidas, solicitações ou exercício de direitos:{" "}
+            <a
+              href="mailto:[EMAIL_DE_CONTATO]"
+              className="text-primary underline"
+            >
+              [EMAIL_DE_CONTATO]
             </a>
             .
           </p>
