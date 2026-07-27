@@ -134,7 +134,12 @@ function ConversaPage() {
               <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">{inicial}</AvatarFallback>
             </Avatar>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-bold">{contato?.username ? `@${contato.username}` : nome}</p>
+              <p className="truncate text-sm font-bold">
+                {contato?.username ? `@${contato.username}` : nome}
+                {contato?.opt_out ? (
+                  <span className="ml-2 rounded-full bg-destructive/10 px-1.5 py-0.5 text-[10px] font-semibold text-destructive">Opt-out</span>
+                ) : null}
+              </p>
               <p className="truncate text-[11px] text-muted-foreground">
                 {conversa?.modo === "automatico" ? "🤖 Modo automático" : "👤 Você está respondendo"}
               </p>
