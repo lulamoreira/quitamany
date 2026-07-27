@@ -228,12 +228,20 @@ async function handleComentario(value: any) {
       }
     }
 
-    // Private reply via DM
+    // Private reply via DM (não aplica checagem de janela de 24h; regra própria da Meta para comentários)
     const info = from?.id ? await fetchUserInfo(cfg.ig_user_id, cfg.access_token, from.id) : null;
     let contato: any = null;
     if (from?.id) {
       contato = await upsertContato(from.id, { username: info?.username ?? from.username, nome: info?.nome, foto_url: info?.foto_url });
     }
+
+    // Se o contato optou por sair, não envia a DM privada — mas o comentário público já foi respondido acima.
+    if (contato?.opt_out === true) {
+      await logEvento("opt_out_bloqueou_dm_comentario", { contato_id: contato.id, comment_id: commentId });
+      await incAutomacao(a.id);
+      break;
+    }
+
     const send = await sendDM(cfg.ig_user_id, cfg.access_token, { comment_id: commentId }, a.resposta_dm, a.botoes);
     if (!send.ok) {
       const errMsg = send.body?.error?.message ?? "Falha ao enviar DM";
