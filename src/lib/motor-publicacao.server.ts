@@ -1,5 +1,5 @@
 // Server-only motor de publicação. Não importar do cliente.
-const GRAPH = "https://graph.facebook.com/v21.0";
+import { GRAPH } from "@/lib/graph";
 
 async function faseA(supabaseAdmin: any, cfg: any) {
   const { data: posts } = await supabaseAdmin
