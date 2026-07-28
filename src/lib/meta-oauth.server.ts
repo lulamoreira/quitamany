@@ -18,7 +18,7 @@ export async function configurarWebhookServerSide(pageId: string, pageAccessToke
   const verifyToken = process.env.WEBHOOK_VERIFY_TOKEN!;
   const appToken = `${appId}|${appSecret}`;
 
-  const subUrl = new URL(`${GRAPH_V25}/${appId}/subscriptions`);
+  const subUrl = new URL(`${GRAPH}/${appId}/subscriptions`);
   subUrl.searchParams.set("object", "instagram");
   subUrl.searchParams.set("callback_url", callbackUrl);
   subUrl.searchParams.set("verify_token", verifyToken);
@@ -30,7 +30,7 @@ export async function configurarWebhookServerSide(pageId: string, pageAccessToke
     : { ok: false, msg: r1.json?.error?.message || `Falha (${r1.status})` };
 
   const r2 = await jfetch(
-    `${GRAPH_V25}/${pageId}/subscribed_apps?subscribed_fields=messages,comments&access_token=${encodeURIComponent(pageAccessToken)}`,
+    `${GRAPH}/${pageId}/subscribed_apps?subscribed_fields=messages,comments&access_token=${encodeURIComponent(pageAccessToken)}`,
     { method: "POST" },
   );
   const etapa2 = r2.ok
@@ -45,7 +45,7 @@ export async function trocarCodePorTokenLongo(code: string, redirect_uri: string
   const appId = process.env.META_APP_ID!;
   const appSecret = process.env.META_APP_SECRET!;
 
-  const shortUrl = new URL(`${GRAPH_V25}/oauth/access_token`);
+  const shortUrl = new URL(`${GRAPH}/oauth/access_token`);
   shortUrl.searchParams.set("client_id", appId);
   shortUrl.searchParams.set("client_secret", appSecret);
   shortUrl.searchParams.set("redirect_uri", redirect_uri);
@@ -56,7 +56,7 @@ export async function trocarCodePorTokenLongo(code: string, redirect_uri: string
   }
   const shortToken = rShort.json.access_token as string;
 
-  const longUrl = new URL(`${GRAPH_V25}/oauth/access_token`);
+  const longUrl = new URL(`${GRAPH}/oauth/access_token`);
   longUrl.searchParams.set("grant_type", "fb_exchange_token");
   longUrl.searchParams.set("client_id", appId);
   longUrl.searchParams.set("client_secret", appSecret);
@@ -70,7 +70,7 @@ export async function trocarCodePorTokenLongo(code: string, redirect_uri: string
 
 export async function listarPaginas(userAccessToken: string): Promise<Pagina[]> {
   const r = await jfetch(
-    `${GRAPH_V25}/me/accounts?fields=id,name,access_token,instagram_business_account&access_token=${encodeURIComponent(userAccessToken)}`,
+    `${GRAPH}/me/accounts?fields=id,name,access_token,instagram_business_account&access_token=${encodeURIComponent(userAccessToken)}`,
   );
   return (r.json?.data ?? []) as Pagina[];
 }
@@ -89,7 +89,7 @@ export async function finalizarConexaoMeta(
 
   if (!pageAccessToken || !igAccountId) {
     const r = await jfetch(
-      `${GRAPH_V25}/${pagina.id}?fields=access_token,instagram_business_account&access_token=${encodeURIComponent(userAccessToken)}`,
+      `${GRAPH}/${pagina.id}?fields=access_token,instagram_business_account&access_token=${encodeURIComponent(userAccessToken)}`,
     );
     if (!r.ok) return { ok: false, error: r.json?.error?.message || "Falha ao buscar página" };
     pageAccessToken = pageAccessToken || r.json.access_token;
@@ -100,7 +100,7 @@ export async function finalizarConexaoMeta(
   if (!pageAccessToken) return { ok: false, error: "Não foi possível obter o token da página." };
 
   const rUser = await jfetch(
-    `${GRAPH_V25}/${igAccountId}?fields=username&access_token=${encodeURIComponent(userAccessToken)}`,
+    `${GRAPH}/${igAccountId}?fields=username&access_token=${encodeURIComponent(userAccessToken)}`,
   );
   const username = rUser.json?.username ?? null;
 
@@ -133,7 +133,7 @@ export async function renovarTodosTokens() {
   const { data: configs } = await (supabaseAdmin as any).from("ig_config").select("id, access_token");
   const results: Array<{ id: string; ok: boolean; error?: string }> = [];
   for (const cfg of configs ?? []) {
-    const url = new URL(`${GRAPH_V25}/oauth/access_token`);
+    const url = new URL(`${GRAPH}/oauth/access_token`);
     url.searchParams.set("grant_type", "fb_exchange_token");
     url.searchParams.set("client_id", appId);
     url.searchParams.set("client_secret", appSecret);
