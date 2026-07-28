@@ -190,6 +190,7 @@ export type Database = {
           conta_username: string | null
           id: string
           ig_user_id: string
+          page_access_token: string | null
           page_id: string | null
           token_gerado_em: string
           ultima_execucao_motor: string | null
@@ -201,6 +202,7 @@ export type Database = {
           conta_username?: string | null
           id?: string
           ig_user_id: string
+          page_access_token?: string | null
           page_id?: string | null
           token_gerado_em?: string
           ultima_execucao_motor?: string | null
@@ -212,6 +214,7 @@ export type Database = {
           conta_username?: string | null
           id?: string
           ig_user_id?: string
+          page_access_token?: string | null
           page_id?: string | null
           token_gerado_em?: string
           ultima_execucao_motor?: string | null

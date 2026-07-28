@@ -18,9 +18,17 @@ type Automacao = {
   execucoes: number;
 };
 
-async function getIgConfig() {
+type IgConfig = {
+  id: string;
+  ig_user_id: string;
+  access_token: string;
+  page_id: string | null;
+  page_access_token: string | null;
+};
+
+async function getIgConfig(): Promise<IgConfig | null> {
   const { data } = await supabaseAdmin.from("ig_config").select("*").limit(1).maybeSingle();
-  return data as { ig_user_id: string; access_token: string } | null;
+  return (data as IgConfig | null) ?? null;
 }
 
 async function logEvento(tipo: string, payload: unknown, erro?: string) {
@@ -32,7 +40,37 @@ async function logEvento(tipo: string, payload: unknown, erro?: string) {
   });
 }
 
-async function fetchUserInfo(igUserId: string, token: string, userId: string) {
+// Retorna o page access token do cfg, buscando/persistindo se necessário.
+// A API do Instagram (mensagens/comentários/perfil do remetente) exige page token,
+// não o token de usuário.
+async function getPageToken(cfg: IgConfig): Promise<string | null> {
+  if (cfg.page_access_token) return cfg.page_access_token;
+  if (!cfg.page_id) {
+    await logEvento("erro_page_token", { cfg_id: cfg.id }, "page_id ausente em ig_config");
+    return null;
+  }
+  try {
+    const r = await fetch(
+      `${GRAPH}/${cfg.page_id}?fields=access_token&access_token=${encodeURIComponent(cfg.access_token)}`,
+    );
+    const j: any = await r.json().catch(() => ({}));
+    if (!r.ok || !j?.access_token) {
+      await logEvento("erro_page_token", j, j?.error?.message ?? `HTTP ${r.status}`);
+      return null;
+    }
+    const pageToken = j.access_token as string;
+    await (supabaseAdmin as any)
+      .from("ig_config")
+      .update({ page_access_token: pageToken })
+      .eq("id", cfg.id);
+    return pageToken;
+  } catch (e: any) {
+    await logEvento("erro_page_token", { err: e?.message ?? String(e) }, e?.message ?? String(e));
+    return null;
+  }
+}
+
+async function fetchUserInfo(token: string, userId: string) {
   try {
     const url = `${GRAPH}/${userId}?fields=username,name,profile_pic&access_token=${encodeURIComponent(token)}`;
     const r = await fetch(url);
@@ -93,7 +131,7 @@ async function upsertConversa(contatoId: string) {
   return created;
 }
 
-async function sendDM(igUserId: string, token: string, recipient: { id?: string; comment_id?: string }, text: string, botoes?: Array<{ titulo: string }>) {
+async function sendDM(pageId: string, pageToken: string, recipient: { id?: string; comment_id?: string }, text: string, botoes?: Array<{ titulo: string }>) {
   const message: any = { text };
   if (botoes && botoes.length > 0) {
     message.quick_replies = botoes.slice(0, 3).map((b) => ({
@@ -103,7 +141,7 @@ async function sendDM(igUserId: string, token: string, recipient: { id?: string;
     }));
   }
   const body = { recipient, message };
-  const r = await fetch(`${GRAPH}/${igUserId}/messages?access_token=${encodeURIComponent(token)}`, {
+  const r = await fetch(`${GRAPH}/${pageId}/messages?access_token=${encodeURIComponent(pageToken)}`, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify(body),
@@ -231,12 +269,20 @@ async function handleComentario(value: any) {
   if (from?.id && from.id === cfg.ig_user_id) return;
 
   const autos = await getAutomacoes("gatilho_comentario");
+  if (autos.length === 0) return;
+
+  const pageToken = await getPageToken(cfg);
+  if (!cfg.page_id || !pageToken) {
+    await logEvento("erro_page_token", { comment_id: commentId }, "page_id/page_access_token indisponíveis");
+    return;
+  }
+
   for (const a of autos) {
     if (a.post_ig_id && mediaId && a.post_ig_id !== mediaId) continue;
     if (!matchPalavra(texto, a.palavras)) continue;
 
     if (a.resposta_comentario) {
-      const r = await replyToComment(commentId, cfg.access_token, a.resposta_comentario);
+      const r = await replyToComment(commentId, pageToken, a.resposta_comentario);
       if (!r.ok && r.body?.error?.code === 190) {
         await logEvento("token_expirado", r.body, "Token expirado");
         return;
@@ -244,7 +290,7 @@ async function handleComentario(value: any) {
     }
 
     // Private reply via DM (não aplica checagem de janela de 24h; regra própria da Meta para comentários)
-    const info = from?.id ? await fetchUserInfo(cfg.ig_user_id, cfg.access_token, from.id) : null;
+    const info = from?.id ? await fetchUserInfo(pageToken, from.id) : null;
     let contato: any = null;
     if (from?.id) {
       contato = await upsertContato(from.id, { username: info?.username ?? from.username, nome: info?.nome, foto_url: info?.foto_url });
@@ -261,7 +307,7 @@ async function handleComentario(value: any) {
     const textoDM = conv && (await primeiraMensagemDoRobo(conv.id))
       ? comRodapeOptOut(a.resposta_dm)
       : a.resposta_dm;
-    const send = await sendDM(cfg.ig_user_id, cfg.access_token, { comment_id: commentId }, textoDM, a.botoes);
+    const send = await sendDM(cfg.page_id, pageToken, { comment_id: commentId }, textoDM, a.botoes);
     if (!send.ok) {
       const errMsg = send.body?.error?.message ?? "Falha ao enviar DM";
       await logEvento("erro_envio_dm", send.body, errMsg);
@@ -278,8 +324,8 @@ async function handleComentario(value: any) {
   }
 }
 
-async function handleMensagem(igUserId: string, token: string, sender: string, texto: string, payload: any) {
-  const info = await fetchUserInfo(igUserId, token, sender);
+async function handleMensagem(pageId: string, pageToken: string, sender: string, texto: string, payload: any) {
+  const info = await fetchUserInfo(pageToken, sender);
   const contato = await upsertContato(sender, { username: info?.username, nome: info?.nome, foto_url: info?.foto_url });
   const conv = await upsertConversa(contato.id);
   const mid = payload?.message?.mid ?? null;
@@ -292,7 +338,7 @@ async function handleMensagem(igUserId: string, token: string, sender: string, t
       .from("contatos")
       .update({ opt_out: false, opt_out_em: null })
       .eq("id", contato.id);
-    const send = await sendDM(igUserId, token, { id: sender }, "Pronto! Você voltou a receber nossas mensagens.");
+    const send = await sendDM(pageId, pageToken, { id: sender }, "Pronto! Você voltou a receber nossas mensagens.");
     if (send.ok) {
       await saveMensagem(conv.id, "enviada", "Pronto! Você voltou a receber nossas mensagens.", "robo", send.body);
       await updateConversaAfterSend(conv.id, "Pronto! Você voltou a receber nossas mensagens.");
@@ -308,7 +354,7 @@ async function handleMensagem(igUserId: string, token: string, sender: string, t
       .update({ opt_out: true, opt_out_em: new Date().toISOString() })
       .eq("id", contato.id);
     const msg = "Você não receberá mais mensagens automáticas. Envie VOLTAR quando quiser retomar.";
-    const send = await sendDM(igUserId, token, { id: sender }, msg);
+    const send = await sendDM(pageId, pageToken, { id: sender }, msg);
     if (send.ok) {
       await saveMensagem(conv.id, "enviada", msg, "robo", send.body);
       await updateConversaAfterSend(conv.id, msg);
@@ -350,7 +396,7 @@ async function handleMensagem(igUserId: string, token: string, sender: string, t
         return;
       }
       const textoBV = (await primeiraMensagemDoRobo(conv.id)) ? comRodapeOptOut(a.resposta_dm) : a.resposta_dm;
-      const send = await sendDM(igUserId, token, { id: sender }, textoBV, a.botoes);
+      const send = await sendDM(pageId, pageToken, { id: sender }, textoBV, a.botoes);
       if (send.ok) {
         await saveMensagem(conv.id, "enviada", textoBV, "robo", send.body);
         await updateConversaAfterSend(conv.id, textoBV);
@@ -372,7 +418,7 @@ async function handleMensagem(igUserId: string, token: string, sender: string, t
       break;
     }
     const textoKW = (await primeiraMensagemDoRobo(conv.id)) ? comRodapeOptOut(a.resposta_dm) : a.resposta_dm;
-    const send = await sendDM(igUserId, token, { id: sender }, textoKW, a.botoes);
+    const send = await sendDM(pageId, pageToken, { id: sender }, textoKW, a.botoes);
     if (send.ok) {
       await saveMensagem(conv.id, "enviada", textoKW, "robo", send.body);
       await updateConversaAfterSend(conv.id, textoKW);
@@ -415,6 +461,10 @@ export async function processarWebhook(body: any): Promise<{ ok: true }> {
   const cfg = await getIgConfig();
   await logEvento("webhook_recebido", body);
 
+  // Resolve page token uma única vez para todos os envios deste webhook.
+  let pageToken: string | null = null;
+  if (cfg) pageToken = await getPageToken(cfg);
+
   const entries = body?.entry ?? [];
   for (const entry of entries) {
     // DMs
@@ -443,8 +493,12 @@ export async function processarWebhook(body: any): Promise<{ ok: true }> {
 
       const texto = m.message?.text ?? "";
       if (!texto || !senderId) continue;
+      if (!cfg.page_id || !pageToken) {
+        await logEvento("erro_page_token", { sender: senderId }, "page_id/page_access_token indisponíveis");
+        continue;
+      }
       try {
-        await handleMensagem(cfg.ig_user_id, cfg.access_token, senderId, texto, m);
+        await handleMensagem(cfg.page_id, pageToken, senderId, texto, m);
       } catch (e: any) {
         await logEvento("erro_mensagem", m, e?.message ?? String(e));
       }

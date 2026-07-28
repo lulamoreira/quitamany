@@ -1,0 +1,1 @@
+ALTER TABLE public.ig_config ADD COLUMN IF NOT EXISTS page_access_token text NULL;

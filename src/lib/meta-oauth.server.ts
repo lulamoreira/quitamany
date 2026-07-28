@@ -111,6 +111,7 @@ export async function finalizarConexaoMeta(
   const { error: insErr } = await (supabaseAdmin as any).from("ig_config").insert({
     ig_user_id: igAccountId,
     access_token: userAccessToken,
+    page_access_token: pageAccessToken,
     page_id: pagina.id,
     conta_username: username,
     token_gerado_em: new Date().toISOString(),
@@ -132,7 +133,7 @@ export async function renovarTodosTokens() {
   if (!appId || !appSecret) return { ok: false, error: "Credenciais Meta ausentes" };
 
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data: configs } = await (supabaseAdmin as any).from("ig_config").select("id, access_token");
+  const { data: configs } = await (supabaseAdmin as any).from("ig_config").select("id, access_token, page_id");
   const results: Array<{ id: string; ok: boolean; error?: string }> = [];
   for (const cfg of configs ?? []) {
     const url = new URL(`${GRAPH}/oauth/access_token`);
@@ -142,10 +143,21 @@ export async function renovarTodosTokens() {
     url.searchParams.set("fb_exchange_token", cfg.access_token);
     const r = await jfetch(url.toString());
     if (r.ok && r.json?.access_token) {
-      await (supabaseAdmin as any)
-        .from("ig_config")
-        .update({ access_token: r.json.access_token, token_gerado_em: new Date().toISOString() })
-        .eq("id", cfg.id);
+      const novoUserToken = r.json.access_token as string;
+      const patch: Record<string, any> = {
+        access_token: novoUserToken,
+        token_gerado_em: new Date().toISOString(),
+      };
+      // Renova também o page access token, que é derivado do token de usuário.
+      if (cfg.page_id) {
+        const rPage = await jfetch(
+          `${GRAPH}/${cfg.page_id}?fields=access_token&access_token=${encodeURIComponent(novoUserToken)}`,
+        );
+        if (rPage.ok && rPage.json?.access_token) {
+          patch.page_access_token = rPage.json.access_token;
+        }
+      }
+      await (supabaseAdmin as any).from("ig_config").update(patch).eq("id", cfg.id);
       results.push({ id: cfg.id, ok: true });
     } else {
       results.push({ id: cfg.id, ok: false, error: r.json?.error?.message || `HTTP ${r.status}` });

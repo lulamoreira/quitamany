@@ -120,10 +120,30 @@ export const enviarMensagem = createServerFn({ method: "POST" })
     const { data: contato } = await sb.from("contatos").select("ig_id").eq("id", conv.contato_id).single();
     if (!contato) return { ok: false as const, error: "Contato não encontrado" };
 
-    const { data: cfg } = await sb.from("ig_config").select("ig_user_id, access_token").limit(1).maybeSingle();
+    const { data: cfg } = await sb
+      .from("ig_config")
+      .select("id, ig_user_id, access_token, page_id, page_access_token")
+      .limit(1)
+      .maybeSingle();
     if (!cfg) return { ok: false as const, error: "Conexão Meta não configurada" };
+    if (!cfg.page_id) return { ok: false as const, error: "Page ID ausente — reconecte a Meta em Ajustes." };
 
-    const url = `${GRAPH}/${cfg.ig_user_id}/messages?access_token=${encodeURIComponent(cfg.access_token)}`;
+    // API do Instagram exige page token, não token de usuário.
+    let pageToken: string | null = cfg.page_access_token ?? null;
+    if (!pageToken) {
+      const rTok = await fetch(
+        `${GRAPH}/${cfg.page_id}?fields=access_token&access_token=${encodeURIComponent(cfg.access_token)}`,
+      );
+      const jTok: any = await rTok.json().catch(() => ({}));
+      if (!rTok.ok || !jTok?.access_token) {
+        return { ok: false as const, error: jTok?.error?.message || "Não foi possível obter o page access token." };
+      }
+      pageToken = jTok.access_token as string;
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      await (supabaseAdmin as any).from("ig_config").update({ page_access_token: pageToken }).eq("id", cfg.id);
+    }
+
+    const url = `${GRAPH}/${cfg.page_id}/messages?access_token=${encodeURIComponent(pageToken)}`;
     const r = await fetch(url, {
       method: "POST",
       headers: { "content-type": "application/json" },
