@@ -152,6 +152,19 @@ async function dentroDaJanela(conversaId: string): Promise<boolean> {
   return new Date(j).getTime() > Date.now();
 }
 
+async function primeiraMensagemDoRobo(conversaId: string): Promise<boolean> {
+  const { count } = await (supabaseAdmin as any)
+    .from("mensagens")
+    .select("id", { count: "exact", head: true })
+    .eq("conversa_id", conversaId)
+    .eq("direcao", "enviada")
+    .eq("enviada_por", "robo");
+  return (count ?? 0) === 0;
+}
+
+function comRodapeOptOut(texto: string): string {
+  return `${texto}\n\nResponda PARAR para não receber mais mensagens.`;
+
 async function updateConversaAfterReceive(conversaId: string, texto: string) {
   const now = new Date();
   const janela = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
