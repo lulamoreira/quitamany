@@ -111,6 +111,7 @@ export async function finalizarConexaoMeta(
   const { error: insErr } = await (supabaseAdmin as any).from("ig_config").insert({
     ig_user_id: igAccountId,
     access_token: userAccessToken,
+    page_access_token: pageAccessToken,
     page_id: pagina.id,
     conta_username: username,
     token_gerado_em: new Date().toISOString(),
