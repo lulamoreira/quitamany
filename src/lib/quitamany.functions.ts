@@ -247,10 +247,12 @@ export const configurarWebhookMeta = createServerFn({ method: "POST" })
       etapa2 = { ok: false, msg: rTok.json?.error?.message || "Não foi possível obter o page access token." };
     } else {
       const pageToken = rTok.json.access_token as string;
-      const subAppUrl = `${GRAPH}/${cfg.page_id}/subscribed_apps?subscribed_fields=messages,comments&access_token=${encodeURIComponent(pageToken)}`;
+      // Campos de PÁGINA apenas. Campos do Instagram (comments/messages) vêm da inscrição
+      // do app em /{appId}/subscriptions e do painel Webhooks. "comments" aqui causa erro (#100).
+      const subAppUrl = `${GRAPH}/${cfg.page_id}/subscribed_apps?subscribed_fields=messages&access_token=${encodeURIComponent(pageToken)}`;
       const r2 = await metaFetch(subAppUrl, { method: "POST" });
       etapa2 = r2.ok && r2.json?.success !== false
-        ? { ok: true, msg: "Página inscrita no app (subscribed_fields: messages, comments)." }
+        ? { ok: true, msg: "Página inscrita no app (subscribed_fields: messages)." }
         : { ok: false, msg: r2.json?.error?.message || `Falha (${r2.status})` };
     }
 

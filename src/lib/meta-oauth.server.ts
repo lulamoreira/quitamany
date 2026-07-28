@@ -29,12 +29,14 @@ export async function configurarWebhookServerSide(pageId: string, pageAccessToke
     ? { ok: true, msg: "Webhook registrado no app" }
     : { ok: false, msg: r1.json?.error?.message || `Falha (${r1.status})` };
 
+  // Campos de PÁGINA apenas. Campos do Instagram (comments/messages) vêm da inscrição
+  // do app em /{appId}/subscriptions e do painel Webhooks. "comments" aqui causa erro (#100).
   const r2 = await jfetch(
-    `${GRAPH}/${pageId}/subscribed_apps?subscribed_fields=messages,comments&access_token=${encodeURIComponent(pageAccessToken)}`,
+    `${GRAPH}/${pageId}/subscribed_apps?subscribed_fields=messages&access_token=${encodeURIComponent(pageAccessToken)}`,
     { method: "POST" },
   );
   const etapa2 = r2.ok
-    ? { ok: true, msg: "Página inscrita no app (subscribed_fields: messages, comments)." }
+    ? { ok: true, msg: "Página inscrita no app (subscribed_fields: messages)." }
     : { ok: false, msg: r2.json?.error?.message || `Falha (${r2.status})` };
 
   return { etapa1, etapa2 };
