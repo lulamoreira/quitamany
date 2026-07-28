@@ -23,6 +23,7 @@ import { Route as AuthenticatedAjustesRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedAgendaRouteImport } from './routes/_authenticated/agenda'
 import { Route as AuthenticatedQuitamanyIndexRouteImport } from './routes/_authenticated/quitamany/index'
 import { Route as AuthenticatedPublicadorIndexRouteImport } from './routes/_authenticated/publicador/index'
+import { Route as ApiPublicVersaoRouteImport } from './routes/api/public/versao'
 import { Route as ApiPublicMetaCallbackRouteImport } from './routes/api/public/meta-callback'
 import { Route as AuthenticatedQuitamanyContatosRouteImport } from './routes/_authenticated/quitamany/contatos'
 import { Route as AuthenticatedQuitamanyAutomacoesRouteImport } from './routes/_authenticated/quitamany/automacoes'
@@ -107,6 +108,11 @@ const AuthenticatedPublicadorIndexRoute =
     path: '/publicador/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicVersaoRoute = ApiPublicVersaoRouteImport.update({
+  id: '/api/public/versao',
+  path: '/api/public/versao',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicMetaCallbackRoute = ApiPublicMetaCallbackRouteImport.update({
   id: '/api/public/meta-callback',
   path: '/api/public/meta-callback',
@@ -198,6 +204,7 @@ export interface FileRoutesByFullPath {
   '/quitamany/automacoes': typeof AuthenticatedQuitamanyAutomacoesRoute
   '/quitamany/contatos': typeof AuthenticatedQuitamanyContatosRoute
   '/api/public/meta-callback': typeof ApiPublicMetaCallbackRoute
+  '/api/public/versao': typeof ApiPublicVersaoRoute
   '/publicador/': typeof AuthenticatedPublicadorIndexRoute
   '/quitamany/': typeof AuthenticatedQuitamanyIndexRoute
   '/quitamany/conversa/$id': typeof AuthenticatedQuitamanyConversaIdRoute
@@ -225,6 +232,7 @@ export interface FileRoutesByTo {
   '/quitamany/automacoes': typeof AuthenticatedQuitamanyAutomacoesRoute
   '/quitamany/contatos': typeof AuthenticatedQuitamanyContatosRoute
   '/api/public/meta-callback': typeof ApiPublicMetaCallbackRoute
+  '/api/public/versao': typeof ApiPublicVersaoRoute
   '/publicador': typeof AuthenticatedPublicadorIndexRoute
   '/quitamany': typeof AuthenticatedQuitamanyIndexRoute
   '/quitamany/conversa/$id': typeof AuthenticatedQuitamanyConversaIdRoute
@@ -254,6 +262,7 @@ export interface FileRoutesById {
   '/_authenticated/quitamany/automacoes': typeof AuthenticatedQuitamanyAutomacoesRoute
   '/_authenticated/quitamany/contatos': typeof AuthenticatedQuitamanyContatosRoute
   '/api/public/meta-callback': typeof ApiPublicMetaCallbackRoute
+  '/api/public/versao': typeof ApiPublicVersaoRoute
   '/_authenticated/publicador/': typeof AuthenticatedPublicadorIndexRoute
   '/_authenticated/quitamany/': typeof AuthenticatedQuitamanyIndexRoute
   '/_authenticated/quitamany/conversa/$id': typeof AuthenticatedQuitamanyConversaIdRoute
@@ -283,6 +292,7 @@ export interface FileRouteTypes {
     | '/quitamany/automacoes'
     | '/quitamany/contatos'
     | '/api/public/meta-callback'
+    | '/api/public/versao'
     | '/publicador/'
     | '/quitamany/'
     | '/quitamany/conversa/$id'
@@ -310,6 +320,7 @@ export interface FileRouteTypes {
     | '/quitamany/automacoes'
     | '/quitamany/contatos'
     | '/api/public/meta-callback'
+    | '/api/public/versao'
     | '/publicador'
     | '/quitamany'
     | '/quitamany/conversa/$id'
@@ -338,6 +349,7 @@ export interface FileRouteTypes {
     | '/_authenticated/quitamany/automacoes'
     | '/_authenticated/quitamany/contatos'
     | '/api/public/meta-callback'
+    | '/api/public/versao'
     | '/_authenticated/publicador/'
     | '/_authenticated/quitamany/'
     | '/_authenticated/quitamany/conversa/$id'
@@ -352,6 +364,7 @@ export interface RootRouteChildren {
   ExclusaoDeDadosRoute: typeof ExclusaoDeDadosRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   ApiPublicMetaCallbackRoute: typeof ApiPublicMetaCallbackRoute
+  ApiPublicVersaoRoute: typeof ApiPublicVersaoRoute
   ApiPublicHooksPublicarPostsRoute: typeof ApiPublicHooksPublicarPostsRoute
   ApiPublicHooksRenovarTokensRoute: typeof ApiPublicHooksRenovarTokensRoute
   ApiPublicHooksWebhookInstagramRoute: typeof ApiPublicHooksWebhookInstagramRoute
@@ -456,6 +469,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/publicador/'
       preLoaderRoute: typeof AuthenticatedPublicadorIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/public/versao': {
+      id: '/api/public/versao'
+      path: '/api/public/versao'
+      fullPath: '/api/public/versao'
+      preLoaderRoute: typeof ApiPublicVersaoRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/public/meta-callback': {
       id: '/api/public/meta-callback'
@@ -595,6 +615,7 @@ const rootRouteChildren: RootRouteChildren = {
   ExclusaoDeDadosRoute: ExclusaoDeDadosRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   ApiPublicMetaCallbackRoute: ApiPublicMetaCallbackRoute,
+  ApiPublicVersaoRoute: ApiPublicVersaoRoute,
   ApiPublicHooksPublicarPostsRoute: ApiPublicHooksPublicarPostsRoute,
   ApiPublicHooksRenovarTokensRoute: ApiPublicHooksRenovarTokensRoute,
   ApiPublicHooksWebhookInstagramRoute: ApiPublicHooksWebhookInstagramRoute,
