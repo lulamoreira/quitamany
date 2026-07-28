@@ -18,9 +18,17 @@ type Automacao = {
   execucoes: number;
 };
 
-async function getIgConfig() {
+type IgConfig = {
+  id: string;
+  ig_user_id: string;
+  access_token: string;
+  page_id: string | null;
+  page_access_token: string | null;
+};
+
+async function getIgConfig(): Promise<IgConfig | null> {
   const { data } = await supabaseAdmin.from("ig_config").select("*").limit(1).maybeSingle();
-  return data as { ig_user_id: string; access_token: string } | null;
+  return (data as IgConfig | null) ?? null;
 }
 
 async function logEvento(tipo: string, payload: unknown, erro?: string) {
@@ -32,7 +40,37 @@ async function logEvento(tipo: string, payload: unknown, erro?: string) {
   });
 }
 
-async function fetchUserInfo(igUserId: string, token: string, userId: string) {
+// Retorna o page access token do cfg, buscando/persistindo se necessário.
+// A API do Instagram (mensagens/comentários/perfil do remetente) exige page token,
+// não o token de usuário.
+async function getPageToken(cfg: IgConfig): Promise<string | null> {
+  if (cfg.page_access_token) return cfg.page_access_token;
+  if (!cfg.page_id) {
+    await logEvento("erro_page_token", { cfg_id: cfg.id }, "page_id ausente em ig_config");
+    return null;
+  }
+  try {
+    const r = await fetch(
+      `${GRAPH}/${cfg.page_id}?fields=access_token&access_token=${encodeURIComponent(cfg.access_token)}`,
+    );
+    const j: any = await r.json().catch(() => ({}));
+    if (!r.ok || !j?.access_token) {
+      await logEvento("erro_page_token", j, j?.error?.message ?? `HTTP ${r.status}`);
+      return null;
+    }
+    const pageToken = j.access_token as string;
+    await (supabaseAdmin as any)
+      .from("ig_config")
+      .update({ page_access_token: pageToken })
+      .eq("id", cfg.id);
+    return pageToken;
+  } catch (e: any) {
+    await logEvento("erro_page_token", { err: e?.message ?? String(e) }, e?.message ?? String(e));
+    return null;
+  }
+}
+
+async function fetchUserInfo(token: string, userId: string) {
   try {
     const url = `${GRAPH}/${userId}?fields=username,name,profile_pic&access_token=${encodeURIComponent(token)}`;
     const r = await fetch(url);
