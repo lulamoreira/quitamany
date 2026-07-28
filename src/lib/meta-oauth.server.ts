@@ -1,7 +1,7 @@
 // Server-only: lógica compartilhada entre o callback OAuth e a escolha manual de página.
 // NÃO importar de rotas do cliente diretamente.
 
-const GRAPH_V25 = "https://graph.facebook.com/v25.0";
+import { GRAPH } from "@/lib/graph";
 
 type Pagina = { id: string; access_token?: string; name?: string; instagram_business_account?: { id: string } };
 
