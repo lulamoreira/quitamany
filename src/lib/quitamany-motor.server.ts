@@ -152,6 +152,21 @@ async function dentroDaJanela(conversaId: string): Promise<boolean> {
   return new Date(j).getTime() > Date.now();
 }
 
+async function primeiraMensagemDoRobo(conversaId: string): Promise<boolean> {
+  const { count } = await (supabaseAdmin as any)
+    .from("mensagens")
+    .select("id", { count: "exact", head: true })
+    .eq("conversa_id", conversaId)
+    .eq("direcao", "enviada")
+    .eq("enviada_por", "robo");
+  return (count ?? 0) === 0;
+}
+
+function comRodapeOptOut(texto: string): string {
+  return `${texto}\n\nResponda PARAR para não receber mais mensagens.`;
+}
+
+
 async function updateConversaAfterReceive(conversaId: string, texto: string) {
   const now = new Date();
   const janela = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
@@ -242,17 +257,20 @@ async function handleComentario(value: any) {
       break;
     }
 
-    const send = await sendDM(cfg.ig_user_id, cfg.access_token, { comment_id: commentId }, a.resposta_dm, a.botoes);
+    const conv = contato ? await upsertConversa(contato.id) : null;
+    const textoDM = conv && (await primeiraMensagemDoRobo(conv.id))
+      ? comRodapeOptOut(a.resposta_dm)
+      : a.resposta_dm;
+    const send = await sendDM(cfg.ig_user_id, cfg.access_token, { comment_id: commentId }, textoDM, a.botoes);
     if (!send.ok) {
       const errMsg = send.body?.error?.message ?? "Falha ao enviar DM";
       await logEvento("erro_envio_dm", send.body, errMsg);
       if (send.body?.error?.code === 190) return;
       break;
     }
-    if (contato) {
-      const conv = await upsertConversa(contato.id);
-      await saveMensagem(conv.id, "enviada", a.resposta_dm, "robo", send.body);
-      await updateConversaAfterSend(conv.id, a.resposta_dm);
+    if (contato && conv) {
+      await saveMensagem(conv.id, "enviada", textoDM, "robo", send.body);
+      await updateConversaAfterSend(conv.id, textoDM);
       if (a.etiqueta_aplicar) await aplicarEtiqueta(contato.id, a.etiqueta_aplicar);
     }
     await incAutomacao(a.id);
@@ -331,10 +349,11 @@ async function handleMensagem(igUserId: string, token: string, sender: string, t
         await logEvento("fora_da_janela", { conversa_id: conv.id, automacao_id: a.id, tipo: "boas_vindas" });
         return;
       }
-      const send = await sendDM(igUserId, token, { id: sender }, a.resposta_dm, a.botoes);
+      const textoBV = (await primeiraMensagemDoRobo(conv.id)) ? comRodapeOptOut(a.resposta_dm) : a.resposta_dm;
+      const send = await sendDM(igUserId, token, { id: sender }, textoBV, a.botoes);
       if (send.ok) {
-        await saveMensagem(conv.id, "enviada", a.resposta_dm, "robo", send.body);
-        await updateConversaAfterSend(conv.id, a.resposta_dm);
+        await saveMensagem(conv.id, "enviada", textoBV, "robo", send.body);
+        await updateConversaAfterSend(conv.id, textoBV);
         if (a.etiqueta_aplicar) await aplicarEtiqueta(contato.id, a.etiqueta_aplicar);
         await incAutomacao(a.id);
         return;
@@ -352,10 +371,11 @@ async function handleMensagem(igUserId: string, token: string, sender: string, t
       await logEvento("fora_da_janela", { conversa_id: conv.id, automacao_id: a.id, tipo: "palavra_chave_dm" });
       break;
     }
-    const send = await sendDM(igUserId, token, { id: sender }, a.resposta_dm, a.botoes);
+    const textoKW = (await primeiraMensagemDoRobo(conv.id)) ? comRodapeOptOut(a.resposta_dm) : a.resposta_dm;
+    const send = await sendDM(igUserId, token, { id: sender }, textoKW, a.botoes);
     if (send.ok) {
-      await saveMensagem(conv.id, "enviada", a.resposta_dm, "robo", send.body);
-      await updateConversaAfterSend(conv.id, a.resposta_dm);
+      await saveMensagem(conv.id, "enviada", textoKW, "robo", send.body);
+      await updateConversaAfterSend(conv.id, textoKW);
       if (a.etiqueta_aplicar) await aplicarEtiqueta(contato.id, a.etiqueta_aplicar);
       await incAutomacao(a.id);
     } else {
