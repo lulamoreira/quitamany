@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermosRouteImport } from './routes/termos'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as ExclusaoDeDadosRouteImport } from './routes/exclusao-de-dados'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -37,6 +38,11 @@ import { Route as ApiPublicHooksRenovarTokensRouteImport } from './routes/api/pu
 import { Route as ApiPublicHooksPublicarPostsRouteImport } from './routes/api/public/hooks/publicar-posts'
 import { Route as AuthenticatedQuitamanyConversaIdRouteImport } from './routes/_authenticated/quitamany/conversa.$id'
 
+const TermosRoute = TermosRouteImport.update({
+  id: '/termos',
+  path: '/termos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacidadeRoute = PrivacidadeRouteImport.update({
   id: '/privacidade',
   path: '/privacidade',
@@ -189,6 +195,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/exclusao-de-dados': typeof ExclusaoDeDadosRoute
   '/privacidade': typeof PrivacidadeRoute
+  '/termos': typeof TermosRoute
   '/agenda': typeof AuthenticatedAgendaRoute
   '/ajustes': typeof AuthenticatedAjustesRoute
   '/automacoes': typeof AuthenticatedAutomacoesRoute
@@ -216,6 +223,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/exclusao-de-dados': typeof ExclusaoDeDadosRoute
   '/privacidade': typeof PrivacidadeRoute
+  '/termos': typeof TermosRoute
   '/agenda': typeof AuthenticatedAgendaRoute
   '/ajustes': typeof AuthenticatedAjustesRoute
   '/automacoes': typeof AuthenticatedAutomacoesRoute
@@ -246,6 +254,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/exclusao-de-dados': typeof ExclusaoDeDadosRoute
   '/privacidade': typeof PrivacidadeRoute
+  '/termos': typeof TermosRoute
   '/_authenticated/agenda': typeof AuthenticatedAgendaRoute
   '/_authenticated/ajustes': typeof AuthenticatedAjustesRoute
   '/_authenticated/automacoes': typeof AuthenticatedAutomacoesRoute
@@ -277,6 +286,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/exclusao-de-dados'
     | '/privacidade'
+    | '/termos'
     | '/agenda'
     | '/ajustes'
     | '/automacoes'
@@ -304,6 +314,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/exclusao-de-dados'
     | '/privacidade'
+    | '/termos'
     | '/agenda'
     | '/ajustes'
     | '/automacoes'
@@ -333,6 +344,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/exclusao-de-dados'
     | '/privacidade'
+    | '/termos'
     | '/_authenticated/agenda'
     | '/_authenticated/ajustes'
     | '/_authenticated/automacoes'
@@ -363,6 +375,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ExclusaoDeDadosRoute: typeof ExclusaoDeDadosRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
+  TermosRoute: typeof TermosRoute
   ApiPublicMetaCallbackRoute: typeof ApiPublicMetaCallbackRoute
   ApiPublicVersaoRoute: typeof ApiPublicVersaoRoute
   ApiPublicHooksPublicarPostsRoute: typeof ApiPublicHooksPublicarPostsRoute
@@ -372,6 +385,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/termos': {
+      id: '/termos'
+      path: '/termos'
+      fullPath: '/termos'
+      preLoaderRoute: typeof TermosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacidade': {
       id: '/privacidade'
       path: '/privacidade'
@@ -614,6 +634,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ExclusaoDeDadosRoute: ExclusaoDeDadosRoute,
   PrivacidadeRoute: PrivacidadeRoute,
+  TermosRoute: TermosRoute,
   ApiPublicMetaCallbackRoute: ApiPublicMetaCallbackRoute,
   ApiPublicVersaoRoute: ApiPublicVersaoRoute,
   ApiPublicHooksPublicarPostsRoute: ApiPublicHooksPublicarPostsRoute,
