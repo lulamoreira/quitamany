@@ -164,6 +164,8 @@ async function primeiraMensagemDoRobo(conversaId: string): Promise<boolean> {
 
 function comRodapeOptOut(texto: string): string {
   return `${texto}\n\nResponda PARAR para não receber mais mensagens.`;
+}
+
 
 async function updateConversaAfterReceive(conversaId: string, texto: string) {
   const now = new Date();
