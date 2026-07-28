@@ -131,7 +131,7 @@ async function upsertConversa(contatoId: string) {
   return created;
 }
 
-async function sendDM(igUserId: string, token: string, recipient: { id?: string; comment_id?: string }, text: string, botoes?: Array<{ titulo: string }>) {
+async function sendDM(pageId: string, pageToken: string, recipient: { id?: string; comment_id?: string }, text: string, botoes?: Array<{ titulo: string }>) {
   const message: any = { text };
   if (botoes && botoes.length > 0) {
     message.quick_replies = botoes.slice(0, 3).map((b) => ({
@@ -141,7 +141,7 @@ async function sendDM(igUserId: string, token: string, recipient: { id?: string;
     }));
   }
   const body = { recipient, message };
-  const r = await fetch(`${GRAPH}/${igUserId}/messages?access_token=${encodeURIComponent(token)}`, {
+  const r = await fetch(`${GRAPH}/${pageId}/messages?access_token=${encodeURIComponent(pageToken)}`, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify(body),
