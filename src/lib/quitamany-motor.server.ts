@@ -257,17 +257,20 @@ async function handleComentario(value: any) {
       break;
     }
 
-    const send = await sendDM(cfg.ig_user_id, cfg.access_token, { comment_id: commentId }, a.resposta_dm, a.botoes);
+    const conv = contato ? await upsertConversa(contato.id) : null;
+    const textoDM = conv && (await primeiraMensagemDoRobo(conv.id))
+      ? comRodapeOptOut(a.resposta_dm)
+      : a.resposta_dm;
+    const send = await sendDM(cfg.ig_user_id, cfg.access_token, { comment_id: commentId }, textoDM, a.botoes);
     if (!send.ok) {
       const errMsg = send.body?.error?.message ?? "Falha ao enviar DM";
       await logEvento("erro_envio_dm", send.body, errMsg);
       if (send.body?.error?.code === 190) return;
       break;
     }
-    if (contato) {
-      const conv = await upsertConversa(contato.id);
-      await saveMensagem(conv.id, "enviada", a.resposta_dm, "robo", send.body);
-      await updateConversaAfterSend(conv.id, a.resposta_dm);
+    if (contato && conv) {
+      await saveMensagem(conv.id, "enviada", textoDM, "robo", send.body);
+      await updateConversaAfterSend(conv.id, textoDM);
       if (a.etiqueta_aplicar) await aplicarEtiqueta(contato.id, a.etiqueta_aplicar);
     }
     await incAutomacao(a.id);
