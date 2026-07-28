@@ -11,6 +11,10 @@ export function FooterLinks() {
         <Link to="/exclusao-de-dados" className="hover:text-foreground hover:underline">
           Exclusão de dados
         </Link>
+        <span aria-hidden>·</span>
+        <Link to="/termos" className="hover:text-foreground hover:underline">
+          Termos de Serviço
+        </Link>
       </div>
     </footer>
   );
