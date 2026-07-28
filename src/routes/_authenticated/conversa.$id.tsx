@@ -345,7 +345,7 @@ function ConversaSidebarList({ activeId }: { activeId: string }) {
 
   useEffect(() => {
     const ch = supabase
-      .channel("qm-conversas-side")
+      .channel(`qm-conversas-side-${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "conversas" }, () =>
         qc.invalidateQueries({ queryKey: ["quitamany-conversas"] }),
       )
