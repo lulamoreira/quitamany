@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const GRAPH = "https://graph.facebook.com/v21.0";
+import { GRAPH, FB_DIALOG } from "@/lib/graph";
 const META_OAUTH_SCOPES = [
   "instagram_basic",
   "instagram_content_publish",
@@ -39,7 +39,7 @@ export const iniciarConexaoMeta = createServerFn({ method: "POST" })
     });
     if (error) return { ok: false as const, error: error.message };
 
-    const url = new URL("https://www.facebook.com/v25.0/dialog/oauth");
+    const url = new URL(FB_DIALOG);
     url.searchParams.set("client_id", appId);
     url.searchParams.set("redirect_uri", redirect_uri);
     url.searchParams.set("scope", META_OAUTH_SCOPES);
@@ -201,7 +201,6 @@ export const salvarPageId = createServerFn({ method: "POST" })
     return { ok: true as const };
   });
 
-const GRAPH_V25 = "https://graph.facebook.com/v25.0";
 
 async function metaFetch(url: string, init?: RequestInit) {
   const r = await fetch(url, init);
@@ -229,7 +228,7 @@ export const configurarWebhookMeta = createServerFn({ method: "POST" })
     const appToken = `${appId}|${appSecret}`;
 
     // Etapa 1: registrar webhook no app
-    const subUrl = new URL(`${GRAPH_V25}/${appId}/subscriptions`);
+    const subUrl = new URL(`${GRAPH}/${appId}/subscriptions`);
     subUrl.searchParams.set("object", "instagram");
     subUrl.searchParams.set("callback_url", data.callback_url);
     subUrl.searchParams.set("verify_token", verifyToken);
@@ -242,13 +241,13 @@ export const configurarWebhookMeta = createServerFn({ method: "POST" })
 
     // Etapa 2: page access token + subscribed_apps
     let etapa2: { ok: boolean; msg: string };
-    const tokUrl = `${GRAPH_V25}/${cfg.page_id}?fields=access_token&access_token=${encodeURIComponent(cfg.access_token)}`;
+    const tokUrl = `${GRAPH}/${cfg.page_id}?fields=access_token&access_token=${encodeURIComponent(cfg.access_token)}`;
     const rTok = await metaFetch(tokUrl);
     if (!rTok.ok || !rTok.json?.access_token) {
       etapa2 = { ok: false, msg: rTok.json?.error?.message || "Não foi possível obter o page access token." };
     } else {
       const pageToken = rTok.json.access_token as string;
-      const subAppUrl = `${GRAPH_V25}/${cfg.page_id}/subscribed_apps?subscribed_fields=messages,comments&access_token=${encodeURIComponent(pageToken)}`;
+      const subAppUrl = `${GRAPH}/${cfg.page_id}/subscribed_apps?subscribed_fields=messages,comments&access_token=${encodeURIComponent(pageToken)}`;
       const r2 = await metaFetch(subAppUrl, { method: "POST" });
       etapa2 = r2.ok && r2.json?.success !== false
         ? { ok: true, msg: "Página inscrita no app (subscribed_fields: messages, comments)." }
@@ -271,16 +270,16 @@ export const verificarStatusWebhook = createServerFn({ method: "GET" })
     const { data: cfg } = await sb.from("ig_config").select("page_id, access_token").limit(1).maybeSingle();
     const appToken = `${appId}|${appSecret}`;
 
-    const rSub = await metaFetch(`${GRAPH_V25}/${appId}/subscriptions?access_token=${encodeURIComponent(appToken)}`);
+    const rSub = await metaFetch(`${GRAPH}/${appId}/subscriptions?access_token=${encodeURIComponent(appToken)}`);
     const app_subscriptions = rSub.ok
       ? { ok: true as const, data: rSub.json?.data ?? [] }
       : { ok: false as const, error: rSub.json?.error?.message || `Falha (${rSub.status})` };
 
     let page_subscribed: any = { ok: false, error: "Page ID não configurado." };
     if (cfg?.page_id && cfg?.access_token) {
-      const rTok = await metaFetch(`${GRAPH_V25}/${cfg.page_id}?fields=access_token&access_token=${encodeURIComponent(cfg.access_token)}`);
+      const rTok = await metaFetch(`${GRAPH}/${cfg.page_id}?fields=access_token&access_token=${encodeURIComponent(cfg.access_token)}`);
       if (rTok.ok && rTok.json?.access_token) {
-        const rApps = await metaFetch(`${GRAPH_V25}/${cfg.page_id}/subscribed_apps?access_token=${encodeURIComponent(rTok.json.access_token)}`);
+        const rApps = await metaFetch(`${GRAPH}/${cfg.page_id}/subscribed_apps?access_token=${encodeURIComponent(rTok.json.access_token)}`);
         page_subscribed = rApps.ok
           ? { ok: true, data: rApps.json?.data ?? [] }
           : { ok: false, error: rApps.json?.error?.message || `Falha (${rApps.status})` };

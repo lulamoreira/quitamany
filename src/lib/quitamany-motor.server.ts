@@ -2,7 +2,7 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { ehParada, ehRetorno } from "@/lib/opt-out";
 
-const GRAPH = "https://graph.facebook.com/v21.0";
+import { GRAPH } from "@/lib/graph";
 
 type Automacao = {
   id: string;
