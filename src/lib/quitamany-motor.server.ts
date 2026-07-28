@@ -269,12 +269,20 @@ async function handleComentario(value: any) {
   if (from?.id && from.id === cfg.ig_user_id) return;
 
   const autos = await getAutomacoes("gatilho_comentario");
+  if (autos.length === 0) return;
+
+  const pageToken = await getPageToken(cfg);
+  if (!cfg.page_id || !pageToken) {
+    await logEvento("erro_page_token", { comment_id: commentId }, "page_id/page_access_token indisponíveis");
+    return;
+  }
+
   for (const a of autos) {
     if (a.post_ig_id && mediaId && a.post_ig_id !== mediaId) continue;
     if (!matchPalavra(texto, a.palavras)) continue;
 
     if (a.resposta_comentario) {
-      const r = await replyToComment(commentId, cfg.access_token, a.resposta_comentario);
+      const r = await replyToComment(commentId, pageToken, a.resposta_comentario);
       if (!r.ok && r.body?.error?.code === 190) {
         await logEvento("token_expirado", r.body, "Token expirado");
         return;
@@ -282,7 +290,7 @@ async function handleComentario(value: any) {
     }
 
     // Private reply via DM (não aplica checagem de janela de 24h; regra própria da Meta para comentários)
-    const info = from?.id ? await fetchUserInfo(cfg.ig_user_id, cfg.access_token, from.id) : null;
+    const info = from?.id ? await fetchUserInfo(pageToken, from.id) : null;
     let contato: any = null;
     if (from?.id) {
       contato = await upsertContato(from.id, { username: info?.username ?? from.username, nome: info?.nome, foto_url: info?.foto_url });
@@ -299,7 +307,7 @@ async function handleComentario(value: any) {
     const textoDM = conv && (await primeiraMensagemDoRobo(conv.id))
       ? comRodapeOptOut(a.resposta_dm)
       : a.resposta_dm;
-    const send = await sendDM(cfg.ig_user_id, cfg.access_token, { comment_id: commentId }, textoDM, a.botoes);
+    const send = await sendDM(cfg.page_id, pageToken, { comment_id: commentId }, textoDM, a.botoes);
     if (!send.ok) {
       const errMsg = send.body?.error?.message ?? "Falha ao enviar DM";
       await logEvento("erro_envio_dm", send.body, errMsg);
@@ -315,6 +323,115 @@ async function handleComentario(value: any) {
     break;
   }
 }
+
+async function handleMensagem(pageId: string, pageToken: string, sender: string, texto: string, payload: any) {
+  const info = await fetchUserInfo(pageToken, sender);
+  const contato = await upsertContato(sender, { username: info?.username, nome: info?.nome, foto_url: info?.foto_url });
+  const conv = await upsertConversa(contato.id);
+  const mid = payload?.message?.mid ?? null;
+  await saveMensagem(conv.id, "recebida", texto, null, payload, mid);
+  await updateConversaAfterReceive(conv.id, texto);
+
+  // ---- Opt-out / retorno (antes de qualquer automação) ----
+  if (ehRetorno(texto)) {
+    await (supabaseAdmin as any)
+      .from("contatos")
+      .update({ opt_out: false, opt_out_em: null })
+      .eq("id", contato.id);
+    const send = await sendDM(pageId, pageToken, { id: sender }, "Pronto! Você voltou a receber nossas mensagens.");
+    if (send.ok) {
+      await saveMensagem(conv.id, "enviada", "Pronto! Você voltou a receber nossas mensagens.", "robo", send.body);
+      await updateConversaAfterSend(conv.id, "Pronto! Você voltou a receber nossas mensagens.");
+    } else {
+      await logEvento("erro_envio_dm", send.body, send.body?.error?.message ?? "Falha ao enviar DM (retorno)");
+    }
+    return;
+  }
+
+  if (ehParada(texto)) {
+    await (supabaseAdmin as any)
+      .from("contatos")
+      .update({ opt_out: true, opt_out_em: new Date().toISOString() })
+      .eq("id", contato.id);
+    const msg = "Você não receberá mais mensagens automáticas. Envie VOLTAR quando quiser retomar.";
+    const send = await sendDM(pageId, pageToken, { id: sender }, msg);
+    if (send.ok) {
+      await saveMensagem(conv.id, "enviada", msg, "robo", send.body);
+      await updateConversaAfterSend(conv.id, msg);
+    } else {
+      await logEvento("erro_envio_dm", send.body, send.body?.error?.message ?? "Falha ao enviar DM (parada)");
+    }
+    return;
+  }
+
+  // Se contato já estava em opt-out, robô não responde. Mensagem já foi gravada para atendimento humano.
+  const { data: contatoAtual } = await (supabaseAdmin as any)
+    .from("contatos")
+    .select("opt_out")
+    .eq("id", contato.id)
+    .maybeSingle();
+  if (contatoAtual?.opt_out === true) return;
+
+  // Não responder se modo humano
+  const { data: convAtual } = await (supabaseAdmin as any)
+    .from("conversas")
+    .select("modo")
+    .eq("id", conv.id)
+    .single();
+  if (convAtual?.modo === "humano") return;
+
+  // Primeira mensagem? conta mensagens recebidas
+  const { count } = await (supabaseAdmin as any)
+    .from("mensagens")
+    .select("id", { count: "exact", head: true })
+    .eq("conversa_id", conv.id)
+    .eq("direcao", "recebida");
+
+  if (count === 1) {
+    const bv = await getAutomacoes("boas_vindas");
+    if (bv.length > 0) {
+      const a = bv[0];
+      if (!(await dentroDaJanela(conv.id))) {
+        await logEvento("fora_da_janela", { conversa_id: conv.id, automacao_id: a.id, tipo: "boas_vindas" });
+        return;
+      }
+      const textoBV = (await primeiraMensagemDoRobo(conv.id)) ? comRodapeOptOut(a.resposta_dm) : a.resposta_dm;
+      const send = await sendDM(pageId, pageToken, { id: sender }, textoBV, a.botoes);
+      if (send.ok) {
+        await saveMensagem(conv.id, "enviada", textoBV, "robo", send.body);
+        await updateConversaAfterSend(conv.id, textoBV);
+        if (a.etiqueta_aplicar) await aplicarEtiqueta(contato.id, a.etiqueta_aplicar);
+        await incAutomacao(a.id);
+        return;
+      }
+      const errMsg = send.body?.error?.message ?? "Falha ao enviar DM";
+      await logEvento("erro_envio_dm", send.body, errMsg);
+      if (send.body?.error?.code === 190) return;
+    }
+  }
+
+  const kws = await getAutomacoes("palavra_chave_dm");
+  for (const a of kws) {
+    if (!matchPalavra(texto, a.palavras)) continue;
+    if (!(await dentroDaJanela(conv.id))) {
+      await logEvento("fora_da_janela", { conversa_id: conv.id, automacao_id: a.id, tipo: "palavra_chave_dm" });
+      break;
+    }
+    const textoKW = (await primeiraMensagemDoRobo(conv.id)) ? comRodapeOptOut(a.resposta_dm) : a.resposta_dm;
+    const send = await sendDM(pageId, pageToken, { id: sender }, textoKW, a.botoes);
+    if (send.ok) {
+      await saveMensagem(conv.id, "enviada", textoKW, "robo", send.body);
+      await updateConversaAfterSend(conv.id, textoKW);
+      if (a.etiqueta_aplicar) await aplicarEtiqueta(contato.id, a.etiqueta_aplicar);
+      await incAutomacao(a.id);
+    } else {
+      const errMsg = send.body?.error?.message ?? "Falha ao enviar DM";
+      await logEvento("erro_envio_dm", send.body, errMsg);
+    }
+    break;
+  }
+}
+
 
 async function handleMensagem(igUserId: string, token: string, sender: string, texto: string, payload: any) {
   const info = await fetchUserInfo(igUserId, token, sender);
