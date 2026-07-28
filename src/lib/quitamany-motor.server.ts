@@ -461,6 +461,10 @@ export async function processarWebhook(body: any): Promise<{ ok: true }> {
   const cfg = await getIgConfig();
   await logEvento("webhook_recebido", body);
 
+  // Resolve page token uma única vez para todos os envios deste webhook.
+  let pageToken: string | null = null;
+  if (cfg) pageToken = await getPageToken(cfg);
+
   const entries = body?.entry ?? [];
   for (const entry of entries) {
     // DMs
@@ -489,8 +493,12 @@ export async function processarWebhook(body: any): Promise<{ ok: true }> {
 
       const texto = m.message?.text ?? "";
       if (!texto || !senderId) continue;
+      if (!cfg.page_id || !pageToken) {
+        await logEvento("erro_page_token", { sender: senderId }, "page_id/page_access_token indisponíveis");
+        continue;
+      }
       try {
-        await handleMensagem(cfg.ig_user_id, cfg.access_token, senderId, texto, m);
+        await handleMensagem(cfg.page_id, pageToken, senderId, texto, m);
       } catch (e: any) {
         await logEvento("erro_mensagem", m, e?.message ?? String(e));
       }
