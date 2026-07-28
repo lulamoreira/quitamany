@@ -371,10 +371,11 @@ async function handleMensagem(igUserId: string, token: string, sender: string, t
       await logEvento("fora_da_janela", { conversa_id: conv.id, automacao_id: a.id, tipo: "palavra_chave_dm" });
       break;
     }
-    const send = await sendDM(igUserId, token, { id: sender }, a.resposta_dm, a.botoes);
+    const textoKW = (await primeiraMensagemDoRobo(conv.id)) ? comRodapeOptOut(a.resposta_dm) : a.resposta_dm;
+    const send = await sendDM(igUserId, token, { id: sender }, textoKW, a.botoes);
     if (send.ok) {
-      await saveMensagem(conv.id, "enviada", a.resposta_dm, "robo", send.body);
-      await updateConversaAfterSend(conv.id, a.resposta_dm);
+      await saveMensagem(conv.id, "enviada", textoKW, "robo", send.body);
+      await updateConversaAfterSend(conv.id, textoKW);
       if (a.etiqueta_aplicar) await aplicarEtiqueta(contato.id, a.etiqueta_aplicar);
       await incAutomacao(a.id);
     } else {
