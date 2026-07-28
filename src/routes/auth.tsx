@@ -28,7 +28,7 @@ function AuthPage() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/" });
+      if (data.session) navigate({ to: "/painel" });
     });
   }, [navigate]);
 
@@ -70,7 +70,7 @@ function AuthPage() {
     setLoading(false);
     if (error) return toast.error(error.message);
     if (mode === "signup") toast.success("Conta criada! Aguarde aprovação do administrador.");
-    navigate({ to: "/" });
+    navigate({ to: "/painel" });
   };
 
   return (

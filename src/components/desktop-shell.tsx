@@ -27,7 +27,7 @@ type Item = { to: string; label: string; icon: typeof CalendarDays; exact?: bool
 const SECTIONS: Array<{ title: string | null; items: Item[] }> = [
   {
     title: null,
-    items: [{ to: "/", label: "Início", icon: Home, exact: true }],
+    items: [{ to: "/painel", label: "Início", icon: Home, exact: true }],
   },
   {
     title: "Conversas",

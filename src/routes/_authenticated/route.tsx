@@ -170,7 +170,7 @@ function MaisButton({ open, onOpenChange }: { open: boolean; onOpenChange: (v: b
         </SheetHeader>
         <div className="space-y-1 py-2">
           <Link
-            to="/"
+            to="/painel"
             onClick={() => onOpenChange(false)}
             className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium hover:bg-accent"
           >
