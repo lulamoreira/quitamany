@@ -14,7 +14,7 @@ import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as ExclusaoDeDadosRouteImport } from './routes/exclusao-de-dados'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
-import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedPainelRouteImport } from './routes/_authenticated/painel'
 import { Route as AuthenticatedNovoRouteImport } from './routes/_authenticated/novo'
 import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
 import { Route as AuthenticatedConversasRouteImport } from './routes/_authenticated/conversas'
@@ -62,9 +62,9 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
-  id: '/',
-  path: '/',
+const AuthenticatedPainelRoute = AuthenticatedPainelRouteImport.update({
+  id: '/painel',
+  path: '/painel',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedNovoRoute = AuthenticatedNovoRouteImport.update({
@@ -191,7 +191,7 @@ const AuthenticatedQuitamanyConversaIdRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof AuthenticatedIndexRoute
+  '/': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/exclusao-de-dados': typeof ExclusaoDeDadosRoute
   '/privacidade': typeof PrivacidadeRoute
@@ -203,6 +203,7 @@ export interface FileRoutesByFullPath {
   '/conversas': typeof AuthenticatedConversasRoute
   '/historico': typeof AuthenticatedHistoricoRoute
   '/novo': typeof AuthenticatedNovoRoute
+  '/painel': typeof AuthenticatedPainelRoute
   '/conversa/$id': typeof AuthenticatedConversaIdRoute
   '/publicador/ajustes': typeof AuthenticatedPublicadorAjustesRoute
   '/publicador/historico': typeof AuthenticatedPublicadorHistoricoRoute
@@ -220,6 +221,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/webhook-instagram': typeof ApiPublicHooksWebhookInstagramRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/exclusao-de-dados': typeof ExclusaoDeDadosRoute
   '/privacidade': typeof PrivacidadeRoute
@@ -231,7 +233,7 @@ export interface FileRoutesByTo {
   '/conversas': typeof AuthenticatedConversasRoute
   '/historico': typeof AuthenticatedHistoricoRoute
   '/novo': typeof AuthenticatedNovoRoute
-  '/': typeof AuthenticatedIndexRoute
+  '/painel': typeof AuthenticatedPainelRoute
   '/conversa/$id': typeof AuthenticatedConversaIdRoute
   '/publicador/ajustes': typeof AuthenticatedPublicadorAjustesRoute
   '/publicador/historico': typeof AuthenticatedPublicadorHistoricoRoute
@@ -262,7 +264,7 @@ export interface FileRoutesById {
   '/_authenticated/conversas': typeof AuthenticatedConversasRoute
   '/_authenticated/historico': typeof AuthenticatedHistoricoRoute
   '/_authenticated/novo': typeof AuthenticatedNovoRoute
-  '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/painel': typeof AuthenticatedPainelRoute
   '/_authenticated/conversa/$id': typeof AuthenticatedConversaIdRoute
   '/_authenticated/publicador/ajustes': typeof AuthenticatedPublicadorAjustesRoute
   '/_authenticated/publicador/historico': typeof AuthenticatedPublicadorHistoricoRoute
@@ -294,6 +296,7 @@ export interface FileRouteTypes {
     | '/conversas'
     | '/historico'
     | '/novo'
+    | '/painel'
     | '/conversa/$id'
     | '/publicador/ajustes'
     | '/publicador/historico'
@@ -311,6 +314,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/webhook-instagram'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/auth'
     | '/exclusao-de-dados'
     | '/privacidade'
@@ -322,7 +326,7 @@ export interface FileRouteTypes {
     | '/conversas'
     | '/historico'
     | '/novo'
-    | '/'
+    | '/painel'
     | '/conversa/$id'
     | '/publicador/ajustes'
     | '/publicador/historico'
@@ -352,7 +356,7 @@ export interface FileRouteTypes {
     | '/_authenticated/conversas'
     | '/_authenticated/historico'
     | '/_authenticated/novo'
-    | '/_authenticated/'
+    | '/_authenticated/painel'
     | '/_authenticated/conversa/$id'
     | '/_authenticated/publicador/ajustes'
     | '/_authenticated/publicador/historico'
@@ -420,11 +424,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/': {
-      id: '/_authenticated/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedIndexRouteImport
+    '/_authenticated/painel': {
+      id: '/_authenticated/painel'
+      path: '/painel'
+      fullPath: '/painel'
+      preLoaderRoute: typeof AuthenticatedPainelRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/novo': {
@@ -592,7 +596,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedConversasRoute: typeof AuthenticatedConversasRoute
   AuthenticatedHistoricoRoute: typeof AuthenticatedHistoricoRoute
   AuthenticatedNovoRoute: typeof AuthenticatedNovoRoute
-  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedPainelRoute: typeof AuthenticatedPainelRoute
   AuthenticatedConversaIdRoute: typeof AuthenticatedConversaIdRoute
   AuthenticatedPublicadorAjustesRoute: typeof AuthenticatedPublicadorAjustesRoute
   AuthenticatedPublicadorHistoricoRoute: typeof AuthenticatedPublicadorHistoricoRoute
@@ -613,7 +617,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedConversasRoute: AuthenticatedConversasRoute,
   AuthenticatedHistoricoRoute: AuthenticatedHistoricoRoute,
   AuthenticatedNovoRoute: AuthenticatedNovoRoute,
-  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedPainelRoute: AuthenticatedPainelRoute,
   AuthenticatedConversaIdRoute: AuthenticatedConversaIdRoute,
   AuthenticatedPublicadorAjustesRoute: AuthenticatedPublicadorAjustesRoute,
   AuthenticatedPublicadorHistoricoRoute: AuthenticatedPublicadorHistoricoRoute,

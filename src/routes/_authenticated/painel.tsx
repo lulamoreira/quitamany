@@ -19,7 +19,7 @@ import { ptBR } from "date-fns/locale";
 import { useIsDesktop } from "@/hooks/use-desktop";
 import { DesktopPageHeader } from "@/components/desktop-shell";
 
-export const Route = createFileRoute("/_authenticated/")({
+export const Route = createFileRoute("/_authenticated/painel")({
   head: () => ({
     meta: [
       { title: "Início · QuitaMany" },
