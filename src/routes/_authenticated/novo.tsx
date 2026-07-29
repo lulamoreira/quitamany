@@ -12,6 +12,7 @@ import { Eye, Loader2, Upload, Video } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { PostPreview } from "@/components/agenda/post-preview";
+import { ehModuloObsoleto, MENSAGEM_VERSAO_OBSOLETA } from "@/lib/versao-obsoleta";
 
 export const Route = createFileRoute("/_authenticated/novo")({
   validateSearch: (s: Record<string, unknown>) => ({ id: (s.id as string) || undefined }),
@@ -162,6 +163,13 @@ function NovoPost() {
       }
     } catch (e) {
       console.error(e);
+      if (ehModuloObsoleto(e)) {
+        toast.error(MENSAGEM_VERSAO_OBSOLETA, {
+          action: { label: "Recarregar", onClick: () => window.location.reload() },
+          duration: 15000,
+        });
+        return;
+      }
       toast.error("Falha ao processar vídeo: " + descreverErro(e));
     } finally {
       setUploading(false);

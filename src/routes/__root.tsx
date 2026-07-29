@@ -8,10 +8,11 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
-import { Toaster } from "sonner";
+import { Toaster, toast } from "sonner";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { ehModuloObsoleto, MENSAGEM_VERSAO_OBSOLETA } from "@/lib/versao-obsoleta";
 import { supabase } from "@/integrations/supabase/client";
 
 function NotFoundComponent() {
@@ -130,6 +131,21 @@ function RootComponent() {
     });
     return () => sub.subscription.unsubscribe();
   }, [router, queryClient]);
+
+  // Rede de segurança: bundle antigo tentando buscar um chunk que já não existe.
+  useEffect(() => {
+    const aoRejeitar = (e: PromiseRejectionEvent) => {
+      if (!ehModuloObsoleto(e.reason)) return;
+      toast.error(MENSAGEM_VERSAO_OBSOLETA, {
+        action: { label: "Recarregar", onClick: () => window.location.reload() },
+        duration: 15000,
+      });
+    };
+    window.addEventListener("unhandledrejection", aoRejeitar);
+    return () => window.removeEventListener("unhandledrejection", aoRejeitar);
+  }, []);
+
+
 
   return (
     <QueryClientProvider client={queryClient}>
