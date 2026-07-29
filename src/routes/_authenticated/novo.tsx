@@ -8,9 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, Upload, Video } from "lucide-react";
+import { Eye, Loader2, Upload, Video } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { PostPreview } from "@/components/agenda/post-preview";
 
 export const Route = createFileRoute("/_authenticated/novo")({
   validateSearch: (s: Record<string, unknown>) => ({ id: (s.id as string) || undefined }),
