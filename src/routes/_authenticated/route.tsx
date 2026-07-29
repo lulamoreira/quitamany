@@ -91,11 +91,6 @@ function AuthenticatedLayout() {
   );
 }
 
-
-    </>
-  );
-}
-
 function MobileBottomNav() {
   const location = useLocation();
   const path = location.pathname;
