@@ -229,21 +229,26 @@ function LandingPage() {
       {/* PRIVACIDADE */}
       <section style={{ background: C.tinta, color: C.branco }}>
         <div className="mx-auto max-w-6xl px-5 py-16 md:py-24">
-          <div className="flex items-center gap-3">
-            <Heart className="h-6 w-6" style={{ color: C.amarelo }} />
-            <span
-              className="text-xs font-bold uppercase tracking-widest"
-              style={{ color: C.amarelo }}
-            >
-              Privacidade e controle
-            </span>
+          <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
+            <div className="max-w-3xl">
+              <div className="flex items-center gap-3">
+                <Heart className="h-6 w-6" style={{ color: C.amarelo }} />
+                <span
+                  className="text-xs font-bold uppercase tracking-widest"
+                  style={{ color: C.amarelo }}
+                >
+                  Privacidade e controle
+                </span>
+              </div>
+              <h2
+                style={{ ...displayStyle, fontSize: "clamp(2rem, 5vw, 3.75rem)" }}
+                className="mt-4 text-white"
+              >
+                Consentimento primeiro, sempre.
+              </h2>
+            </div>
+            <IlustraPrivacidade className="h-28 w-28 shrink-0 self-start md:self-center" />
           </div>
-          <h2
-            style={{ ...displayStyle, fontSize: "clamp(2rem, 5vw, 3.75rem)" }}
-            className="mt-4 max-w-3xl text-white"
-          >
-            Consentimento primeiro, sempre.
-          </h2>
           <div className="mt-10 grid gap-8 text-white/80 md:grid-cols-3">
             <p style={{ fontSize: "1.05rem", lineHeight: 1.6 }}>
               O QuitaMany só acessa contas que o próprio titular conecta e
