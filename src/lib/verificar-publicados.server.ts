@@ -206,6 +206,8 @@ export async function verificarPublicados(): Promise<ResumoVerificacao> {
         .from("posts_agendados")
         .update({
           verificado_em: agora,
+          // Normaliza posts antigos que só tinham `media_id` preenchido.
+          ...(p.instagram_media_id ? {} : { instagram_media_id: mediaId }),
           ...(temAlguma ? { ...metricas, metricas_em: agora } : {}),
         })
         .eq("id", p.id);
