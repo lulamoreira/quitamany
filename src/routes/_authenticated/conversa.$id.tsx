@@ -330,6 +330,7 @@ function ConversaPage() {
         ) : (
           <div className="flex items-end gap-2">
             <Textarea
+              ref={respostaRef}
               value={texto}
               onChange={(e) => setTexto(e.target.value)}
               placeholder="Escreva uma resposta…"
@@ -339,6 +340,11 @@ function ConversaPage() {
                 if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleEnviar(); }
               }}
             />
+            <EmojiPicker onSelect={inserirNaResposta}>
+              <Button type="button" size="icon" variant="ghost" aria-label="Inserir emoji">
+                <Smile className="h-4 w-4" />
+              </Button>
+            </EmojiPicker>
             <Button size="icon" onClick={handleEnviar} disabled={sending || !texto.trim()}>
               {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </Button>
