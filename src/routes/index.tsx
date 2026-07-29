@@ -15,6 +15,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import {
+  IlustraConectar,
+  IlustraPalavraChave,
+  IlustraCaixaEntrada,
+  IlustraPrivacidade,
+} from "@/components/landing/ilustracoes";
 
 export const Route = createFileRoute("/")({
   head: () => ({
