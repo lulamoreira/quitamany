@@ -138,7 +138,7 @@ function NovoPost() {
 
     if (fileOriginal.size > 200 * 1024 * 1024) {
       toast.warning(
-        `Vídeo grande (${mb(fileOriginal.size)} MB). Vamos comprimir automaticamente — isso pode levar alguns minutos, mantenha esta aba aberta.`,
+        `Vídeo grande (${mb(fileOriginal.size)}). Vamos comprimir automaticamente — isso pode levar alguns minutos, mantenha esta aba aberta.`,
       );
     }
 
