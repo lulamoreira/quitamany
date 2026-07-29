@@ -167,33 +167,44 @@ function LandingPage() {
       {/* COMO FUNCIONA */}
       <section
         id="como-funciona"
-        style={{ background: C.creme, color: C.tinta }}
+        className="relative isolate"
+        style={{
+          backgroundImage: `url(${comoFuncionaBg.url})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
       >
+        {/* overlay para contraste */}
+        <div
+          aria-hidden
+          className="absolute inset-0 -z-10"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(11,11,15,0.85) 0%, rgba(11,11,15,0.7) 50%, rgba(11,11,15,0.85) 100%)",
+          }}
+        />
         <div className="mx-auto max-w-6xl px-5 py-16 md:py-24">
           <h2
-            style={{ ...displayStyle, fontSize: "clamp(2rem, 5vw, 3.75rem)" }}
+            style={{ ...displayStyle, fontSize: "clamp(2rem, 5vw, 3.75rem)", color: C.branco }}
             className="max-w-2xl"
           >
             Como funciona.
           </h2>
           <div className="mt-10 grid gap-5 md:grid-cols-3">
-            <StepCard
+            <GlassStepCard
               n="01"
-              bg={C.branco}
               title="Conecte sua conta"
               text="Autorize sua conta profissional do Instagram pelo Login do Facebook."
               ilustracao={<IlustraConectar className="h-24 w-24 md:h-28 md:w-28" />}
             />
-            <StepCard
+            <GlassStepCard
               n="02"
-              bg={C.amarelo}
               title="Defina as regras"
               text="Escolha palavras-chave e as respostas automáticas para DMs e comentários."
               ilustracao={<IlustraPalavraChave className="h-24 w-24 md:h-28 md:w-28" />}
             />
-            <StepCard
+            <GlassStepCard
               n="03"
-              bg="#FFD9DA"
               title="Assuma quando quiser"
               text="O app responde por você. Na caixa de entrada, você entra na conversa quando precisar."
               ilustracao={<IlustraCaixaEntrada className="h-24 w-24 md:h-28 md:w-28" />}
