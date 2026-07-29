@@ -36,6 +36,9 @@ export const Route = createFileRoute("/_authenticated")({
 function AuthenticatedLayout() {
   const { data: role, isLoading } = useMyRole();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  // Telas de conversa gerenciam a própria altura (composer fixo) — sem rodapé/padding extra.
+  const chatLayout = pathname.startsWith("/conversa/");
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
@@ -64,11 +67,23 @@ function AuthenticatedLayout() {
       </div>
 
       {/* Mobile: bottom nav 5 itens */}
-      <div className="lg:hidden min-h-screen bg-background pb-[calc(7.5rem+env(safe-area-inset-bottom))]">
-        <main className="mx-auto flex w-full max-w-2xl min-w-0 flex-col gap-6 px-4 pb-6 pt-6 sm:px-6">
+      <div
+        className={cn(
+          "lg:hidden bg-background",
+          chatLayout
+            ? "h-[100dvh] overflow-hidden pb-[calc(4.5rem+env(safe-area-inset-bottom))]"
+            : "min-h-screen pb-[calc(8.5rem+env(safe-area-inset-bottom))]",
+        )}
+      >
+        <main
+          className={cn(
+            "mx-auto flex w-full max-w-2xl min-w-0 flex-col",
+            chatLayout ? "h-full min-h-0" : "gap-6 px-4 pb-6 pt-6 sm:px-6",
+          )}
+        >
           <Outlet />
         </main>
-        <FooterLinks />
+        {!chatLayout && <FooterLinks />}
         <MobileBottomNav />
       </div>
 
