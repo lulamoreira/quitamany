@@ -22,8 +22,8 @@ async function getFfmpeg(): Promise<any> {
     const { FFmpeg } = await import("@ffmpeg/ffmpeg");
     const ffmpeg = new FFmpeg();
     await ffmpeg.load({
-      classWorkerURL: "/ffmpeg/814.ffmpeg.js",
-      coreURL: "/ffmpeg/ffmpeg-core.js",
+      classWorkerURL: "/ffmpeg/esm/worker.js",
+      coreURL: "https://unpkg.com/@ffmpeg/core@0.12.10/dist/esm/ffmpeg-core.js",
       wasmURL: wasmAsset.url,
     });
     ffmpegInstance = ffmpeg;
