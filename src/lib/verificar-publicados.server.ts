@@ -112,12 +112,17 @@ export async function verificarPublicados(): Promise<ResumoVerificacao> {
 
   // Ordem estável: verificados há mais tempo primeiro; nulos entram na frente.
   // Lote pequeno e fixo — não há risco de passar de 1000 linhas.
+  //
+  // Posts antigos gravaram o id da mídia apenas em `media_id`; por isso
+  // aceitamos qualquer um dos dois campos. Filtrar só por
+  // `instagram_media_id` deixava esses posts fora da verificação para sempre,
+  // fazendo publicações apagadas continuarem aparecendo como ativas.
   const { data: posts, error } = await supabaseAdmin
     .from("posts_agendados")
-    .select("id, instagram_media_id, verificado_em")
+    .select("id, instagram_media_id, media_id, verificado_em")
     .eq("status", "publicado")
     .eq("removido_no_instagram", false)
-    .not("instagram_media_id", "is", null)
+    .or("instagram_media_id.not.is.null,media_id.not.is.null")
     .order("verificado_em", { ascending: true, nullsFirst: true })
     .order("id", { ascending: true })
     .limit(LOTE);
@@ -130,8 +135,10 @@ export async function verificarPublicados(): Promise<ResumoVerificacao> {
   const agora = new Date().toISOString();
 
   for (const p of posts ?? []) {
-    const mediaId = p.instagram_media_id;
+    const mediaId = p.instagram_media_id ?? p.media_id;
     if (!mediaId) continue;
+
+
 
     let body: any;
     try {
