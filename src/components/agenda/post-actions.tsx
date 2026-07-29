@@ -39,7 +39,10 @@ export type PostLite = {
   erro_msg: string | null;
   permalink?: string | null;
   instagram_permalink?: string | null;
+  /** Detectado como apagado no Instagram pela rotina de verificação. */
+  removido_no_instagram?: boolean | null;
 };
+
 
 export const STATUS_LABEL: Record<string, string> = {
   rascunho: "Rascunho",
@@ -91,8 +94,13 @@ export function PostActions({
   const [deleting, setDeleting] = useState(false);
 
   const isPublicado = post.status === "publicado";
-  const canDelete = !isPublicado;
+  const removido = Boolean(post.removido_no_instagram);
+  // Publicados normalmente são protegidos (o registro espelha algo que existe
+  // no Instagram). Quando a publicação foi apagada lá, o registro vira lixo
+  // histórico e o usuário precisa poder limpá-lo.
+  const canDelete = !isPublicado || removido;
   const canEdit = post.status === "rascunho" || post.status === "agendado" || post.status === "erro";
+
 
   const goEdit = () => {
     navigate({ to: "/novo", search: { id: post.id } as any });
@@ -149,16 +157,20 @@ export function PostActions({
           <button
             type="button"
             onClick={() => setConfirmDel(true)}
-            title="Excluir"
-            aria-label="Excluir"
+            title={removido ? "Excluir registro removido do Instagram" : "Excluir"}
+            aria-label={removido ? "Excluir registro removido do Instagram" : "Excluir"}
             className={cn(
-              "flex items-center justify-center rounded-md text-muted-foreground ring-1 ring-border bg-background/80 hover:text-destructive hover:ring-destructive/50",
+              "flex items-center justify-center rounded-md ring-1 bg-background/80 hover:text-destructive hover:ring-destructive/50",
+              removido
+                ? "text-destructive ring-destructive/40"
+                : "text-muted-foreground ring-border",
               size,
             )}
           >
             <Trash2 className={icon} />
           </button>
         )}
+
       </div>
 
       <Dialog open={preview} onOpenChange={setPreview}>
@@ -247,14 +259,18 @@ export function PostActions({
           onPointerDown={(e) => e.stopPropagation()}
         >
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir este post?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {removido ? "Excluir este registro?" : "Excluir este post?"}
+            </AlertDialogTitle>
             <AlertDialogDescription>
               Esta ação é permanente. O post{" "}
               <span className="font-medium">
                 {post.titulo || post.legenda?.slice(0, 40) || "sem título"}
               </span>{" "}
-              será removido.
+              será removido do QuitaMany.
+              {removido && " A publicação já não existe mais no Instagram."}
             </AlertDialogDescription>
+
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
