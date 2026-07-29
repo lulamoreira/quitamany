@@ -14,9 +14,21 @@ export const Route = createFileRoute("/api/public/hooks/publicar-posts")({
           });
         }
         const result = await executarMotor();
-        return new Response(JSON.stringify(result), {
+
+        // Verificação de posts removidos no Instagram: acessória ao motor.
+        // Nunca pode derrubar a publicação, então roda isolada.
+        let verificacao: unknown = null;
+        try {
+          const { verificarPublicados } = await import("@/lib/verificar-publicados.server");
+          verificacao = await verificarPublicados();
+        } catch (e) {
+          verificacao = { erro: e instanceof Error ? e.message : "falha na verificação" };
+        }
+
+        return new Response(JSON.stringify({ ...result, verificacao }), {
           headers: { "content-type": "application/json" },
         });
+
       },
     },
   },
