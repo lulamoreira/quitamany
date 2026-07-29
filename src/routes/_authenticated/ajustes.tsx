@@ -99,7 +99,7 @@ function AjustesPage() {
     return (
       <>
         <DesktopPageHeader title="Ajustes" subtitle="Conexão, webhook, motor e equipe." />
-        <div className="mx-auto w-full max-w-[1200px] px-8 py-6">{conteudo}</div>
+        {conteudo}
       </>
     );
   }

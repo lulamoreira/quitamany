@@ -102,6 +102,8 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
   };
 
   const inicial = (email[0] ?? "?").toUpperCase();
+  // Telas de conversa usam layout de 3 colunas em altura cheia (sem respiro extra).
+  const chatLayout = location.pathname.startsWith("/conversa");
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -239,8 +241,26 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        {children}
+      <div
+        className={cn(
+          "flex min-w-0 flex-1 flex-col",
+          // --shell-pad: respiro lateral/vertical padrão do conteúdo autenticado.
+          // Telas de conversa (3 colunas) usam 0 para não perder área útil.
+          chatLayout
+            ? "[--shell-pad:0px]"
+            : "[--shell-pad:1.5rem] lg:[--shell-pad:2.5rem]",
+        )}
+      >
+        <div className="flex min-w-0 flex-1 flex-col px-[var(--shell-pad)] py-[var(--shell-pad)]">
+          <div
+            className={cn(
+              "mx-auto flex w-full min-w-0 flex-1 flex-col",
+              chatLayout ? "max-w-none" : "max-w-[1280px] gap-6",
+            )}
+          >
+            {children}
+          </div>
+        </div>
         <FooterLinks />
       </div>
 
@@ -260,8 +280,8 @@ export function DesktopPageHeader({
   actions?: React.ReactNode;
 }) {
   return (
-    <header className="sticky top-0 z-20 border-b border-border/60 bg-background/95 px-8 py-4 backdrop-blur">
-      <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4">
+    <header className="sticky top-0 z-20 -mx-[var(--shell-pad)] -mt-[var(--shell-pad)] mb-2 border-b border-border/60 bg-background/95 px-[max(var(--shell-pad),1.5rem)] py-4 backdrop-blur">
+      <div className="mx-auto flex max-w-[1280px] items-center justify-between gap-4">
         <div className="min-w-0">
           {breadcrumb && (
             <div className="mb-1 text-[11px] font-medium text-muted-foreground">{breadcrumb}</div>
