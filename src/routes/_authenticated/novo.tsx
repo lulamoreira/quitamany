@@ -43,6 +43,23 @@ function NovoPost() {
   const [progresso, setProgresso] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [arrastando, setArrastando] = useState(false);
+  const [previewAberto, setPreviewAberto] = useState(false);
+  const [contaUsername, setContaUsername] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    let ativo = true;
+    supabase
+      .from("ig_config")
+      .select("conta_username")
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (ativo && data?.conta_username) setContaUsername(data.conta_username);
+      });
+    return () => {
+      ativo = false;
+    };
+  }, []);
 
 
   useEffect(() => {
