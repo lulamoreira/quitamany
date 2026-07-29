@@ -30,19 +30,19 @@ const SECTIONS: Array<{ title: string | null; items: Item[] }> = [
     items: [{ to: "/painel", label: "Início", icon: Home, exact: true }],
   },
   {
-    title: "Conversas",
-    items: [
-      { to: "/conversas", label: "Conversas", icon: MessageCircle },
-      { to: "/automacoes", label: "Automações", icon: Zap },
-      { to: "/contatos", label: "Contatos", icon: Users },
-    ],
-  },
-  {
     title: "Publicações",
     items: [
       { to: "/agenda", label: "Agenda", icon: CalendarDays },
       { to: "/novo", label: "Novo post", icon: PlusCircle },
       { to: "/historico", label: "Histórico", icon: Clock },
+    ],
+  },
+  {
+    title: "Conversas",
+    items: [
+      { to: "/conversas", label: "Conversas", icon: MessageCircle },
+      { to: "/automacoes", label: "Automações", icon: Zap },
+      { to: "/contatos", label: "Contatos", icon: Users },
     ],
   },
 ];
