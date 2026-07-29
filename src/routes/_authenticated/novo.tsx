@@ -551,6 +551,9 @@ function NovoPost() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Hashtags</CardTitle>
+          <p className="text-xs text-muted-foreground">
+            Sugestões genéricas — clique para adicionar e edite à vontade.
+          </p>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex flex-wrap gap-2">
