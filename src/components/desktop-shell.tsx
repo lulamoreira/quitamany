@@ -125,16 +125,24 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
             <Sparkles className="h-5 w-5" />
           </div>
           {!collapsed && (
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-bold tracking-tight">QuitaMany</p>
               <p className={cn("truncate text-[10px]", contaConectada ? "text-muted-foreground" : "text-muted-foreground/70 italic")}>
                 {contaConectada ? `@${contaUsername}` : "conta não conectada"}
               </p>
             </div>
           )}
+          {!collapsed && <NotificationBell className="shrink-0" />}
         </div>
 
+        {collapsed && (
+          <div className="flex justify-center border-b border-border/60 py-2">
+            <NotificationBell />
+          </div>
+        )}
+
         <nav className="flex-1 space-y-4 overflow-y-auto px-2 py-4">
+
           {SECTIONS.map((sec, idx) => (
             <div key={sec.title ?? `sec-${idx}`}>
               {!collapsed && sec.title && (
