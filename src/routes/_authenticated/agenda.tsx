@@ -16,6 +16,8 @@ import { AgendaKanban } from "@/components/agenda/agenda-kanban";
 import { AgendaCalendarDesktop } from "@/components/agenda/agenda-calendar";
 import { PostActions, StatusBadge } from "@/components/agenda/post-actions";
 import { useRealtimePosts } from "@/hooks/use-realtime-posts";
+import { BotaoAtualizar } from "@/components/agenda/botao-atualizar";
+
 
 
 export const Route = createFileRoute("/_authenticated/agenda")({
