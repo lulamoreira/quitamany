@@ -61,6 +61,15 @@ function Historico() {
         <BotaoAtualizar onAtualizar={() => refetch()} />
       </header>
 
+      <ErrosPublicacao
+        posts={posts.filter((p) => p.status === "erro") as any}
+        onAtualizar={() => {
+          qc.invalidateQueries({ queryKey: ["historico"] });
+          qc.invalidateQueries({ queryKey: ["agenda"] });
+        }}
+      />
+
+
 
       {isLoading ? (
         <p className="text-sm text-muted-foreground">Carregando…</p>
