@@ -206,23 +206,57 @@ function NovoPost() {
               </Button>
             </div>
           ) : (
-            <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border py-8 hover:bg-accent/30">
+            <label
+              className={cn(
+                "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed py-8 transition-colors",
+                arrastando
+                  ? "border-primary bg-primary/10"
+                  : "border-border hover:bg-accent/30",
+              )}
+              onDragEnter={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!uploading) setArrastando(true);
+              }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!uploading) setArrastando(true);
+              }}
+              onDragLeave={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setArrastando(false);
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setArrastando(false);
+                if (uploading) return;
+                const arquivo = e.dataTransfer.files?.[0];
+                if (arquivo) handleUpload(arquivo);
+              }}
+            >
               {uploading ? (
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               ) : (
                 <Upload className="h-6 w-6 text-muted-foreground" />
               )}
               <span className="text-sm text-muted-foreground">
-                {uploading ? (progresso ?? "Enviando…") : "Toque para escolher um vídeo"}
+                {uploading
+                  ? (progresso ?? "Enviando…")
+                  : arrastando
+                    ? "Solte o vídeo aqui"
+                    : "Toque ou arraste um vídeo"}
               </span>
               {!uploading && (
                 <span className="text-[11px] text-muted-foreground">
-                  Aceita MP4, MOV, WebM, MKV. Até 200 MB (converte para MP4 aqui mesmo).
+                  MP4, MOV, WebM, MKV, AVI. Vídeos grandes são comprimidos aqui mesmo.
                 </span>
               )}
               <input
                 type="file"
-                accept="video/*,.webm,.mkv,.mov"
+                accept="video/*,.mp4,.mov,.webm,.mkv,.avi,.m4v"
                 className="hidden"
                 disabled={uploading}
                 onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])}
