@@ -39,7 +39,10 @@ export type PostLite = {
   erro_msg: string | null;
   permalink?: string | null;
   instagram_permalink?: string | null;
+  /** Detectado como apagado no Instagram pela rotina de verificação. */
+  removido_no_instagram?: boolean | null;
 };
+
 
 export const STATUS_LABEL: Record<string, string> = {
   rascunho: "Rascunho",
