@@ -256,8 +256,8 @@ function ConversaPage() {
 
   // ---- Mobile (inalterado) ----
   return (
-    <div className="flex h-[calc(100dvh-9rem)] min-h-0 flex-col">
-      <Card className="mb-3 flex items-center gap-3 border-transparent p-3 shadow-[var(--shadow-card)]">
+    <div className="flex h-full min-h-0 flex-col px-4 pt-4">
+      <Card className="mb-3 flex shrink-0 items-center gap-3 border-transparent p-3 shadow-[var(--shadow-card)]">
         <Button variant="ghost" size="icon" onClick={() => navigate({ to: "/conversas" })}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
