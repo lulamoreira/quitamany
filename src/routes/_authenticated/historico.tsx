@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { PostActions, StatusBadge } from "@/components/agenda/post-actions";
 
 export const Route = createFileRoute("/_authenticated/historico")({
-  head: () => ({ meta: [{ title: "Histórico · Publicador" }] }),
+  head: () => ({ meta: [{ title: "Histórico · QuitaMany" }] }),
   component: Historico,
 });
 

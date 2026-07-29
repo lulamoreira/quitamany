@@ -36,7 +36,7 @@ import {
 
 export const Route = createFileRoute("/_authenticated/novo")({
   validateSearch: (s: Record<string, unknown>) => ({ id: (s.id as string) || undefined }),
-  head: () => ({ meta: [{ title: "Novo post · Publicador" }] }),
+  head: () => ({ meta: [{ title: "Novo post · QuitaMany" }] }),
   component: NovoPost,
 });
 
@@ -339,17 +339,19 @@ function NovoPost() {
         return;
       }
       // Motor é restrito a admin: falha de permissão é esperada e ignorada.
-      let motorRodou = false;
+      // O Instagram processa o vídeo de forma assíncrona, então só afirmamos
+      // que publicou quando o motor confirmar pelo menos uma publicação.
+      let publicados = 0;
       try {
-        await executarMotorFn({});
-        motorRodou = true;
+        const motor = (await executarMotorFn({})) as { publicados?: number } | undefined;
+        publicados = motor?.publicados ?? 0;
       } catch {
-        motorRodou = false;
+        publicados = 0;
       }
       toast.success(
-        motorRodou
+        publicados > 0
           ? "Publicado! Confira no seu perfil."
-          : "Enviado para publicação. Sai no próximo ciclo, em alguns minutos.",
+          : "Enviado para publicação. Sai em instantes, assim que o Instagram terminar de processar o vídeo.",
       );
       temAlteracoesRef.current = false;
       navigate({ to: "/historico" });
