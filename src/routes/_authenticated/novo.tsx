@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Loader2, Upload, Video } from "lucide-react";
 import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/novo")({
   validateSearch: (s: Record<string, unknown>) => ({ id: (s.id as string) || undefined }),
