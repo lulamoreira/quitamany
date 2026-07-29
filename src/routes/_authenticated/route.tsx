@@ -21,6 +21,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { DesktopShell } from "@/components/desktop-shell";
 import { FooterLinks } from "@/components/footer-links";
+import { NotificationBell } from "@/components/notification-bell";
+
 
 
 export const Route = createFileRoute("/_authenticated")({
@@ -83,9 +85,15 @@ function AuthenticatedLayout() {
         >
           <Outlet />
         </main>
+        {!chatLayout && (
+          <div className="pointer-events-auto fixed right-3 top-3 z-50 rounded-full bg-card/95 shadow-md backdrop-blur">
+            <NotificationBell />
+          </div>
+        )}
         {!chatLayout && <FooterLinks />}
         <MobileBottomNav />
       </div>
+
 
     </>
   );
