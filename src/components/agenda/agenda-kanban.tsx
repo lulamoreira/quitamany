@@ -18,7 +18,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
-import { FileText, CalendarClock, CheckCircle2, AlertTriangle, Ban, Loader2, ExternalLink } from "lucide-react";
+import { FileText, CalendarClock, CheckCircle2, AlertTriangle, Ban, Loader2, ExternalLink, EyeOff } from "lucide-react";
 import { PostActions, StatusBadge } from "./post-actions";
 import { format, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -260,7 +260,9 @@ function DraggablePost({ post, dragging, isPublicado }: { post: Post; dragging: 
 
 function PostCardVisual({ post, elevated }: { post: Post; elevated?: boolean }) {
   const hashtags = (post.hashtags ?? "").split(/\s+/).filter((h) => h.startsWith("#")).slice(0, 3);
-  const igLink = post.status === "publicado" ? post.instagram_permalink : null;
+  // Post apagado no Instagram: o link levaria a uma página inexistente.
+  const removido = Boolean((post as any).removido_no_instagram);
+  const igLink = post.status === "publicado" && !removido ? post.instagram_permalink : null;
   return (
     <Card
       className={cn(
@@ -293,7 +295,7 @@ function PostCardVisual({ post, elevated }: { post: Post; elevated?: boolean }) 
           </div>
         )}
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5">
+          <div className="flex flex-wrap items-center gap-1.5">
             <StatusBadge status={post.status} />
             {post.agendado_para && (
               <span className="text-[10px] text-muted-foreground">
@@ -301,14 +303,36 @@ function PostCardVisual({ post, elevated }: { post: Post; elevated?: boolean }) 
               </span>
             )}
           </div>
-          <p className="mt-1 line-clamp-2 text-xs font-semibold leading-tight">
+          <p
+            className={cn(
+              "mt-1 line-clamp-2 text-xs font-semibold leading-tight",
+              removido && "text-muted-foreground line-through",
+            )}
+          >
             {post.titulo || post.legenda?.slice(0, 60) || "Sem título"}
           </p>
+          {removido && (
+            <div className="mt-1">
+              <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                <EyeOff className="h-2.5 w-2.5" />
+                Removido no Instagram
+              </span>
+              {(post as any).verificado_em && (
+                <p className="mt-0.5 text-[10px] text-muted-foreground">
+                  Detectado em{" "}
+                  {format(new Date((post as any).verificado_em), "dd/MM 'às' HH:mm", {
+                    locale: ptBR,
+                  })}
+                </p>
+              )}
+            </div>
+          )}
           {post.status === "erro" && (
             <ResumoUltimoErro postId={post.id} titulo={post.titulo} erro={post.erro_msg} />
           )}
         </div>
       </div>
+
       {hashtags.length > 0 && (
         <div className="mt-1.5 flex flex-wrap gap-1">
           {hashtags.map((h) => (
