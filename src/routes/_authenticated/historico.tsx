@@ -10,6 +10,8 @@ import { toast } from "sonner";
 import { PostActions, StatusBadge } from "@/components/agenda/post-actions";
 import { useRealtimePosts } from "@/hooks/use-realtime-posts";
 import { BotaoAtualizar } from "@/components/agenda/botao-atualizar";
+import { ErrosPublicacao } from "@/components/agenda/erros-publicacao";
+
 
 
 export const Route = createFileRoute("/_authenticated/historico")({
@@ -60,6 +62,15 @@ function Historico() {
         </div>
         <BotaoAtualizar onAtualizar={() => refetch()} />
       </header>
+
+      <ErrosPublicacao
+        posts={posts.filter((p) => p.status === "erro") as any}
+        onAtualizar={() => {
+          qc.invalidateQueries({ queryKey: ["historico"] });
+          qc.invalidateQueries({ queryKey: ["agenda"] });
+        }}
+      />
+
 
 
       {isLoading ? (
