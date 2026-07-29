@@ -191,7 +191,7 @@ function NovoPost() {
 
       <Card>
         <CardContent className="space-y-4 p-4">
-          <Label>Vídeo (MP4, MOV ou WebM — convertemos automaticamente)</Label>
+          <Label>Vídeo — convertemos e comprimimos automaticamente</Label>
           {videoUrl ? (
             <div className="space-y-2">
               <video src={videoUrl} controls className="max-h-64 w-full rounded-md bg-black" />
