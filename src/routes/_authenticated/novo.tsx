@@ -61,6 +61,22 @@ function NovoPost() {
   const [previewAberto, setPreviewAberto] = useState(false);
   const [contaUsername, setContaUsername] = useState<string | undefined>(undefined);
 
+  // Snapshot do último estado salvo (ou carregado). Comparar contra ele evita
+  // avisos em falso, que são piores que a ausência do aviso.
+  const estadoAtual = { titulo, legenda, hashtags, videoUrl, agendadoPara };
+  const baseRef = useRef({
+    titulo: "",
+    legenda: "",
+    hashtags: "",
+    videoUrl: "",
+    agendadoPara: "",
+  });
+  const temAlteracoes = (Object.keys(estadoAtual) as Array<keyof typeof estadoAtual>).some(
+    (k) => (estadoAtual[k] || "") !== (baseRef.current[k] || ""),
+  );
+  const temAlteracoesRef = useRef(temAlteracoes);
+  temAlteracoesRef.current = temAlteracoes;
+
   useEffect(() => {
     let ativo = true;
     supabase
