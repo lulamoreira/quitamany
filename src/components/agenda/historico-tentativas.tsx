@@ -137,6 +137,36 @@ export function HistoricoTentativas({ postId, titulo, trigger }: HistoricoTentat
   );
 }
 
+/**
+ * Selo compacto com o total de tentativas e a data da última falha.
+ * Usa uma única consulta agregada compartilhada entre todos os cards.
+ */
+export function SeloTentativas({ postId, className }: { postId: string; className?: string }) {
+  const { data } = useQuery({
+    queryKey: ["tentativas-resumo"],
+    queryFn: resumoTentativasPorPost,
+    staleTime: 30_000,
+  });
+
+  const resumo = data?.[postId];
+  if (!resumo || resumo.total === 0) return null;
+
+  return (
+    <div className={cn("flex flex-wrap items-center gap-1.5", className)}>
+      <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold text-foreground">
+        <RotateCcw className="h-2.5 w-2.5" />
+        {resumo.total}ª tentativa
+      </span>
+      {resumo.ultimaFalha && (
+        <span className="text-[10px] text-muted-foreground">
+          última falha em{" "}
+          {format(new Date(resumo.ultimaFalha), "dd/MM 'às' HH:mm", { locale: ptBR })}
+        </span>
+      )}
+    </div>
+  );
+}
+
 /** Resumo compacto do último erro, com atalho para a linha do tempo completa. */
 export function ResumoUltimoErro({
   postId,
@@ -155,6 +185,7 @@ export function ResumoUltimoErro({
       className={cn("mt-1 rounded-md bg-destructive/10 p-2", className)}
       onClick={(e) => e.stopPropagation()}
     >
+      <SeloTentativas postId={postId} className="mb-1" />
       <p className="line-clamp-2 text-[11px] font-medium text-destructive">{erro}</p>
       <HistoricoTentativas
         postId={postId}
@@ -171,3 +202,4 @@ export function ResumoUltimoErro({
     </div>
   );
 }
+
