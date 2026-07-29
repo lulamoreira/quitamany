@@ -64,8 +64,8 @@ function AuthenticatedLayout() {
       </div>
 
       {/* Mobile: bottom nav 5 itens */}
-      <div className="lg:hidden min-h-screen bg-background pb-24">
-        <main className="mx-auto flex max-w-2xl flex-col gap-6 px-6 pb-6 pt-6">
+      <div className="lg:hidden min-h-screen bg-background pb-[calc(7.5rem+env(safe-area-inset-bottom))]">
+        <main className="mx-auto flex w-full max-w-2xl min-w-0 flex-col gap-6 px-4 pb-6 pt-6 sm:px-6">
           <Outlet />
         </main>
         <FooterLinks />
@@ -84,7 +84,7 @@ function MobileBottomNav() {
   const isActive = (to: string, exact?: boolean) => (exact ? path === to : path.startsWith(to));
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t bg-card/95 backdrop-blur">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
       <div className="mx-auto grid max-w-2xl grid-cols-5 items-end">
         <NavItem to="/conversas" icon={MessageCircle} label="Conversas" active={isActive("/conversas") || path.startsWith("/conversa/")} />
         <NavItem to="/automacoes" icon={Zap} label="Automações" active={isActive("/automacoes")} />
