@@ -364,17 +364,20 @@ function StepCard({
   title,
   text,
   bg,
+  ilustracao,
 }: {
   n: string;
   title: string;
   text: string;
   bg: string;
+  ilustracao?: React.ReactNode;
 }) {
   return (
     <div
       style={{ background: bg }}
       className="rounded-3xl p-7 shadow-[0_1px_0_rgba(0,0,0,0.04)]"
     >
+      {ilustracao ? <div className="mb-4">{ilustracao}</div> : null}
       <div
         className="text-sm font-black tracking-widest"
         style={{ color: C.tinta, opacity: 0.5 }}
