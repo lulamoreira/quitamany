@@ -132,6 +132,21 @@ function RootComponent() {
     return () => sub.subscription.unsubscribe();
   }, [router, queryClient]);
 
+  // Rede de segurança: bundle antigo tentando buscar um chunk que já não existe.
+  useEffect(() => {
+    const aoRejeitar = (e: PromiseRejectionEvent) => {
+      if (!ehModuloObsoleto(e.reason)) return;
+      toast.error(MENSAGEM_VERSAO_OBSOLETA, {
+        action: { label: "Recarregar", onClick: () => window.location.reload() },
+        duration: 15000,
+      });
+    };
+    window.addEventListener("unhandledrejection", aoRejeitar);
+    return () => window.removeEventListener("unhandledrejection", aoRejeitar);
+  }, []);
+
+
+
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
