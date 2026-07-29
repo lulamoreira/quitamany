@@ -157,16 +157,20 @@ export function PostActions({
           <button
             type="button"
             onClick={() => setConfirmDel(true)}
-            title="Excluir"
-            aria-label="Excluir"
+            title={removido ? "Excluir registro removido do Instagram" : "Excluir"}
+            aria-label={removido ? "Excluir registro removido do Instagram" : "Excluir"}
             className={cn(
-              "flex items-center justify-center rounded-md text-muted-foreground ring-1 ring-border bg-background/80 hover:text-destructive hover:ring-destructive/50",
+              "flex items-center justify-center rounded-md ring-1 bg-background/80 hover:text-destructive hover:ring-destructive/50",
+              removido
+                ? "text-destructive ring-destructive/40"
+                : "text-muted-foreground ring-border",
               size,
             )}
           >
             <Trash2 className={icon} />
           </button>
         )}
+
       </div>
 
       <Dialog open={preview} onOpenChange={setPreview}>
