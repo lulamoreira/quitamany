@@ -503,19 +503,19 @@ function NovoPost() {
 
       <AlertDialog open={bloqueio.status === "blocked"}>
         <AlertDialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-md">
-          <AlertDialogHeader>
+          <AlertDialogHeader className="min-w-0">
             <AlertDialogTitle>Sair sem salvar?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogDescription className="break-words">
               Você tem alterações que ainda não foram salvas. Se sair agora, elas serão
               perdidas.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="flex-col gap-2 sm:flex-row">
+          <AlertDialogFooter className="min-w-0 flex-col flex-wrap gap-2 sm:flex-row">
             <AlertDialogCancel onClick={() => bloqueio.reset?.()} disabled={saving}>
-              Continuar editando
+              Continuar
             </AlertDialogCancel>
             <Button variant="outline" onClick={() => bloqueio.proceed?.()} disabled={saving}>
-              Sair sem salvar
+              Descartar
             </Button>
             <AlertDialogAction
               onClick={(e) => {
@@ -524,7 +524,7 @@ function NovoPost() {
               }}
               disabled={saving}
             >
-              Salvar rascunho e sair
+              Salvar rascunho
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
