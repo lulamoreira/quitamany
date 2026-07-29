@@ -33,7 +33,7 @@ function AgendaPage() {
   const [month] = useState(new Date());
   const [importando, setImportando] = useState(false);
   const queryClient = useQueryClient();
-  useRealtimePosts();
+  const { conectado } = useRealtimePosts();
 
 
   async function importarCalendario() {
@@ -91,12 +91,15 @@ function AgendaPage() {
       if (error) throw error;
       return data;
     },
-    // Enquanto houver post aguardando publicação, atualiza sozinho.
+    // Tempo real cuida da atualização; polling só como rede de segurança
+    // quando o canal não estiver conectado.
     refetchInterval: (query) => {
+      if (conectado) return false;
       const lista = (query.state.data ?? []) as Array<{ status: string }>;
       const pendente = lista.some((p) => p.status === "agendado" || p.status === "processando");
       return pendente ? 15000 : 60000;
     },
+
     refetchOnWindowFocus: true,
   });
 
