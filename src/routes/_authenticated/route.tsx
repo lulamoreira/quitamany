@@ -172,7 +172,7 @@ function MaisButton({ open, onOpenChange }: { open: boolean; onOpenChange: (v: b
           <Link
             to="/painel"
             onClick={() => onOpenChange(false)}
-            className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium hover:bg-accent"
+            className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium hover:bg-muted"
           >
             <HomeIcon className="h-5 w-5 text-muted-foreground" />
             <span>Início</span>
@@ -182,7 +182,7 @@ function MaisButton({ open, onOpenChange }: { open: boolean; onOpenChange: (v: b
               key={it.to}
               to={it.to}
               onClick={() => onOpenChange(false)}
-              className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium hover:bg-accent"
+              className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium hover:bg-muted"
             >
               <it.icon className="h-5 w-5 text-muted-foreground" />
               <span>{it.label}</span>

@@ -104,7 +104,7 @@ function AgendaPage() {
                   onClick={() => setView("kanban")}
                   className={cn(
                     "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors",
-                    view === "kanban" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-accent",
+                    view === "kanban" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted",
                   )}
                 >
                   <LayoutGrid className="h-3.5 w-3.5" /> Kanban
@@ -113,7 +113,7 @@ function AgendaPage() {
                   onClick={() => setView("calendario")}
                   className={cn(
                     "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors",
-                    view === "calendario" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-accent",
+                    view === "calendario" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted",
                   )}
                 >
                   <CalendarDays className="h-3.5 w-3.5" /> Calendário
@@ -226,7 +226,7 @@ function AgendaPage() {
             {posts.map((p) => (
               <Card
                 key={p.id}
-                className="cursor-pointer transition-colors hover:bg-accent/40"
+                className="cursor-pointer transition-colors hover:bg-muted/60"
                 onClick={() => navigate({ to: "/novo", search: { id: p.id } as any })}
               >
                 <CardContent className="flex gap-3 p-3">

@@ -84,7 +84,7 @@ function ContatosPage() {
                   onClick={() => setView("funil")}
                   className={cn(
                     "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors",
-                    view === "funil" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-accent",
+                    view === "funil" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted",
                   )}
                 >
                   <LayoutGrid className="h-3.5 w-3.5" /> Funil
@@ -93,7 +93,7 @@ function ContatosPage() {
                   onClick={() => setView("lista")}
                   className={cn(
                     "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors",
-                    view === "lista" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-accent",
+                    view === "lista" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted",
                   )}
                 >
                   <LayoutList className="h-3.5 w-3.5" /> Lista
@@ -134,7 +134,7 @@ function ContatosPage() {
                       <tr
                         key={c.id}
                         onClick={() => abrirConversa(c.id)}
-                        className="cursor-pointer border-b transition-colors hover:bg-accent/40"
+                        className="cursor-pointer border-b transition-colors hover:bg-muted/60"
                       >
                         <td className="px-4 py-2.5">
                           <div className="flex items-center gap-2">
