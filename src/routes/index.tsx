@@ -177,18 +177,21 @@ function LandingPage() {
               bg={C.branco}
               title="Conecte sua conta"
               text="Autorize sua conta profissional do Instagram pelo Login do Facebook."
+              ilustracao={<IlustraConectar className="h-20 w-20 md:h-24 md:w-24" />}
             />
             <StepCard
               n="02"
               bg={C.amarelo}
               title="Defina as regras"
               text="Escolha palavras-chave e as respostas automáticas para DMs e comentários."
+              ilustracao={<IlustraPalavraChave className="h-20 w-20 md:h-24 md:w-24" />}
             />
             <StepCard
               n="03"
               bg="#FFD9DA"
               title="Assuma quando quiser"
               text="O app responde por você. Na caixa de entrada, você entra na conversa quando precisar."
+              ilustracao={<IlustraCaixaEntrada className="h-20 w-20 md:h-24 md:w-24" />}
             />
           </div>
         </div>
