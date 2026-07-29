@@ -143,9 +143,9 @@ function ConversaPage() {
       <div className="grid h-full min-h-0 flex-1 grid-cols-[320px_1fr_320px] overflow-hidden">
         <ConversaSidebarList activeId={id} />
 
-        <section className="flex min-w-0 flex-col bg-muted/20">
+        <section className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden bg-muted/20">
           {/* Header do chat */}
-          <div className="flex items-center gap-3 border-b bg-card px-4 py-3">
+          <div className="flex shrink-0 items-center gap-3 border-b bg-card px-4 py-3">
             <Avatar className="h-10 w-10">
               {contato?.foto_url ? <AvatarImage src={contato.foto_url} alt={nome} /> : null}
               <AvatarFallback className="bg-primary/10 text-foreground text-xs font-bold">{inicial}</AvatarFallback>
@@ -173,7 +173,7 @@ function ConversaPage() {
           </div>
 
           {/* Mensagens */}
-          <div ref={scrollRef} className="flex-1 space-y-2 overflow-y-auto p-6">
+          <div ref={scrollRef} className="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain p-6">
             {(mensagens ?? []).map((m) => {
               const isOut = m.direcao === "enviada";
               return (
@@ -207,7 +207,7 @@ function ConversaPage() {
           </div>
 
           {/* Composer */}
-          <div className="border-t bg-card p-3">
+          <div className="shrink-0 border-t bg-card p-3">
             {janelaExpirou ? (
               <p className="p-2 text-center text-xs text-muted-foreground">
                 Janela de 24h expirada — aguarde o cliente mandar mensagem para responder.
@@ -256,7 +256,7 @@ function ConversaPage() {
 
   // ---- Mobile (inalterado) ----
   return (
-    <div className="flex h-[calc(100vh-9rem)] flex-col">
+    <div className="flex h-[calc(100dvh-9rem)] min-h-0 flex-col">
       <Card className="mb-3 flex items-center gap-3 border-transparent p-3 shadow-[var(--shadow-card)]">
         <Button variant="ghost" size="icon" onClick={() => navigate({ to: "/conversas" })}>
           <ArrowLeft className="h-4 w-4" />
@@ -289,7 +289,7 @@ function ConversaPage() {
 
       {contato ? <ContatoPanel contato={contato} onChanged={() => qc.invalidateQueries({ queryKey: ["qm-conversa", id] })} /> : null}
 
-      <div ref={scrollRef} className="flex-1 space-y-2 overflow-y-auto rounded-2xl bg-muted/30 p-3">
+      <div ref={scrollRef} className="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain rounded-2xl bg-muted/30 p-3">
         {(mensagens ?? []).map((m) => {
           const isOut = m.direcao === "enviada";
           return (
@@ -322,7 +322,7 @@ function ConversaPage() {
         ) : null}
       </div>
 
-      <Card className="mt-3 border-transparent p-2 shadow-[var(--shadow-card)]">
+      <Card className="sticky bottom-0 mt-3 shrink-0 border-transparent p-2 shadow-[var(--shadow-card)]">
         {janelaExpirou ? (
           <p className="p-2 text-center text-xs text-muted-foreground">
             Janela de 24h expirada — aguarde o cliente mandar mensagem para responder.
