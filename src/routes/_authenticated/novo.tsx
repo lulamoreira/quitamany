@@ -51,7 +51,7 @@ const HASHTAG_SETS: Record<string, string> = {
   "Produto e decoração":
     "#decoracao #decoracaocriativa #presente #presentecriativo #decorhome #casa #achadinhos",
   "Loja e comunidade":
-    "#quitanda3d #lojaonline #compresmall #compredequemfazbem #brasil",
+    "#lojaonline #compresmall #compredequemfazbem #brasil",
 };
 
 /** Formatação de tamanho vem do módulo de limites — um lugar só. */
@@ -551,6 +551,9 @@ function NovoPost() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Hashtags</CardTitle>
+          <p className="text-xs text-muted-foreground">
+            Sugestões genéricas — clique para adicionar e edite à vontade.
+          </p>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex flex-wrap gap-2">
