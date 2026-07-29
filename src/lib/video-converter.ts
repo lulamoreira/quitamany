@@ -9,7 +9,16 @@
 
 import wasmAsset from "@/assets/ffmpeg-core.wasm.asset.json";
 
-export const LIMITE_BYTES = 100 * 1024 * 1024; // 100 MB
+export const LIMITE_BYTES = 100 * 1024 * 1024; // 100 MB (limite de upload)
+export const LIMITE_CONVERSAO_BYTES = 120 * 1024 * 1024; // 120 MB (limite do navegador)
+
+/** Tempo máximo sem nenhum evento de progresso antes de abortar. */
+const TIMEOUT_SEM_PROGRESSO_MS = 90_000;
+/** Tempo máximo total de uma conversão. */
+const TIMEOUT_TOTAL_MS = 10 * 60_000;
+
+const MSG_TRAVOU =
+  "A conversão travou (o vídeo provavelmente é pesado demais para o navegador). Tente um arquivo menor ou mais curto.";
 
 let ffmpegInstance: any = null;
 let carregando: Promise<any> | null = null;
@@ -50,6 +59,25 @@ export function mb(bytes: number): string {
   return (bytes / (1024 * 1024)).toFixed(1);
 }
 
+/** Formata bytes usando KB abaixo de 1 MB e MB acima. */
+export function formatarTamanho(bytes: number): string {
+  if (!Number.isFinite(bytes) || bytes < 0) return "0 KB";
+  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+/** Descarta a instância (worker possivelmente morto) para a próxima tentativa começar limpa. */
+function descartarInstancia() {
+  const atual = ffmpegInstance;
+  ffmpegInstance = null;
+  carregando = null;
+  try {
+    atual?.terminate?.();
+  } catch {
+    /* ignora */
+  }
+}
+
 function extensaoDe(nome: string): string {
   return nome.toLowerCase().match(/\.[a-z0-9]+$/)?.[0] ?? ".mp4";
 }
@@ -62,16 +90,39 @@ async function reencodar(
   nota?: string,
 ): Promise<Uint8Array> {
   const outputName = `saida-${Date.now()}.mp4`;
+  let ultimoProgresso = Date.now();
+  const inicio = Date.now();
+
   const handler = ({ progress }: { progress: number }) => {
+    ultimoProgresso = Date.now();
     if (progress >= 0 && progress <= 1) onProgress?.({ ratio: progress, note: nota });
   };
   ffmpeg.on("progress", handler);
+
+  // Cronômetro de segurança: nenhuma conversão pode ficar pendurada para sempre.
+  let vigia: ReturnType<typeof setInterval> | undefined;
+  const travou = new Promise<never>((_, reject) => {
+    vigia = setInterval(() => {
+      const agora = Date.now();
+      if (
+        agora - ultimoProgresso > TIMEOUT_SEM_PROGRESSO_MS ||
+        agora - inicio > TIMEOUT_TOTAL_MS
+      ) {
+        reject(new Error(MSG_TRAVOU));
+      }
+    }, 5_000);
+  });
+
   try {
-    await ffmpeg.exec(["-i", inputName, ...args, outputName]);
+    await Promise.race([ffmpeg.exec(["-i", inputName, ...args, outputName]), travou]);
     const data = (await ffmpeg.readFile(outputName)) as Uint8Array;
     await ffmpeg.deleteFile(outputName).catch(() => {});
     return data;
+  } catch (e) {
+    descartarInstancia();
+    throw e;
   } finally {
+    if (vigia) clearInterval(vigia);
     ffmpeg.off?.("progress", handler);
   }
 }
@@ -135,6 +186,13 @@ export async function prepararVideo(
     };
   }
 
+  // Recusa cedo: acima disso a conversão no navegador é falha garantida.
+  if (tamanhoOriginal > LIMITE_CONVERSAO_BYTES) {
+    throw new Error(
+      `Este vídeo tem ${formatarTamanho(tamanhoOriginal)}. A conversão acontece dentro do navegador e não dá conta de arquivos acima de 120 MB. Reduza o vídeo antes de enviar — cortar a duração costuma resolver, e lembre que Reels aceita no máximo 90 segundos.`,
+    );
+  }
+
   onProgress?.({ ratio: 0, note: "Preparando conversor…" });
   const ffmpeg = await getFfmpeg();
   const { fetchFile } = await import("@ffmpeg/util");
@@ -162,9 +220,9 @@ export async function prepararVideo(
     // ESTÁGIO 3 — desistência explícita
     if (data.byteLength > LIMITE_BYTES) {
       throw new Error(
-        `Mesmo comprimido o vídeo ficou com ${mb(data.byteLength)} MB (limite de ${mb(
+        `Mesmo comprimido o vídeo ficou com ${formatarTamanho(data.byteLength)} (limite de ${formatarTamanho(
           LIMITE_BYTES,
-        )} MB). Corte a duração do vídeo e tente de novo.`,
+        )}). Corte a duração do vídeo e tente de novo.`,
       );
     }
 

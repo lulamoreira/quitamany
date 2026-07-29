@@ -1,5 +1,5 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { createFileRoute, useNavigate, useBlocker } from "@tanstack/react-router";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { Eye, Loader2, Upload, Video } from "lucide-react";
 import { format } from "date-fns";
@@ -29,7 +39,11 @@ const HASHTAG_SETS: Record<string, string> = {
     "#quitanda3d #lojaonline #compresmall #compredequemfazbem #brasil",
 };
 
-const mb = (bytes: number) => (bytes / (1024 * 1024)).toFixed(1);
+/** KB abaixo de 1 MB, MB acima — evita o antigo "0.0 MB". */
+const mb = (bytes: number) =>
+  bytes < 1024 * 1024
+    ? `${Math.max(1, Math.round(bytes / 1024))} KB`
+    : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 
 function NovoPost() {
   const { id: editId } = Route.useSearch();
@@ -46,6 +60,22 @@ function NovoPost() {
   const [arrastando, setArrastando] = useState(false);
   const [previewAberto, setPreviewAberto] = useState(false);
   const [contaUsername, setContaUsername] = useState<string | undefined>(undefined);
+
+  // Snapshot do último estado salvo (ou carregado). Comparar contra ele evita
+  // avisos em falso, que são piores que a ausência do aviso.
+  const estadoAtual = { titulo, legenda, hashtags, videoUrl, agendadoPara };
+  const baseRef = useRef({
+    titulo: "",
+    legenda: "",
+    hashtags: "",
+    videoUrl: "",
+    agendadoPara: "",
+  });
+  const temAlteracoes = (Object.keys(estadoAtual) as Array<keyof typeof estadoAtual>).some(
+    (k) => (estadoAtual[k] || "") !== (baseRef.current[k] || ""),
+  );
+  const temAlteracoesRef = useRef(temAlteracoes);
+  temAlteracoesRef.current = temAlteracoes;
 
   useEffect(() => {
     let ativo = true;
@@ -72,17 +102,36 @@ function NovoPost() {
       .single()
       .then(({ data }) => {
         if (!data) return;
+        const dataHora = data.agendado_para
+          ? format(new Date(data.agendado_para), "yyyy-MM-dd'T'HH:mm")
+          : "";
         setLegenda(data.legenda || "");
         setHashtags(data.hashtags || "");
         setTitulo(data.titulo || "");
         setVideoUrl(data.video_url || "");
         setVideoPath(data.video_path || "");
-        if (data.agendado_para) {
-          const d = new Date(data.agendado_para);
-          setAgendadoPara(format(d, "yyyy-MM-dd'T'HH:mm"));
-        }
+        setAgendadoPara(dataHora);
+        // O que veio do banco já está salvo — não conta como alteração.
+        baseRef.current = {
+          titulo: data.titulo || "",
+          legenda: data.legenda || "",
+          hashtags: data.hashtags || "",
+          videoUrl: data.video_url || "",
+          agendadoPara: dataHora,
+        };
       });
   }, [editId]);
+
+  // Fechar ou recarregar a aba com alterações pendentes.
+  useEffect(() => {
+    const aviso = (e: BeforeUnloadEvent) => {
+      if (!temAlteracoesRef.current) return;
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", aviso);
+    return () => window.removeEventListener("beforeunload", aviso);
+  }, []);
 
   // Sem isto, soltar um arquivo fora da área pontilhada faz o navegador abrir o
   // vídeo em outra aba e o usuário perde o formulário.
@@ -124,7 +173,7 @@ function NovoPost() {
 
     if (fileOriginal.size > 200 * 1024 * 1024) {
       toast.warning(
-        `Vídeo grande (${mb(fileOriginal.size)} MB). Vamos comprimir automaticamente — isso pode levar alguns minutos, mantenha esta aba aberta.`,
+        `Vídeo grande (${mb(fileOriginal.size)}). Vamos comprimir automaticamente — isso pode levar alguns minutos, mantenha esta aba aberta.`,
       );
     }
 
@@ -156,7 +205,7 @@ function NovoPost() {
       setVideoUrl(data.publicUrl);
       if (resultado.comprimido) {
         toast.success(
-          `Vídeo pronto: de ${mb(resultado.tamanhoOriginal)} MB para ${mb(resultado.tamanhoFinal)} MB.`,
+          `Vídeo pronto: de ${mb(resultado.tamanhoOriginal)} para ${mb(resultado.tamanhoFinal)}.`,
         );
       } else {
         toast.success("Vídeo enviado!");
@@ -184,9 +233,16 @@ function NovoPost() {
     setAgendadoPara(format(d, "yyyy-MM-dd'T'HH:mm"));
   };
 
-  const salvar = async (status: "rascunho" | "agendado") => {
-    if (status === "agendado" && !videoUrl) return toast.error("Envie um vídeo antes de agendar");
-    if (status === "agendado" && !agendadoPara) return toast.error("Escolha data e hora");
+  /** Persiste o post. Devolve true em caso de sucesso. */
+  const persistir = async (status: "rascunho" | "agendado"): Promise<boolean> => {
+    if (status === "agendado" && !videoUrl) {
+      toast.error("Envie um vídeo antes de agendar");
+      return false;
+    }
+    if (status === "agendado" && !agendadoPara) {
+      toast.error("Escolha data e hora");
+      return false;
+    }
     setSaving(true);
     const { data: user } = await supabase.auth.getUser();
     const payload = {
@@ -203,9 +259,29 @@ function NovoPost() {
       ? await supabase.from("posts_agendados").update(payload).eq("id", editId)
       : await supabase.from("posts_agendados").insert(payload);
     setSaving(false);
-    if (res.error) return toast.error(res.error.message);
+    if (res.error) {
+      toast.error(res.error.message);
+      return false;
+    }
+    // Salvo: some o estado "não salvo" antes de qualquer navegação.
+    baseRef.current = { titulo, legenda, hashtags, videoUrl, agendadoPara };
+    temAlteracoesRef.current = false;
     toast.success(status === "agendado" ? "Post agendado!" : "Rascunho salvo");
-    navigate({ to: "/agenda" });
+    return true;
+  };
+
+  const salvar = async (status: "rascunho" | "agendado") => {
+    if (await persistir(status)) navigate({ to: "/agenda" });
+  };
+
+  const bloqueio = useBlocker({
+    shouldBlockFn: () => temAlteracoesRef.current,
+    enableBeforeUnload: false,
+    withResolver: true,
+  });
+
+  const salvarESair = async () => {
+    if (await persistir("rascunho")) bloqueio.proceed?.();
   };
 
   const preview = (
@@ -409,6 +485,35 @@ function NovoPost() {
           </div>
         </aside>
       </div>
+
+      <AlertDialog open={bloqueio.status === "blocked"}>
+        <AlertDialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Sair sem salvar?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Você tem alterações que ainda não foram salvas. Se sair agora, elas serão
+              perdidas.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col gap-2 sm:flex-row">
+            <AlertDialogCancel onClick={() => bloqueio.reset?.()} disabled={saving}>
+              Continuar editando
+            </AlertDialogCancel>
+            <Button variant="outline" onClick={() => bloqueio.proceed?.()} disabled={saving}>
+              Sair sem salvar
+            </Button>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                void salvarESair();
+              }}
+              disabled={saving}
+            >
+              Salvar rascunho e sair
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
