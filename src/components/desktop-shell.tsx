@@ -280,8 +280,8 @@ export function DesktopPageHeader({
   actions?: React.ReactNode;
 }) {
   return (
-    <header className="sticky top-0 z-20 border-b border-border/60 bg-background/95 px-8 py-4 backdrop-blur">
-      <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4">
+    <header className="sticky top-0 z-20 -mx-[var(--shell-pad)] -mt-[var(--shell-pad)] mb-2 border-b border-border/60 bg-background/95 px-[max(var(--shell-pad),1.5rem)] py-4 backdrop-blur">
+      <div className="mx-auto flex max-w-[1280px] items-center justify-between gap-4">
         <div className="min-w-0">
           {breadcrumb && (
             <div className="mb-1 text-[11px] font-medium text-muted-foreground">{breadcrumb}</div>

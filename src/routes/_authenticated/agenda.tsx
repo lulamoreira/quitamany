@@ -129,7 +129,7 @@ function AgendaPage() {
             </>
           }
         />
-        <div className="mx-auto w-full max-w-[1600px] px-8 py-6">
+        <div className="w-full">
           {isLoading ? (
             <p className="text-sm text-muted-foreground">Carregando…</p>
           ) : view === "kanban" ? (

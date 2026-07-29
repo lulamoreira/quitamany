@@ -271,7 +271,7 @@ function DashboardPage() {
             </Button>
           }
         />
-        <div className="mx-auto w-full max-w-[1600px] px-8 py-6">{body}</div>
+        {body}
       </>
     );
   }
