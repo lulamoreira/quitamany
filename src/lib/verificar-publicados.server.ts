@@ -15,8 +15,53 @@ const LOTE = 25;
 export interface ResumoVerificacao {
   verificados: number;
   removidos: number;
+  /** Quantos posts tiveram curtidas/comentários/compartilhamentos atualizados. */
+  metricasAtualizadas: number;
   interrompidoPorToken: boolean;
   erros: string[];
+}
+
+/** Métricas de desempenho de uma publicação. `null` = indisponível na Meta. */
+interface MetricasMidia {
+  curtidas: number | null;
+  comentarios: number | null;
+  compartilhamentos: number | null;
+  reposts: number | null;
+}
+
+function numeroOuNulo(v: unknown): number | null {
+  return typeof v === "number" && Number.isFinite(v) ? v : null;
+}
+
+/**
+ * Lê métricas de insights (compartilhamentos/reposts). Insights só existem
+ * para alguns tipos de mídia e podem falhar por permissão — qualquer falha é
+ * tratada como "indisponível", nunca como erro do fluxo de verificação.
+ */
+async function lerInsights(
+  mediaId: string,
+  token: string,
+): Promise<{ compartilhamentos: number | null; reposts: number | null }> {
+  const buscar = async (metric: string): Promise<number | null> => {
+    try {
+      const resp = await fetch(
+        `${GRAPH}/${mediaId}/insights?metric=${metric}&access_token=${encodeURIComponent(token)}`,
+      );
+      const body = await resp.json().catch(() => null);
+      const valor = body?.data?.[0]?.values?.[0]?.value;
+      return numeroOuNulo(valor);
+    } catch {
+      return null;
+    }
+  };
+
+  // Chamadas separadas: uma métrica inválida para o tipo de mídia derruba
+  // a requisição inteira quando pedidas juntas.
+  const [compartilhamentos, reposts] = await Promise.all([
+    buscar("shares"),
+    buscar("reposts"),
+  ]);
+  return { compartilhamentos, reposts };
 }
 
 /** Códigos que indicam problema transitório/credencial, nunca "post apagado". */
