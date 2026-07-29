@@ -64,8 +64,8 @@ function AuthenticatedLayout() {
       </div>
 
       {/* Mobile: bottom nav 5 itens */}
-      <div className="lg:hidden min-h-screen bg-background pb-24">
-        <main className="mx-auto flex max-w-2xl flex-col gap-6 px-6 pb-6 pt-6">
+      <div className="lg:hidden min-h-screen bg-background pb-[calc(7.5rem+env(safe-area-inset-bottom))]">
+        <main className="mx-auto flex w-full max-w-2xl min-w-0 flex-col gap-6 px-4 pb-6 pt-6 sm:px-6">
           <Outlet />
         </main>
         <FooterLinks />
