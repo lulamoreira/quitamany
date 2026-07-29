@@ -41,7 +41,7 @@ export const Route = createFileRoute("/")({
       {
         property: "og:description",
         content:
-          "Responda DMs e comentários automaticamente, agende publicações e centralize tudo em uma caixa de entrada.",
+          "Automação de atendimento para Instagram: responda mensagens diretas e comentários automaticamente, agende publicações e centralize tudo em uma caixa de entrada.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
