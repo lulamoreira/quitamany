@@ -239,8 +239,26 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        {children}
+      <div
+        className={cn(
+          "flex min-w-0 flex-1 flex-col",
+          // --shell-pad: respiro lateral/vertical padrão do conteúdo autenticado.
+          // Telas de conversa (3 colunas) usam 0 para não perder área útil.
+          chatLayout
+            ? "[--shell-pad:0px]"
+            : "[--shell-pad:1.5rem] lg:[--shell-pad:2.5rem]",
+        )}
+      >
+        <div className="flex min-w-0 flex-1 flex-col px-[var(--shell-pad)] py-[var(--shell-pad)]">
+          <div
+            className={cn(
+              "mx-auto flex w-full min-w-0 flex-1 flex-col",
+              chatLayout ? "max-w-none" : "max-w-[1280px] gap-6",
+            )}
+          >
+            {children}
+          </div>
+        </div>
         <FooterLinks />
       </div>
 
