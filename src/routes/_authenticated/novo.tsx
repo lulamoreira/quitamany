@@ -23,6 +23,13 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { PostPreview } from "@/components/agenda/post-preview";
 import { ehModuloObsoleto, MENSAGEM_VERSAO_OBSOLETA } from "@/lib/versao-obsoleta";
+import {
+  AVISO_DEMORA_BYTES,
+  LIMITE_CONVERSAO_BYTES,
+  LIMITE_UPLOAD_BYTES,
+  formatarTamanho,
+  mensagemVideoMuitoGrande,
+} from "@/lib/video-limites";
 
 export const Route = createFileRoute("/_authenticated/novo")({
   validateSearch: (s: Record<string, unknown>) => ({ id: (s.id as string) || undefined }),
@@ -39,11 +46,8 @@ const HASHTAG_SETS: Record<string, string> = {
     "#quitanda3d #lojaonline #compresmall #compredequemfazbem #brasil",
 };
 
-/** KB abaixo de 1 MB, MB acima — evita o antigo "0.0 MB". */
-const mb = (bytes: number) =>
-  bytes < 1024 * 1024
-    ? `${Math.max(1, Math.round(bytes / 1024))} KB`
-    : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+/** Formatação de tamanho vem do módulo de limites — um lugar só. */
+const mb = formatarTamanho;
 
 function NovoPost() {
   const { id: editId } = Route.useSearch();
@@ -171,9 +175,20 @@ function NovoPost() {
       return;
     }
 
-    if (fileOriginal.size > 200 * 1024 * 1024) {
+    // 1) Acima do teto de conversão: só a recusa, sem promessa falsa.
+    if (fileOriginal.size > LIMITE_CONVERSAO_BYTES) {
+      toast.error(mensagemVideoMuitoGrande(fileOriginal.size));
+      return;
+    }
+
+    // 2) Haverá conversão? (não é mp4, ou é mp4 acima do teto de upload)
+    const jaMp4 = fileOriginal.type === "video/mp4" || nome.endsWith(".mp4");
+    const precisaConverter = !jaMp4 || fileOriginal.size > LIMITE_UPLOAD_BYTES;
+
+    // 3) Avisar da demora apenas quando ela realmente vai acontecer.
+    if (precisaConverter && fileOriginal.size > AVISO_DEMORA_BYTES) {
       toast.warning(
-        `Vídeo grande (${mb(fileOriginal.size)}). Vamos comprimir automaticamente — isso pode levar alguns minutos, mantenha esta aba aberta.`,
+        `Vídeo de ${formatarTamanho(fileOriginal.size)}. Vamos converter e comprimir aqui mesmo — pode levar alguns minutos, mantenha esta aba aberta.`,
       );
     }
 

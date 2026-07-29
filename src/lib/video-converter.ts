@@ -8,9 +8,24 @@
 // e `coreURL` para o build ESM do núcleo (o UMD é incompatível).
 
 import wasmAsset from "@/assets/ffmpeg-core.wasm.asset.json";
+import {
+  AVISO_DEMORA_BYTES,
+  LIMITE_CONVERSAO_BYTES,
+  LIMITE_UPLOAD_BYTES,
+  formatarTamanho,
+  mensagemVideoMuitoGrande,
+} from "@/lib/video-limites";
 
-export const LIMITE_BYTES = 100 * 1024 * 1024; // 100 MB (limite de upload)
-export const LIMITE_CONVERSAO_BYTES = 120 * 1024 * 1024; // 120 MB (limite do navegador)
+export {
+  AVISO_DEMORA_BYTES,
+  LIMITE_CONVERSAO_BYTES,
+  LIMITE_UPLOAD_BYTES,
+  formatarTamanho,
+  mensagemVideoMuitoGrande,
+};
+
+/** Compatibilidade com o nome antigo do teto de upload. */
+export const LIMITE_BYTES = LIMITE_UPLOAD_BYTES;
 
 /** Tempo máximo sem nenhum evento de progresso antes de abortar. */
 const TIMEOUT_SEM_PROGRESSO_MS = 90_000;
@@ -59,12 +74,6 @@ export function mb(bytes: number): string {
   return (bytes / (1024 * 1024)).toFixed(1);
 }
 
-/** Formata bytes usando KB abaixo de 1 MB e MB acima. */
-export function formatarTamanho(bytes: number): string {
-  if (!Number.isFinite(bytes) || bytes < 0) return "0 KB";
-  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
 
 /** Descarta a instância (worker possivelmente morto) para a próxima tentativa começar limpa. */
 function descartarInstancia() {
@@ -188,9 +197,7 @@ export async function prepararVideo(
 
   // Recusa cedo: acima disso a conversão no navegador é falha garantida.
   if (tamanhoOriginal > LIMITE_CONVERSAO_BYTES) {
-    throw new Error(
-      `Este vídeo tem ${formatarTamanho(tamanhoOriginal)}. A conversão acontece dentro do navegador e não dá conta de arquivos acima de 120 MB. Reduza o vídeo antes de enviar — cortar a duração costuma resolver, e lembre que Reels aceita no máximo 90 segundos.`,
-    );
+    throw new Error(mensagemVideoMuitoGrande(tamanhoOriginal));
   }
 
   onProgress?.({ ratio: 0, note: "Preparando conversor…" });
