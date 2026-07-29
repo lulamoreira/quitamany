@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 export const Route = createFileRoute("/api/public/versao")({
   server: {
     handlers: {
-      GET: async () => Response.json({ build: "2026-07-28-landing-v2" }),
+      GET: async () => Response.json({ build: "2026-07-28-landing-v3" }),
     },
   },
 });

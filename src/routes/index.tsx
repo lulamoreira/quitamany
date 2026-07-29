@@ -15,6 +15,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import {
+  IlustraConectar,
+  IlustraPalavraChave,
+  IlustraCaixaEntrada,
+  IlustraPrivacidade,
+} from "@/components/landing/ilustracoes";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -171,18 +177,21 @@ function LandingPage() {
               bg={C.branco}
               title="Conecte sua conta"
               text="Autorize sua conta profissional do Instagram pelo Login do Facebook."
+              ilustracao={<IlustraConectar className="h-20 w-20 md:h-24 md:w-24" />}
             />
             <StepCard
               n="02"
               bg={C.amarelo}
               title="Defina as regras"
               text="Escolha palavras-chave e as respostas automáticas para DMs e comentários."
+              ilustracao={<IlustraPalavraChave className="h-20 w-20 md:h-24 md:w-24" />}
             />
             <StepCard
               n="03"
               bg="#FFD9DA"
               title="Assuma quando quiser"
               text="O app responde por você. Na caixa de entrada, você entra na conversa quando precisar."
+              ilustracao={<IlustraCaixaEntrada className="h-20 w-20 md:h-24 md:w-24" />}
             />
           </div>
         </div>
@@ -220,21 +229,26 @@ function LandingPage() {
       {/* PRIVACIDADE */}
       <section style={{ background: C.tinta, color: C.branco }}>
         <div className="mx-auto max-w-6xl px-5 py-16 md:py-24">
-          <div className="flex items-center gap-3">
-            <Heart className="h-6 w-6" style={{ color: C.amarelo }} />
-            <span
-              className="text-xs font-bold uppercase tracking-widest"
-              style={{ color: C.amarelo }}
-            >
-              Privacidade e controle
-            </span>
+          <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
+            <div className="max-w-3xl">
+              <div className="flex items-center gap-3">
+                <Heart className="h-6 w-6" style={{ color: C.amarelo }} />
+                <span
+                  className="text-xs font-bold uppercase tracking-widest"
+                  style={{ color: C.amarelo }}
+                >
+                  Privacidade e controle
+                </span>
+              </div>
+              <h2
+                style={{ ...displayStyle, fontSize: "clamp(2rem, 5vw, 3.75rem)" }}
+                className="mt-4 text-white"
+              >
+                Consentimento primeiro, sempre.
+              </h2>
+            </div>
+            <IlustraPrivacidade className="h-28 w-28 shrink-0 self-start md:self-center" />
           </div>
-          <h2
-            style={{ ...displayStyle, fontSize: "clamp(2rem, 5vw, 3.75rem)" }}
-            className="mt-4 max-w-3xl text-white"
-          >
-            Consentimento primeiro, sempre.
-          </h2>
           <div className="mt-10 grid gap-8 text-white/80 md:grid-cols-3">
             <p style={{ fontSize: "1.05rem", lineHeight: 1.6 }}>
               O QuitaMany só acessa contas que o próprio titular conecta e
@@ -355,17 +369,20 @@ function StepCard({
   title,
   text,
   bg,
+  ilustracao,
 }: {
   n: string;
   title: string;
   text: string;
   bg: string;
+  ilustracao?: React.ReactNode;
 }) {
   return (
     <div
       style={{ background: bg }}
       className="rounded-3xl p-7 shadow-[0_1px_0_rgba(0,0,0,0.04)]"
     >
+      {ilustracao ? <div className="mb-4">{ilustracao}</div> : null}
       <div
         className="text-sm font-black tracking-widest"
         style={{ color: C.tinta, opacity: 0.5 }}
