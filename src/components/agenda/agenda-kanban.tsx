@@ -1,3 +1,4 @@
+import { ResumoUltimoErro } from "@/components/agenda/historico-tentativas";
 import { useMemo, useState } from "react";
 import {
   DndContext,

@@ -17,6 +17,7 @@ import { AgendaCalendarDesktop } from "@/components/agenda/agenda-calendar";
 import { PostActions, StatusBadge } from "@/components/agenda/post-actions";
 import { useRealtimePosts } from "@/hooks/use-realtime-posts";
 import { BotaoAtualizar } from "@/components/agenda/botao-atualizar";
+import { ResumoUltimoErro } from "@/components/agenda/historico-tentativas";
 
 
 
