@@ -18,7 +18,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
-import { FileText, CalendarClock, CheckCircle2, AlertTriangle, Ban, Loader2, ExternalLink } from "lucide-react";
+import { FileText, CalendarClock, CheckCircle2, AlertTriangle, Ban, Loader2, ExternalLink, EyeOff } from "lucide-react";
 import { PostActions, StatusBadge } from "./post-actions";
 import { format, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
