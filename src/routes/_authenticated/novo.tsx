@@ -19,7 +19,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Eye, Loader2, Send, Upload, Video } from "lucide-react";
+import { Eye, Hash, Loader2, Pilcrow, Send, Smile, Upload, Video } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { PostPreview } from "@/components/agenda/post-preview";
@@ -38,6 +39,11 @@ export const Route = createFileRoute("/_authenticated/novo")({
   head: () => ({ meta: [{ title: "Novo post · Publicador" }] }),
   component: NovoPost,
 });
+
+const EMOJIS = [
+  "🔥","✨","🎉","💛","📦","🚚","✅","🛒","😍","🙌","👏","💡",
+  "🎁","💸","⭐","👉","📸","🧡","💚","😉","🤩","🕒","📍","❤️",
+];
 
 const HASHTAG_SETS: Record<string, string> = {
   "Nicho maker":
@@ -67,6 +73,8 @@ function NovoPost() {
   const [previewAberto, setPreviewAberto] = useState(false);
   const [contaUsername, setContaUsername] = useState<string | undefined>(undefined);
   const [confirmarPublicar, setConfirmarPublicar] = useState(false);
+  const [emojisAbertos, setEmojisAbertos] = useState(false);
+  const legendaRef = useRef<HTMLTextAreaElement | null>(null);
   const [publicando, setPublicando] = useState(false);
   const publicarAgoraFn = useServerFn(publicarAgora);
   const executarMotorFn = useServerFn(executarMotorAgora);
@@ -252,6 +260,24 @@ function NovoPost() {
     const d = new Date();
     d.setHours(hora, 0, 0, 0);
     setAgendadoPara(format(d, "yyyy-MM-dd'T'HH:mm"));
+  };
+
+  /** Insere texto na posição do cursor da legenda, respeitando o limite de 2200. */
+  const inserirNaLegenda = (texto: string) => {
+    const el = legendaRef.current;
+    const inicio = el ? el.selectionStart : legenda.length;
+    const fim = el ? el.selectionEnd : legenda.length;
+    const novo = legenda.slice(0, inicio) + texto + legenda.slice(fim);
+    if (novo.length > 2200) {
+      toast.error("A legenda chegou ao limite de 2200 caracteres.");
+      return;
+    }
+    setLegenda(novo);
+    const cursor = inicio + texto.length;
+    requestAnimationFrame(() => {
+      el?.focus();
+      el?.setSelectionRange(cursor, cursor);
+    });
   };
 
   /** Persiste o post. Devolve o id salvo, ou null em caso de falha. */
@@ -464,12 +490,54 @@ function NovoPost() {
             <Label htmlFor="legenda">Legenda</Label>
             <Textarea
               id="legenda"
+              ref={legendaRef}
               rows={5}
               maxLength={2200}
               value={legenda}
               onChange={(e) => setLegenda(e.target.value)}
               placeholder="Escreva a legenda do post…"
             />
+            <div className="flex flex-wrap items-center gap-2">
+              <Popover open={emojisAbertos} onOpenChange={setEmojisAbertos}>
+                <PopoverTrigger asChild>
+                  <Button type="button" variant="outline" size="sm">
+                    <Smile className="mr-1.5 h-4 w-4" />
+                    Emoji
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align="start" className="w-[248px] p-2">
+                  <div className="grid grid-cols-6 gap-1">
+                    {EMOJIS.map((emoji) => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        aria-label={`Inserir ${emoji}`}
+                        className="rounded-md p-1.5 text-lg transition-colors hover:bg-accent"
+                        onClick={() => {
+                          setEmojisAbertos(false);
+                          inserirNaLegenda(emoji);
+                        }}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
+              <Button type="button" variant="outline" size="sm" onClick={() => inserirNaLegenda("#")}>
+                <Hash className="mr-1.5 h-4 w-4" />
+                Hashtag
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => inserirNaLegenda("\n\n")}
+              >
+                <Pilcrow className="mr-1.5 h-4 w-4" />
+                Parágrafo
+              </Button>
+            </div>
             <p className="text-right text-xs text-muted-foreground">{legenda.length}/2200</p>
           </div>
         </CardContent>

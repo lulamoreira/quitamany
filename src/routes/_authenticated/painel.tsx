@@ -11,9 +11,11 @@ import {
   PlugZap,
   ArrowRight,
   PlusCircle,
+  Inbox,
   CheckCircle2,
   AlertCircle,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { format, endOfWeek, startOfWeek } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useIsDesktop } from "@/hooks/use-desktop";
@@ -30,6 +32,39 @@ export const Route = createFileRoute("/_authenticated/painel")({
   }),
   component: DashboardPage,
 });
+
+function AtalhoCard({
+  titulo,
+  descricao,
+  icon: Icon,
+  onClick,
+}: {
+  titulo: string;
+  descricao: string;
+  icon: LucideIcon;
+  onClick: () => void;
+}) {
+  return (
+    <Card
+      onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+      className="group cursor-pointer border-transparent p-4 shadow-[var(--shadow-card)] transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    >
+      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+        <Icon className="h-5 w-5 text-primary" />
+      </div>
+      <p className="mt-3 text-sm font-bold">{titulo}</p>
+      <p className="mt-0.5 text-xs text-muted-foreground">{descricao}</p>
+    </Card>
+  );
+}
 
 function DashboardPage() {
   const isDesktop = useIsDesktop();
@@ -105,6 +140,36 @@ function DashboardPage() {
           </p>
         </header>
       )}
+
+      <section className="space-y-3">
+        <h2 className="text-sm font-semibold tracking-tight">O que você quer fazer?</h2>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <AtalhoCard
+            titulo="Criar um post"
+            descricao="Monte um Reel e agende a publicação"
+            icon={PlusCircle}
+            onClick={() => navigate({ to: "/novo" })}
+          />
+          <AtalhoCard
+            titulo="Ver conversas"
+            descricao="Responda comentários e mensagens"
+            icon={Inbox}
+            onClick={() => navigate({ to: "/conversas" })}
+          />
+          <AtalhoCard
+            titulo="Montar automação"
+            descricao="Responda por palavra-chave sozinho"
+            icon={Zap}
+            onClick={() => navigate({ to: "/automacoes" })}
+          />
+          <AtalhoCard
+            titulo="Ver a agenda"
+            descricao="Acompanhe o que já está programado"
+            icon={CalendarDays}
+            onClick={() => navigate({ to: "/agenda" })}
+          />
+        </div>
+      </section>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <ResumoCard
