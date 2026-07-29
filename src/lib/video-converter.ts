@@ -59,6 +59,25 @@ export function mb(bytes: number): string {
   return (bytes / (1024 * 1024)).toFixed(1);
 }
 
+/** Formata bytes usando KB abaixo de 1 MB e MB acima. */
+export function formatarTamanho(bytes: number): string {
+  if (!Number.isFinite(bytes) || bytes < 0) return "0 KB";
+  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+/** Descarta a instância (worker possivelmente morto) para a próxima tentativa começar limpa. */
+function descartarInstancia() {
+  const atual = ffmpegInstance;
+  ffmpegInstance = null;
+  carregando = null;
+  try {
+    atual?.terminate?.();
+  } catch {
+    /* ignora */
+  }
+}
+
 function extensaoDe(nome: string): string {
   return nome.toLowerCase().match(/\.[a-z0-9]+$/)?.[0] ?? ".mp4";
 }
@@ -71,16 +90,39 @@ async function reencodar(
   nota?: string,
 ): Promise<Uint8Array> {
   const outputName = `saida-${Date.now()}.mp4`;
+  let ultimoProgresso = Date.now();
+  const inicio = Date.now();
+
   const handler = ({ progress }: { progress: number }) => {
+    ultimoProgresso = Date.now();
     if (progress >= 0 && progress <= 1) onProgress?.({ ratio: progress, note: nota });
   };
   ffmpeg.on("progress", handler);
+
+  // Cronômetro de segurança: nenhuma conversão pode ficar pendurada para sempre.
+  let vigia: ReturnType<typeof setInterval> | undefined;
+  const travou = new Promise<never>((_, reject) => {
+    vigia = setInterval(() => {
+      const agora = Date.now();
+      if (
+        agora - ultimoProgresso > TIMEOUT_SEM_PROGRESSO_MS ||
+        agora - inicio > TIMEOUT_TOTAL_MS
+      ) {
+        reject(new Error(MSG_TRAVOU));
+      }
+    }, 5_000);
+  });
+
   try {
-    await ffmpeg.exec(["-i", inputName, ...args, outputName]);
+    await Promise.race([ffmpeg.exec(["-i", inputName, ...args, outputName]), travou]);
     const data = (await ffmpeg.readFile(outputName)) as Uint8Array;
     await ffmpeg.deleteFile(outputName).catch(() => {});
     return data;
+  } catch (e) {
+    descartarInstancia();
+    throw e;
   } finally {
+    if (vigia) clearInterval(vigia);
     ffmpeg.off?.("progress", handler);
   }
 }
