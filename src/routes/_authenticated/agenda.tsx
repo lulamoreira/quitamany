@@ -94,7 +94,7 @@ function AgendaPage() {
     return (
       <>
         <DesktopPageHeader
-          breadcrumb="Publicador"
+          breadcrumb="Publicações"
           title="Agenda"
           subtitle="Arraste os posts entre colunas para agendar, desagendar ou reprogramar."
           actions={
