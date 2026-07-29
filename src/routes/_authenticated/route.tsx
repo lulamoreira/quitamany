@@ -83,9 +83,15 @@ function AuthenticatedLayout() {
         >
           <Outlet />
         </main>
+        {!chatLayout && (
+          <div className="pointer-events-auto fixed right-3 top-3 z-50 rounded-full bg-card/95 shadow-md backdrop-blur">
+            <NotificationBell />
+          </div>
+        )}
         {!chatLayout && <FooterLinks />}
         <MobileBottomNav />
       </div>
+
 
     </>
   );
