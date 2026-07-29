@@ -140,7 +140,7 @@ function ConversaPage() {
   // ---- Desktop: 3 colunas (lista | chat | painel do contato) ----
   if (isDesktop) {
     return (
-      <div className="grid h-screen grid-cols-[320px_1fr_320px] overflow-hidden">
+      <div className="grid h-full min-h-0 flex-1 grid-cols-[320px_1fr_320px] overflow-hidden">
         <ConversaSidebarList activeId={id} />
 
         <section className="flex min-w-0 flex-col bg-muted/20">
