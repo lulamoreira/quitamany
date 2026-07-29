@@ -186,6 +186,13 @@ export async function prepararVideo(
     };
   }
 
+  // Recusa cedo: acima disso a conversão no navegador é falha garantida.
+  if (tamanhoOriginal > LIMITE_CONVERSAO_BYTES) {
+    throw new Error(
+      `Este vídeo tem ${formatarTamanho(tamanhoOriginal)}. A conversão acontece dentro do navegador e não dá conta de arquivos acima de 120 MB. Reduza o vídeo antes de enviar — cortar a duração costuma resolver, e lembre que Reels aceita no máximo 90 segundos.`,
+    );
+  }
+
   onProgress?.({ ratio: 0, note: "Preparando conversor…" });
   const ffmpeg = await getFfmpeg();
   const { fetchFile } = await import("@ffmpeg/util");
@@ -213,9 +220,9 @@ export async function prepararVideo(
     // ESTÁGIO 3 — desistência explícita
     if (data.byteLength > LIMITE_BYTES) {
       throw new Error(
-        `Mesmo comprimido o vídeo ficou com ${mb(data.byteLength)} MB (limite de ${mb(
+        `Mesmo comprimido o vídeo ficou com ${formatarTamanho(data.byteLength)} (limite de ${formatarTamanho(
           LIMITE_BYTES,
-        )} MB). Corte a duração do vídeo e tente de novo.`,
+        )}). Corte a duração do vídeo e tente de novo.`,
       );
     }
 
