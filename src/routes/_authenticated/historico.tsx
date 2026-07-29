@@ -28,7 +28,11 @@ function Historico() {
       if (error) throw error;
       return data;
     },
+    // Novos publicados aparecem sem recarregar a página.
+    refetchInterval: 20000,
+    refetchOnWindowFocus: true,
   });
+
 
   const tentarNovamente = async (id: string) => {
     const { error } = await supabase
