@@ -259,14 +259,18 @@ export function PostActions({
           onPointerDown={(e) => e.stopPropagation()}
         >
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir este post?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {removido ? "Excluir este registro?" : "Excluir este post?"}
+            </AlertDialogTitle>
             <AlertDialogDescription>
               Esta ação é permanente. O post{" "}
               <span className="font-medium">
                 {post.titulo || post.legenda?.slice(0, 40) || "sem título"}
               </span>{" "}
-              será removido.
+              será removido do QuitaMany.
+              {removido && " A publicação já não existe mais no Instagram."}
             </AlertDialogDescription>
+
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
