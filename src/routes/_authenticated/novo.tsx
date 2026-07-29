@@ -46,11 +46,8 @@ const HASHTAG_SETS: Record<string, string> = {
     "#quitanda3d #lojaonline #compresmall #compredequemfazbem #brasil",
 };
 
-/** KB abaixo de 1 MB, MB acima — evita o antigo "0.0 MB". */
-const mb = (bytes: number) =>
-  bytes < 1024 * 1024
-    ? `${Math.max(1, Math.round(bytes / 1024))} KB`
-    : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+/** Formatação de tamanho vem do módulo de limites — um lugar só. */
+const mb = formatarTamanho;
 
 function NovoPost() {
   const { id: editId } = Route.useSearch();
