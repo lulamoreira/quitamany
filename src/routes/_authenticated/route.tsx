@@ -111,11 +111,18 @@ function NavItem({
     <Link
       to={to}
       className={cn(
-        "flex flex-col items-center gap-1 py-3 text-[10px] font-medium transition-colors",
-        active ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+        "flex flex-col items-center gap-1 py-2 text-[10px] transition-colors",
+        active ? "font-semibold text-foreground" : "font-medium text-muted-foreground hover:text-foreground",
       )}
     >
-      <Icon className="h-5 w-5" strokeWidth={active ? 2.5 : 2} />
+      <span
+        className={cn(
+          "flex h-7 w-12 items-center justify-center rounded-full transition-colors",
+          active && "bg-primary text-primary-foreground",
+        )}
+      >
+        <Icon className="h-5 w-5" strokeWidth={active ? 2.5 : 2} />
+      </span>
       <span>{label}</span>
     </Link>
   );
