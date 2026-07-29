@@ -102,6 +102,8 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
   };
 
   const inicial = (email[0] ?? "?").toUpperCase();
+  // Telas de conversa usam layout de 3 colunas em altura cheia (sem respiro extra).
+  const chatLayout = location.pathname.startsWith("/conversa");
 
   return (
     <div className="flex min-h-screen bg-background">
