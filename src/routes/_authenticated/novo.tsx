@@ -1,5 +1,5 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { createFileRoute, useNavigate, useBlocker } from "@tanstack/react-router";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { Eye, Loader2, Upload, Video } from "lucide-react";
 import { format } from "date-fns";
@@ -29,7 +39,11 @@ const HASHTAG_SETS: Record<string, string> = {
     "#quitanda3d #lojaonline #compresmall #compredequemfazbem #brasil",
 };
 
-const mb = (bytes: number) => (bytes / (1024 * 1024)).toFixed(1);
+/** KB abaixo de 1 MB, MB acima — evita o antigo "0.0 MB". */
+const mb = (bytes: number) =>
+  bytes < 1024 * 1024
+    ? `${Math.max(1, Math.round(bytes / 1024))} KB`
+    : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 
 function NovoPost() {
   const { id: editId } = Route.useSearch();
