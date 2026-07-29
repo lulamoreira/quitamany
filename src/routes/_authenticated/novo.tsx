@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate, useBlocker } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -18,10 +19,11 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Eye, Loader2, Upload, Video } from "lucide-react";
+import { Eye, Loader2, Send, Upload, Video } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { PostPreview } from "@/components/agenda/post-preview";
+import { publicarAgora, executarMotorAgora } from "@/lib/publicador.functions";
 import { ehModuloObsoleto, MENSAGEM_VERSAO_OBSOLETA } from "@/lib/versao-obsoleta";
 import {
   AVISO_DEMORA_BYTES,
@@ -64,6 +66,10 @@ function NovoPost() {
   const [arrastando, setArrastando] = useState(false);
   const [previewAberto, setPreviewAberto] = useState(false);
   const [contaUsername, setContaUsername] = useState<string | undefined>(undefined);
+  const [confirmarPublicar, setConfirmarPublicar] = useState(false);
+  const [publicando, setPublicando] = useState(false);
+  const publicarAgoraFn = useServerFn(publicarAgora);
+  const executarMotorFn = useServerFn(executarMotorAgora);
 
   // Snapshot do último estado salvo (ou carregado). Comparar contra ele evita
   // avisos em falso, que são piores que a ausência do aviso.
@@ -248,15 +254,18 @@ function NovoPost() {
     setAgendadoPara(format(d, "yyyy-MM-dd'T'HH:mm"));
   };
 
-  /** Persiste o post. Devolve true em caso de sucesso. */
-  const persistir = async (status: "rascunho" | "agendado"): Promise<boolean> => {
+  /** Persiste o post. Devolve o id salvo, ou null em caso de falha. */
+  const persistir = async (
+    status: "rascunho" | "agendado",
+    opcoes?: { silencioso?: boolean },
+  ): Promise<string | null> => {
     if (status === "agendado" && !videoUrl) {
       toast.error("Envie um vídeo antes de agendar");
-      return false;
+      return null;
     }
     if (status === "agendado" && !agendadoPara) {
       toast.error("Escolha data e hora");
-      return false;
+      return null;
     }
     setSaving(true);
     const { data: user } = await supabase.auth.getUser();
@@ -271,23 +280,58 @@ function NovoPost() {
       criado_por: user.user!.id,
     };
     const res = editId
-      ? await supabase.from("posts_agendados").update(payload).eq("id", editId)
-      : await supabase.from("posts_agendados").insert(payload);
+      ? await supabase.from("posts_agendados").update(payload).eq("id", editId).select("id").single()
+      : await supabase.from("posts_agendados").insert(payload).select("id").single();
     setSaving(false);
     if (res.error) {
       toast.error(res.error.message);
-      return false;
+      return null;
     }
     // Salvo: some o estado "não salvo" antes de qualquer navegação.
     baseRef.current = { titulo, legenda, hashtags, videoUrl, agendadoPara };
     temAlteracoesRef.current = false;
-    toast.success(status === "agendado" ? "Post agendado!" : "Rascunho salvo");
-    return true;
+    if (!opcoes?.silencioso) {
+      toast.success(status === "agendado" ? "Post agendado!" : "Rascunho salvo");
+    }
+    return res.data?.id ?? editId ?? null;
   };
 
   const salvar = async (status: "rascunho" | "agendado") => {
     if (await persistir(status)) navigate({ to: "/agenda" });
   };
+
+  /** Salva e enfileira para publicação imediata. Não toca no motor existente. */
+  const publicarImediatamente = async () => {
+    setConfirmarPublicar(false);
+    const id = await persistir("rascunho", { silencioso: true });
+    if (!id) return;
+    setPublicando(true);
+    try {
+      const res = await publicarAgoraFn({ data: { id } });
+      if (!res.ok) {
+        toast.error(res.error || "Não foi possível enviar para publicação");
+        return;
+      }
+      // Motor é restrito a admin: falha de permissão é esperada e ignorada.
+      let motorRodou = false;
+      try {
+        await executarMotorFn({});
+        motorRodou = true;
+      } catch {
+        motorRodou = false;
+      }
+      toast.success(
+        motorRodou
+          ? "Publicado! Confira no seu perfil."
+          : "Enviado para publicação. Sai no próximo ciclo, em alguns minutos.",
+      );
+      temAlteracoesRef.current = false;
+      navigate({ to: "/historico" });
+    } finally {
+      setPublicando(false);
+    }
+  };
+
 
   const bloqueio = useBlocker({
     shouldBlockFn: () => temAlteracoesRef.current,
@@ -484,11 +528,30 @@ function NovoPost() {
         <Button variant="outline" onClick={() => salvar("rascunho")} disabled={saving} className="flex-1">
           Salvar rascunho
         </Button>
-        <Button onClick={() => salvar("agendado")} disabled={saving} className="flex-1">
+        <Button onClick={() => salvar("agendado")} disabled={saving || publicando} className="flex-1">
           <Video className="mr-2 h-4 w-4" />
           Agendar
         </Button>
+        <Button
+          variant="secondary"
+          onClick={() => setConfirmarPublicar(true)}
+          disabled={saving || publicando || !videoUrl}
+          title={videoUrl ? undefined : "Envie um vídeo antes de publicar"}
+          className="flex-1"
+        >
+          {publicando ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Send className="mr-2 h-4 w-4" />
+          )}
+          Publicar agora
+        </Button>
       </div>
+      {!videoUrl && (
+        <p className="text-xs text-muted-foreground">
+          "Publicar agora" fica disponível depois que o vídeo for enviado.
+        </p>
+      )}
         </div>
 
         <aside className="hidden min-w-0 lg:block">
@@ -500,6 +563,29 @@ function NovoPost() {
           </div>
         </aside>
       </div>
+
+      <AlertDialog open={confirmarPublicar} onOpenChange={setConfirmarPublicar}>
+        <AlertDialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-md">
+          <AlertDialogHeader className="min-w-0">
+            <AlertDialogTitle>Publicar agora?</AlertDialogTitle>
+            <AlertDialogDescription className="break-words">
+              O post vai para o Instagram imediatamente e não dá para desfazer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="min-w-0 flex-col flex-wrap gap-2 sm:flex-row">
+            <AlertDialogCancel disabled={publicando}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                void publicarImediatamente();
+              }}
+              disabled={publicando || saving}
+            >
+              Publicar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={bloqueio.status === "blocked"}>
         <AlertDialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-md">
