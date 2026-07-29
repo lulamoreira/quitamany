@@ -40,10 +40,6 @@ export const Route = createFileRoute("/_authenticated/novo")({
   component: NovoPost,
 });
 
-const EMOJIS = [
-  "🔥","✨","🎉","💛","📦","🚚","✅","🛒","😍","🙌","👏","💡",
-  "🎁","💸","⭐","👉","📸","🧡","💚","😉","🤩","🕒","📍","❤️",
-];
 
 const HASHTAG_SETS: Record<string, string> = {
   "Nicho maker":
