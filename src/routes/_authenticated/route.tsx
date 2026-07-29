@@ -21,6 +21,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { DesktopShell } from "@/components/desktop-shell";
 import { FooterLinks } from "@/components/footer-links";
+import { NotificationBell } from "@/components/notification-bell";
+
 
 
 export const Route = createFileRoute("/_authenticated")({
