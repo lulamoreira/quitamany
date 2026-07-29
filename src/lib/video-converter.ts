@@ -74,12 +74,6 @@ export function mb(bytes: number): string {
   return (bytes / (1024 * 1024)).toFixed(1);
 }
 
-/** Formata bytes usando KB abaixo de 1 MB e MB acima. */
-export function formatarTamanho(bytes: number): string {
-  if (!Number.isFinite(bytes) || bytes < 0) return "0 KB";
-  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
 
 /** Descarta a instância (worker possivelmente morto) para a próxima tentativa começar limpa. */
 function descartarInstancia() {
