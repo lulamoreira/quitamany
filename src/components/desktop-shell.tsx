@@ -125,7 +125,9 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
           {!collapsed && (
             <div className="min-w-0">
               <p className="truncate text-sm font-bold tracking-tight">QuitaMany</p>
-              <p className="truncate text-[10px] text-muted-foreground">@quitanda3d</p>
+              <p className={cn("truncate text-[10px]", contaConectada ? "text-muted-foreground" : "text-muted-foreground/70 italic")}>
+                {contaConectada ? `@${contaUsername}` : "conta não conectada"}
+              </p>
             </div>
           )}
         </div>
