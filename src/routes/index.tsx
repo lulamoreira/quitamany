@@ -341,22 +341,59 @@ function LandingPage() {
       </section>
 
       {/* CTA FINAL */}
-      <section style={{ background: C.amarelo, color: C.tinta }}>
-        <div className="mx-auto max-w-6xl px-5 py-20 text-center md:py-28">
-          <h2
-            style={{ ...displayStyle, fontSize: "clamp(2.25rem, 6vw, 4.75rem)" }}
-            className="mx-auto max-w-3xl"
+      <section
+        className="relative w-full overflow-hidden bg-cover bg-center bg-fixed"
+        style={{
+          backgroundImage: `url(${ctaBg.url})`,
+          color: C.branco,
+        }}
+      >
+        {/* Degradê de transição do topo (vem do creme da seção anterior) */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 top-0 h-40 md:h-56"
+          style={{
+            background: `linear-gradient(to bottom, ${C.creme} 0%, rgba(11,11,15,0.4) 60%, rgba(11,11,15,0) 100%)`,
+          }}
+        />
+        {/* Overlay escuro geral para contraste */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-black/55"
+        />
+
+        <div className="relative z-10 mx-auto max-w-6xl px-5 py-24 text-center md:py-36">
+          <div
+            className="mx-auto max-w-3xl rounded-3xl border border-white/10 bg-black/60 px-6 py-12 shadow-2xl backdrop-blur-md md:px-12 md:py-16"
           >
-            Pronto para deixar o Instagram trabalhando por você?
-          </h2>
-          <div className="mt-8">
-            <Link
-              to={ctaTo}
-              style={{ background: C.tinta, color: C.branco }}
-              className="inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-base font-semibold transition hover:opacity-90"
+            <h2
+              style={{ ...displayStyle, fontSize: "clamp(2.25rem, 6vw, 4.75rem)" }}
+              className="text-white"
             >
-              {ctaLabel} <ArrowRight className="h-4 w-4" />
-            </Link>
+              Pronto para deixar o Instagram trabalhando por você?
+            </h2>
+            <p
+              className="mx-auto mt-5 max-w-xl text-white/80"
+              style={{ fontSize: "1.05rem", lineHeight: 1.6 }}
+            >
+              Conecte sua conta profissional em minutos e comece a responder
+              DMs e comentários automaticamente.
+            </p>
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
+              <Link
+                to={ctaTo}
+                style={{ background: C.amarelo, color: C.tinta }}
+                className="inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-base font-semibold shadow-lg transition hover:opacity-90"
+              >
+                {ctaLabel} <ArrowRight className="h-4 w-4" />
+              </Link>
+              <a
+                href="#como-funciona"
+                className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-7 py-3.5 text-base font-semibold text-white backdrop-blur-sm transition hover:bg-white/20"
+              >
+                Como funciona
+              </a>
+            </div>
           </div>
         </div>
       </section>
