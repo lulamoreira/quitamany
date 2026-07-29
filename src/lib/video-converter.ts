@@ -9,7 +9,16 @@
 
 import wasmAsset from "@/assets/ffmpeg-core.wasm.asset.json";
 
-export const LIMITE_BYTES = 100 * 1024 * 1024; // 100 MB
+export const LIMITE_BYTES = 100 * 1024 * 1024; // 100 MB (limite de upload)
+export const LIMITE_CONVERSAO_BYTES = 120 * 1024 * 1024; // 120 MB (limite do navegador)
+
+/** Tempo máximo sem nenhum evento de progresso antes de abortar. */
+const TIMEOUT_SEM_PROGRESSO_MS = 90_000;
+/** Tempo máximo total de uma conversão. */
+const TIMEOUT_TOTAL_MS = 10 * 60_000;
+
+const MSG_TRAVOU =
+  "A conversão travou (o vídeo provavelmente é pesado demais para o navegador). Tente um arquivo menor ou mais curto.";
 
 let ffmpegInstance: any = null;
 let carregando: Promise<any> | null = null;
