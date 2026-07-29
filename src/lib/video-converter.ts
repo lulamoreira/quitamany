@@ -8,9 +8,24 @@
 // e `coreURL` para o build ESM do núcleo (o UMD é incompatível).
 
 import wasmAsset from "@/assets/ffmpeg-core.wasm.asset.json";
+import {
+  AVISO_DEMORA_BYTES,
+  LIMITE_CONVERSAO_BYTES,
+  LIMITE_UPLOAD_BYTES,
+  formatarTamanho,
+  mensagemVideoMuitoGrande,
+} from "@/lib/video-limites";
 
-export const LIMITE_BYTES = 100 * 1024 * 1024; // 100 MB (limite de upload)
-export const LIMITE_CONVERSAO_BYTES = 120 * 1024 * 1024; // 120 MB (limite do navegador)
+export {
+  AVISO_DEMORA_BYTES,
+  LIMITE_CONVERSAO_BYTES,
+  LIMITE_UPLOAD_BYTES,
+  formatarTamanho,
+  mensagemVideoMuitoGrande,
+};
+
+/** Compatibilidade com o nome antigo do teto de upload. */
+export const LIMITE_BYTES = LIMITE_UPLOAD_BYTES;
 
 /** Tempo máximo sem nenhum evento de progresso antes de abortar. */
 const TIMEOUT_SEM_PROGRESSO_MS = 90_000;
