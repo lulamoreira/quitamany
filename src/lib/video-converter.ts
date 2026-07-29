@@ -197,9 +197,7 @@ export async function prepararVideo(
 
   // Recusa cedo: acima disso a conversão no navegador é falha garantida.
   if (tamanhoOriginal > LIMITE_CONVERSAO_BYTES) {
-    throw new Error(
-      `Este vídeo tem ${formatarTamanho(tamanhoOriginal)}. A conversão acontece dentro do navegador e não dá conta de arquivos acima de 120 MB. Reduza o vídeo antes de enviar — cortar a duração costuma resolver, e lembre que Reels aceita no máximo 90 segundos.`,
-    );
+    throw new Error(mensagemVideoMuitoGrande(tamanhoOriginal));
   }
 
   onProgress?.({ ratio: 0, note: "Preparando conversor…" });
