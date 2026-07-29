@@ -94,8 +94,13 @@ export function PostActions({
   const [deleting, setDeleting] = useState(false);
 
   const isPublicado = post.status === "publicado";
-  const canDelete = !isPublicado;
+  const removido = Boolean(post.removido_no_instagram);
+  // Publicados normalmente são protegidos (o registro espelha algo que existe
+  // no Instagram). Quando a publicação foi apagada lá, o registro vira lixo
+  // histórico e o usuário precisa poder limpá-lo.
+  const canDelete = !isPublicado || removido;
   const canEdit = post.status === "rascunho" || post.status === "agendado" || post.status === "erro";
+
 
   const goEdit = () => {
     navigate({ to: "/novo", search: { id: post.id } as any });
