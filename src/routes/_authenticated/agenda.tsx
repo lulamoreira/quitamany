@@ -81,7 +81,7 @@ function AgendaPage() {
 
   // Desktop precisa de TODOS (inclui publicado e erro para o kanban).
   // Mobile mantém filtro original.
-  const { data: posts = [], isLoading } = useQuery({
+  const { data: posts = [], isLoading, refetch } = useQuery({
     queryKey: ["posts-agendados", "all"],
     queryFn: async () => {
       const { data, error } = await supabase
