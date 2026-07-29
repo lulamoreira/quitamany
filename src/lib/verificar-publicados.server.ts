@@ -93,6 +93,7 @@ export async function verificarPublicados(): Promise<ResumoVerificacao> {
   const resumo: ResumoVerificacao = {
     verificados: 0,
     removidos: 0,
+    metricasAtualizadas: 0,
     interrompidoPorToken: false,
     erros: [],
   };
