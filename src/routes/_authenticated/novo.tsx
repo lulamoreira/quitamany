@@ -102,17 +102,36 @@ function NovoPost() {
       .single()
       .then(({ data }) => {
         if (!data) return;
+        const dataHora = data.agendado_para
+          ? format(new Date(data.agendado_para), "yyyy-MM-dd'T'HH:mm")
+          : "";
         setLegenda(data.legenda || "");
         setHashtags(data.hashtags || "");
         setTitulo(data.titulo || "");
         setVideoUrl(data.video_url || "");
         setVideoPath(data.video_path || "");
-        if (data.agendado_para) {
-          const d = new Date(data.agendado_para);
-          setAgendadoPara(format(d, "yyyy-MM-dd'T'HH:mm"));
-        }
+        setAgendadoPara(dataHora);
+        // O que veio do banco já está salvo — não conta como alteração.
+        baseRef.current = {
+          titulo: data.titulo || "",
+          legenda: data.legenda || "",
+          hashtags: data.hashtags || "",
+          videoUrl: data.video_url || "",
+          agendadoPara: dataHora,
+        };
       });
   }, [editId]);
+
+  // Fechar ou recarregar a aba com alterações pendentes.
+  useEffect(() => {
+    const aviso = (e: BeforeUnloadEvent) => {
+      if (!temAlteracoesRef.current) return;
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", aviso);
+    return () => window.removeEventListener("beforeunload", aviso);
+  }, []);
 
   // Sem isto, soltar um arquivo fora da área pontilhada faz o navegador abrir o
   // vídeo em outra aba e o usuário perde o formulário.
