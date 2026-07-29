@@ -260,10 +260,21 @@ function AgendaPage() {
                     <div className="h-16 w-16 flex-shrink-0 rounded-md bg-muted" />
                   )}
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex flex-wrap items-center gap-1.5">
                       <StatusBadge status={p.status} />
+                      {(p as any).removido_no_instagram && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                          <EyeOff className="h-2.5 w-2.5" />
+                          Removido no Instagram
+                        </span>
+                      )}
                     </div>
-                    <p className="mt-1 truncate text-sm font-medium">
+                    <p
+                      className={cn(
+                        "mt-1 truncate text-sm font-medium",
+                        (p as any).removido_no_instagram && "text-muted-foreground line-through",
+                      )}
+                    >
                       {p.titulo || p.legenda?.slice(0, 40) || "Sem título"}
                     </p>
                     <p className="text-xs text-muted-foreground">
@@ -273,9 +284,18 @@ function AgendaPage() {
                           ? `Publicado em ${format(new Date(p.publicado_em), "dd 'de' MMM", { locale: ptBR })}`
                           : "Rascunho"}
                     </p>
+                    {(p as any).removido_no_instagram && (p as any).verificado_em && (
+                      <p className="text-[11px] text-muted-foreground">
+                        Detectado em{" "}
+                        {format(new Date((p as any).verificado_em), "dd/MM 'às' HH:mm", {
+                          locale: ptBR,
+                        })}
+                      </p>
+                    )}
                     {p.status === "erro" && (
                       <ResumoUltimoErro postId={p.id} titulo={p.titulo} erro={p.erro_msg} />
                     )}
+
                     <div className="mt-2">
                       <PostActions post={p as any} />
                     </div>
