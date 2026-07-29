@@ -136,7 +136,7 @@ export async function verificarPublicados(): Promise<ResumoVerificacao> {
     let body: any;
     try {
       const resp = await fetch(
-        `${GRAPH}/${mediaId}?fields=id&access_token=${encodeURIComponent(cfg.access_token)}`,
+        `${GRAPH}/${mediaId}?fields=id,like_count,comments_count&access_token=${encodeURIComponent(cfg.access_token)}`,
       );
       body = await resp.json().catch(() => null);
       if (!body) {
