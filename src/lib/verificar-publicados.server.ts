@@ -1,0 +1,144 @@
+import { GRAPH } from "@/lib/graph";
+
+/**
+ * Verifica se os posts marcados como publicados ainda existem no Instagram.
+ *
+ * Filosofia defensiva: só marcamos "removido" quando a Meta afirma
+ * explicitamente que o objeto não existe. Qualquer outra falha (rede, token,
+ * rate limit) é tratada como inconclusiva — nesses casos NÃO tocamos em
+ * `verificado_em`, para que o post seja reavaliado na próxima rodada.
+ */
+
+/** Quantos posts inspecionamos por execução (evita estourar rate limit). */
+const LOTE = 25;
+
+export interface ResumoVerificacao {
+  verificados: number;
+  removidos: number;
+  interrompidoPorToken: boolean;
+  erros: string[];
+}
+
+/** Códigos que indicam problema transitório/credencial, nunca "post apagado". */
+const CODIGOS_RATE_LIMIT = new Set([4, 17, 32, 613]);
+const CODIGO_TOKEN_INVALIDO = 190;
+const CODIGO_OBJETO_INEXISTENTE = 100;
+
+/**
+ * Decide, a partir do erro devolvido pela Graph API, se o objeto realmente
+ * não existe mais. Exige sinal explícito — nunca deduz por ausência.
+ */
+function pareceObjetoInexistente(err: unknown): boolean {
+  if (!err || typeof err !== "object") return false;
+  const e = err as { code?: number; message?: string; type?: string };
+  if (e.code === CODIGO_TOKEN_INVALIDO) return false;
+  if (typeof e.code === "number" && CODIGOS_RATE_LIMIT.has(e.code)) return false;
+
+  const msg = (e.message ?? "").toLowerCase();
+  const mensagemExplicita =
+    msg.includes("does not exist") ||
+    msg.includes("unsupported get request") ||
+    msg.includes("cannot be loaded due to missing permissions") === false && msg.includes("object with id");
+
+  return e.code === CODIGO_OBJETO_INEXISTENTE && mensagemExplicita;
+}
+
+export async function verificarPublicados(): Promise<ResumoVerificacao> {
+  const resumo: ResumoVerificacao = {
+    verificados: 0,
+    removidos: 0,
+    interrompidoPorToken: false,
+    erros: [],
+  };
+
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+  const { data: cfg } = await supabaseAdmin
+    .from("ig_config")
+    .select("access_token")
+    .limit(1)
+    .maybeSingle();
+  if (!cfg?.access_token) {
+    resumo.erros.push("Sem configuração Meta salva");
+    return resumo;
+  }
+
+  // Ordem estável: verificados há mais tempo primeiro; nulos entram na frente.
+  // Lote pequeno e fixo — não há risco de passar de 1000 linhas.
+  const { data: posts, error } = await supabaseAdmin
+    .from("posts_agendados")
+    .select("id, instagram_media_id, verificado_em")
+    .eq("status", "publicado")
+    .eq("removido_no_instagram", false)
+    .not("instagram_media_id", "is", null)
+    .order("verificado_em", { ascending: true, nullsFirst: true })
+    .order("id", { ascending: true })
+    .limit(LOTE);
+
+  if (error) {
+    resumo.erros.push(error.message);
+    return resumo;
+  }
+
+  const agora = new Date().toISOString();
+
+  for (const p of posts ?? []) {
+    const mediaId = p.instagram_media_id;
+    if (!mediaId) continue;
+
+    let body: any;
+    try {
+      const resp = await fetch(
+        `${GRAPH}/${mediaId}?fields=id&access_token=${encodeURIComponent(cfg.access_token)}`,
+      );
+      body = await resp.json().catch(() => null);
+      if (!body) {
+        // Resposta sem corpo: inconclusiva, tenta de novo depois.
+        resumo.erros.push(`Resposta vazia da Meta para ${mediaId}`);
+        continue;
+      }
+    } catch (e) {
+      resumo.erros.push(e instanceof Error ? e.message : "Falha de rede na verificação");
+      continue;
+    }
+
+    const err = body.error;
+
+    if (err?.code === CODIGO_TOKEN_INVALIDO) {
+      // Token inválido: varrer o resto é inútil e só gera ruído.
+      resumo.interrompidoPorToken = true;
+      resumo.erros.push(`Token inválido/expirado: ${err.message ?? ""}`.trim());
+      break;
+    }
+
+    if (err) {
+      if (pareceObjetoInexistente(err)) {
+        const { error: updErr } = await supabaseAdmin
+          .from("posts_agendados")
+          .update({ removido_no_instagram: true, verificado_em: agora })
+          .eq("id", p.id);
+        if (updErr) resumo.erros.push(updErr.message);
+        else {
+          resumo.removidos++;
+          resumo.verificados++;
+        }
+      } else {
+        // Erro inconclusivo: preserva verificado_em para reavaliar depois.
+        resumo.erros.push(err.message ?? `Erro ${err.code ?? "?"} na verificação`);
+      }
+      continue;
+    }
+
+    if (body.id) {
+      const { error: updErr } = await supabaseAdmin
+        .from("posts_agendados")
+        .update({ verificado_em: agora })
+        .eq("id", p.id);
+      if (updErr) resumo.erros.push(updErr.message);
+      else resumo.verificados++;
+    }
+  }
+
+  resumo.erros = resumo.erros.slice(0, 5);
+  return resumo;
+}
