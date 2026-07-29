@@ -19,8 +19,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Eye, Hash, Loader2, Pilcrow, Send, Smile, Upload, Video } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Eye, Hash, Loader2, Pilcrow, Send, Upload, Video } from "lucide-react";
+import { EmojiPicker } from "@/components/emoji-picker";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { PostPreview } from "@/components/agenda/post-preview";
@@ -40,10 +40,6 @@ export const Route = createFileRoute("/_authenticated/novo")({
   component: NovoPost,
 });
 
-const EMOJIS = [
-  "🔥","✨","🎉","💛","📦","🚚","✅","🛒","😍","🙌","👏","💡",
-  "🎁","💸","⭐","👉","📸","🧡","💚","😉","🤩","🕒","📍","❤️",
-];
 
 const HASHTAG_SETS: Record<string, string> = {
   "Nicho maker":
@@ -73,7 +69,7 @@ function NovoPost() {
   const [previewAberto, setPreviewAberto] = useState(false);
   const [contaUsername, setContaUsername] = useState<string | undefined>(undefined);
   const [confirmarPublicar, setConfirmarPublicar] = useState(false);
-  const [emojisAbertos, setEmojisAbertos] = useState(false);
+  
   const legendaRef = useRef<HTMLTextAreaElement | null>(null);
   const [publicando, setPublicando] = useState(false);
   const publicarAgoraFn = useServerFn(publicarAgora);
@@ -503,32 +499,7 @@ function NovoPost() {
               placeholder="Escreva a legenda do post…"
             />
             <div className="flex flex-wrap items-center gap-2">
-              <Popover open={emojisAbertos} onOpenChange={setEmojisAbertos}>
-                <PopoverTrigger asChild>
-                  <Button type="button" variant="outline" size="sm">
-                    <Smile className="mr-1.5 h-4 w-4" />
-                    Emoji
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent align="start" className="w-[248px] p-2">
-                  <div className="grid grid-cols-6 gap-1">
-                    {EMOJIS.map((emoji) => (
-                      <button
-                        key={emoji}
-                        type="button"
-                        aria-label={`Inserir ${emoji}`}
-                        className="rounded-md p-1.5 text-lg transition-colors hover:bg-accent"
-                        onClick={() => {
-                          setEmojisAbertos(false);
-                          inserirNaLegenda(emoji);
-                        }}
-                      >
-                        {emoji}
-                      </button>
-                    ))}
-                  </div>
-                </PopoverContent>
-              </Popover>
+              <EmojiPicker onSelect={inserirNaLegenda} />
               <Button type="button" variant="outline" size="sm" onClick={() => inserirNaLegenda("#")}>
                 <Hash className="mr-1.5 h-4 w-4" />
                 Hashtag

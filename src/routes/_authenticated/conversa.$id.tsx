@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
-import { ArrowLeft, Send, Bot, UserCheck, Tag, StickyNote, Loader2, Search, Zap } from "lucide-react";
+import { ArrowLeft, Send, Bot, UserCheck, Tag, StickyNote, Loader2, Search, Zap, Smile } from "lucide-react";
+import { EmojiPicker } from "@/components/emoji-picker";
 import { cn } from "@/lib/utils";
 import { formatRelative } from "@/lib/format-date";
 import { enviarMensagem, alterarModo, marcarLida } from "@/lib/quitamany.functions";
@@ -31,6 +32,9 @@ function ConversaPage() {
   const [texto, setTexto] = useState("");
   const [sending, setSending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  // Só uma das versões (mobile ou desktop) é montada por vez, então um único
+  // ref atende os dois composers.
+  const respostaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const { data: conversa, isLoading: loadingConversa } = useQuery({
     queryKey: ["qm-conversa", id],
@@ -91,6 +95,19 @@ function ConversaPage() {
     } else {
       toast.error(res?.error || "Não foi possível enviar");
     }
+  };
+
+  /** Insere um trecho na posição do cursor da resposta, mantendo o foco. */
+  const inserirNaResposta = (trecho: string) => {
+    const el = respostaRef.current;
+    const inicio = el ? el.selectionStart : texto.length;
+    const fim = el ? el.selectionEnd : texto.length;
+    setTexto(texto.slice(0, inicio) + trecho + texto.slice(fim));
+    const cursor = inicio + trecho.length;
+    requestAnimationFrame(() => {
+      el?.focus();
+      el?.setSelectionRange(cursor, cursor);
+    });
   };
 
   const handleModo = async (modo: "automatico" | "humano") => {
@@ -198,6 +215,7 @@ function ConversaPage() {
             ) : (
               <div className="flex items-end gap-2">
                 <Textarea
+                  ref={respostaRef}
                   value={texto}
                   onChange={(e) => setTexto(e.target.value)}
                   placeholder="Escreva uma resposta… (Enter envia, Shift+Enter quebra linha)"
@@ -207,6 +225,11 @@ function ConversaPage() {
                     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleEnviar(); }
                   }}
                 />
+                <EmojiPicker onSelect={inserirNaResposta}>
+                  <Button type="button" size="icon" variant="ghost" aria-label="Inserir emoji">
+                    <Smile className="h-4 w-4" />
+                  </Button>
+                </EmojiPicker>
                 <Button size="icon" onClick={handleEnviar} disabled={sending || !texto.trim()}>
                   {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                 </Button>
@@ -307,6 +330,7 @@ function ConversaPage() {
         ) : (
           <div className="flex items-end gap-2">
             <Textarea
+              ref={respostaRef}
               value={texto}
               onChange={(e) => setTexto(e.target.value)}
               placeholder="Escreva uma resposta…"
@@ -316,6 +340,11 @@ function ConversaPage() {
                 if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleEnviar(); }
               }}
             />
+            <EmojiPicker onSelect={inserirNaResposta}>
+              <Button type="button" size="icon" variant="ghost" aria-label="Inserir emoji">
+                <Smile className="h-4 w-4" />
+              </Button>
+            </EmojiPicker>
             <Button size="icon" onClick={handleEnviar} disabled={sending || !texto.trim()}>
               {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </Button>
