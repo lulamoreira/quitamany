@@ -17,7 +17,7 @@ export const Route = createFileRoute("/_authenticated/historico")({
 
 function Historico() {
   const qc = useQueryClient();
-  useRealtimePosts();
+  const { conectado } = useRealtimePosts();
 
   const { data: posts = [], isLoading } = useQuery({
     queryKey: ["historico"],
@@ -31,10 +31,12 @@ function Historico() {
       if (error) throw error;
       return data;
     },
-    // Novos publicados aparecem sem recarregar a página.
-    refetchInterval: 20000,
+    // Tempo real cuida da atualização; polling só como rede de segurança
+    // enquanto o canal não estiver conectado.
+    refetchInterval: conectado ? false : 20000,
     refetchOnWindowFocus: true,
   });
+
 
 
   const tentarNovamente = async (id: string) => {
