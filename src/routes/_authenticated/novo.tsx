@@ -233,9 +233,16 @@ function NovoPost() {
     setAgendadoPara(format(d, "yyyy-MM-dd'T'HH:mm"));
   };
 
-  const salvar = async (status: "rascunho" | "agendado") => {
-    if (status === "agendado" && !videoUrl) return toast.error("Envie um vídeo antes de agendar");
-    if (status === "agendado" && !agendadoPara) return toast.error("Escolha data e hora");
+  /** Persiste o post. Devolve true em caso de sucesso. */
+  const persistir = async (status: "rascunho" | "agendado"): Promise<boolean> => {
+    if (status === "agendado" && !videoUrl) {
+      toast.error("Envie um vídeo antes de agendar");
+      return false;
+    }
+    if (status === "agendado" && !agendadoPara) {
+      toast.error("Escolha data e hora");
+      return false;
+    }
     setSaving(true);
     const { data: user } = await supabase.auth.getUser();
     const payload = {
@@ -252,9 +259,29 @@ function NovoPost() {
       ? await supabase.from("posts_agendados").update(payload).eq("id", editId)
       : await supabase.from("posts_agendados").insert(payload);
     setSaving(false);
-    if (res.error) return toast.error(res.error.message);
+    if (res.error) {
+      toast.error(res.error.message);
+      return false;
+    }
+    // Salvo: some o estado "não salvo" antes de qualquer navegação.
+    baseRef.current = { titulo, legenda, hashtags, videoUrl, agendadoPara };
+    temAlteracoesRef.current = false;
     toast.success(status === "agendado" ? "Post agendado!" : "Rascunho salvo");
-    navigate({ to: "/agenda" });
+    return true;
+  };
+
+  const salvar = async (status: "rascunho" | "agendado") => {
+    if (await persistir(status)) navigate({ to: "/agenda" });
+  };
+
+  const bloqueio = useBlocker({
+    shouldBlockFn: () => temAlteracoesRef.current,
+    enableBeforeUnload: false,
+    withResolver: true,
+  });
+
+  const salvarESair = async () => {
+    if (await persistir("rascunho")) bloqueio.proceed?.();
   };
 
   const preview = (
