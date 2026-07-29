@@ -108,7 +108,7 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
   const chatLayout = location.pathname.startsWith("/conversa");
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className={cn("flex bg-background", chatLayout ? "h-screen overflow-hidden" : "min-h-screen")}>
       <aside
         className={cn(
           "sticky top-0 z-30 flex h-screen flex-col border-r border-border bg-sidebar text-sidebar-foreground transition-[width] duration-200",
