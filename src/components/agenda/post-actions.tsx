@@ -125,7 +125,7 @@ export function PostActions({
           title="Visualizar"
           aria-label="Visualizar"
           className={cn(
-            "flex items-center justify-center rounded-md text-muted-foreground ring-1 ring-border bg-background/80 hover:text-primary hover:ring-primary/50",
+            "flex items-center justify-center rounded-md text-muted-foreground ring-1 ring-border bg-background/80 hover:text-foreground hover:ring-primary/50",
             size,
           )}
         >
@@ -138,7 +138,7 @@ export function PostActions({
             title="Editar"
             aria-label="Editar"
             className={cn(
-              "flex items-center justify-center rounded-md text-muted-foreground ring-1 ring-border bg-background/80 hover:text-primary hover:ring-primary/50",
+              "flex items-center justify-center rounded-md text-muted-foreground ring-1 ring-border bg-background/80 hover:text-foreground hover:ring-primary/50",
               size,
             )}
           >
@@ -204,7 +204,7 @@ export function PostActions({
           {post.hashtags && (
             <div>
               <p className="mb-1 text-xs font-semibold text-muted-foreground">Hashtags</p>
-              <p className="text-sm text-primary">{post.hashtags}</p>
+              <p className="text-sm text-foreground">{post.hashtags}</p>
             </div>
           )}
           {post.status === "erro" && post.erro_msg && (

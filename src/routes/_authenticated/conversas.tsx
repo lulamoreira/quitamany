@@ -167,7 +167,7 @@ function ConversaRow({ c }: { c: ConversaComContato }) {
         >
           <Avatar className="h-10 w-10 shrink-0">
             {c.contatos?.foto_url ? <AvatarImage src={c.contatos.foto_url} alt={nome} /> : null}
-            <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">{inicial}</AvatarFallback>
+            <AvatarFallback className="bg-primary/10 text-foreground text-xs font-bold">{inicial}</AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
             <div className="flex items-baseline gap-1.5">
@@ -206,7 +206,7 @@ function ConversaCard({ c }: { c: ConversaComContato }) {
       <Card className="flex items-center gap-3 border-transparent p-3 shadow-[var(--shadow-card)] transition hover:border-primary/20">
         <Avatar className="h-12 w-12 shrink-0">
           {c.contatos?.foto_url ? <AvatarImage src={c.contatos.foto_url} alt={nome} /> : null}
-          <AvatarFallback className="bg-primary/10 text-primary">{inicial}</AvatarFallback>
+          <AvatarFallback className="bg-primary/10 text-foreground">{inicial}</AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
@@ -241,7 +241,7 @@ export function ModeChip({ modo }: { modo: "automatico" | "humano" }) {
       className={cn(
         "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold",
         modo === "automatico"
-          ? "bg-primary/10 text-primary"
+          ? "bg-primary/10 text-foreground"
           : "bg-success/15 text-success-foreground",
       )}
     >

@@ -255,7 +255,7 @@ function ConexaoFacebookSection() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Facebook className="h-5 w-5 text-primary" /> Conexão com o Instagram
+          <Facebook className="h-5 w-5 text-foreground" /> Conexão com o Instagram
         </CardTitle>
         <CardDescription>Login com Facebook para conectar o Instagram e configurar o webhook em um clique.</CardDescription>
       </CardHeader>
@@ -294,7 +294,7 @@ function ConexaoFacebookSection() {
                   <p className="font-medium">{p.name ?? p.id}</p>
                   <p className="text-xs text-muted-foreground">{p.id}</p>
                 </div>
-                {escolhendo === p.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <span className="text-sm font-medium text-primary">Escolher</span>}
+                {escolhendo === p.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <span className="text-sm font-medium text-foreground">Escolher</span>}
               </button>
             ))}
           </div>
@@ -414,7 +414,7 @@ function ConexaoManualFallback() {
           </Button>
           <p className="text-xs text-muted-foreground">
             Use o{" "}
-            <a href="https://developers.facebook.com/tools/explorer/" target="_blank" rel="noreferrer" className="text-primary underline">
+            <a href="https://developers.facebook.com/tools/explorer/" target="_blank" rel="noreferrer" className="text-foreground underline">
               Graph API Explorer <ExternalLink className="inline h-3 w-3" />
             </a>{" "}
             para gerar um token com <code>instagram_content_publish</code>.
@@ -535,7 +535,7 @@ function WebhookSection() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Webhook className="h-5 w-5 text-primary" /> Webhook do Instagram
+          <Webhook className="h-5 w-5 text-foreground" /> Webhook do Instagram
         </CardTitle>
         <CardDescription>Receba comentários e DMs em tempo real.</CardDescription>
       </CardHeader>
@@ -570,7 +570,7 @@ function WebhookSection() {
 
         <div className="space-y-3 rounded-2xl border-2 border-primary/20 bg-primary/5 p-4">
           <div className="flex items-start gap-2">
-            <Zap className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+            <Zap className="mt-0.5 h-5 w-5 shrink-0 text-foreground" />
             <div className="flex-1">
               <p className="font-semibold">Configurar automaticamente na Meta</p>
               <p className="text-xs text-muted-foreground">Registra o webhook e inscreve a Página.</p>

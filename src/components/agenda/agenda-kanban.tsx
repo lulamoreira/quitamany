@@ -278,7 +278,7 @@ function PostCardVisual({ post, elevated }: { post: Post; elevated?: boolean }) 
           onKeyDown={(e) => e.stopPropagation()}
           title="Abrir no Instagram"
           aria-label="Abrir no Instagram"
-          className="absolute right-1.5 top-1.5 z-10 flex h-6 w-6 items-center justify-center rounded-md bg-background/90 text-muted-foreground shadow-sm ring-1 ring-border hover:text-primary hover:ring-primary/50"
+          className="absolute right-1.5 top-1.5 z-10 flex h-6 w-6 items-center justify-center rounded-md bg-background/90 text-muted-foreground shadow-sm ring-1 ring-border hover:text-foreground hover:ring-primary/50"
         >
           <ExternalLink className="h-3.5 w-3.5" />
         </a>
@@ -311,7 +311,7 @@ function PostCardVisual({ post, elevated }: { post: Post; elevated?: boolean }) 
       {hashtags.length > 0 && (
         <div className="mt-1.5 flex flex-wrap gap-1">
           {hashtags.map((h) => (
-            <span key={h} className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[9px] font-medium text-primary">
+            <span key={h} className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[9px] font-medium text-foreground">
               {h}
             </span>
           ))}

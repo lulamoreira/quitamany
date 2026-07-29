@@ -112,7 +112,7 @@ function NavItem({
       to={to}
       className={cn(
         "flex flex-col items-center gap-1 py-3 text-[10px] font-medium transition-colors",
-        active ? "text-primary" : "text-muted-foreground hover:text-foreground",
+        active ? "text-foreground" : "text-muted-foreground hover:text-foreground",
       )}
     >
       <Icon className="h-5 w-5" strokeWidth={active ? 2.5 : 2} />
@@ -192,7 +192,7 @@ function MaisButton({ open, onOpenChange }: { open: boolean; onOpenChange: (v: b
 
         <div className="mt-2 flex items-center gap-3 rounded-2xl border p-3">
           <Avatar className="h-10 w-10">
-            <AvatarFallback className="bg-primary/10 font-bold text-primary">
+            <AvatarFallback className="bg-primary/10 font-bold text-foreground">
               {(email[0] ?? "?").toUpperCase()}
             </AvatarFallback>
           </Avatar>

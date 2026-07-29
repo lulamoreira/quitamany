@@ -102,12 +102,12 @@ function TermosPage() {
           <p>
             O tratamento de dados pessoais realizado pelo QuitaMany está
             descrito na{" "}
-            <Link to="/privacidade" className="text-primary underline">
+            <Link to="/privacidade" className="text-foreground underline">
               Política de Privacidade
             </Link>
             . Para solicitar a remoção completa dos seus dados, consulte a
             página{" "}
-            <Link to="/exclusao-de-dados" className="text-primary underline">
+            <Link to="/exclusao-de-dados" className="text-foreground underline">
               Exclusão de Dados
             </Link>
             .
@@ -141,7 +141,7 @@ function TermosPage() {
             enviadas para{" "}
             <a
               href="mailto:lula1973@gmail.com"
-              className="text-primary underline"
+              className="text-foreground underline"
             >
               lula1973@gmail.com
             </a>
@@ -150,7 +150,7 @@ function TermosPage() {
         </section>
 
         <footer className="border-t pt-4 text-sm">
-          <Link to="/" className="text-primary hover:underline">
+          <Link to="/" className="text-foreground hover:underline">
             ← Voltar
           </Link>
         </footer>

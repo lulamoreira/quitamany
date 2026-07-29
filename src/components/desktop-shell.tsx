@@ -150,7 +150,7 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
                         className={cn(
                           "relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                           active
-                            ? "bg-primary/10 text-primary"
+                            ? "bg-primary/10 text-foreground"
                             : "text-sidebar-foreground/80 hover:bg-accent hover:text-foreground",
                           collapsed && "justify-center px-0",
                         )}
@@ -158,7 +158,7 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
                         {active && (
                           <span className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r-full bg-primary" />
                         )}
-                        <Icon className={cn("h-4 w-4 shrink-0", active && "text-primary")} />
+                        <Icon className={cn("h-4 w-4 shrink-0", active && "text-foreground")} />
                         {!collapsed && <span className="truncate">{it.label}</span>}
                       </Link>
                     </li>
@@ -182,7 +182,7 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
                     className={cn(
                       "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                       active
-                        ? "bg-primary/10 text-primary"
+                        ? "bg-primary/10 text-foreground"
                         : "text-sidebar-foreground/80 hover:bg-accent hover:text-foreground",
                       collapsed && "justify-center px-0",
                     )}
@@ -202,7 +202,7 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
             )}
           >
             <Avatar className="h-9 w-9 shrink-0">
-              <AvatarFallback className="bg-primary/10 font-bold text-primary">{inicial}</AvatarFallback>
+              <AvatarFallback className="bg-primary/10 font-bold text-foreground">{inicial}</AvatarFallback>
             </Avatar>
             {!collapsed && (
               <div className="min-w-0 flex-1">

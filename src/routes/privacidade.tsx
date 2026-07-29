@@ -124,7 +124,7 @@ function PrivacidadePage() {
           <p>
             Você pode pedir a remoção completa dos seus dados a qualquer momento. O
             procedimento está detalhado na página{" "}
-            <Link to="/exclusao-de-dados" className="text-primary underline">
+            <Link to="/exclusao-de-dados" className="text-foreground underline">
               Exclusão de Dados
             </Link>
             .
@@ -135,7 +135,7 @@ function PrivacidadePage() {
             Dúvidas, solicitações ou exercício de direitos:{" "}
             <a
               href="mailto:[EMAIL_DE_CONTATO]"
-              className="text-primary underline"
+              className="text-foreground underline"
             >
               [EMAIL_DE_CONTATO]
             </a>
@@ -144,7 +144,7 @@ function PrivacidadePage() {
         </section>
 
         <footer className="border-t pt-4 text-sm">
-          <Link to="/" className="text-primary hover:underline">
+          <Link to="/" className="text-foreground hover:underline">
             ← Voltar
           </Link>
         </footer>
