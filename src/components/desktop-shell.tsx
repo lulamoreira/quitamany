@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useMyRole } from "@/hooks/use-role";
+import { useContaInstagram } from "@/hooks/use-conta-instagram";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -102,6 +103,7 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
   };
 
   const inicial = (email[0] ?? "?").toUpperCase();
+  const { username: contaUsername, conectado: contaConectada } = useContaInstagram();
   // Telas de conversa usam layout de 3 colunas em altura cheia (sem respiro extra).
   const chatLayout = location.pathname.startsWith("/conversa");
 
@@ -125,7 +127,9 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
           {!collapsed && (
             <div className="min-w-0">
               <p className="truncate text-sm font-bold tracking-tight">QuitaMany</p>
-              <p className="truncate text-[10px] text-muted-foreground">@quitanda3d</p>
+              <p className={cn("truncate text-[10px]", contaConectada ? "text-muted-foreground" : "text-muted-foreground/70 italic")}>
+                {contaConectada ? `@${contaUsername}` : "conta não conectada"}
+              </p>
             </div>
           )}
         </div>

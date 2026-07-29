@@ -47,7 +47,7 @@ function PrivacidadePage() {
           <ul className="list-disc space-y-1 pl-5">
             <li>
               <strong>Informações do perfil comercial:</strong> nome de usuário
-              (@quitanda3d, por exemplo), nome da página, ID da página e foto do
+              (@sualoja, por exemplo), nome da página, ID da página e foto do
               perfil.
             </li>
             <li>
