@@ -22,6 +22,7 @@ import {
   IlustraPrivacidade,
 } from "@/components/landing/ilustracoes";
 import heroBg from "@/assets/hero-bg.png.asset.json";
+import ctaBg from "@/assets/cta-bg.png.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
