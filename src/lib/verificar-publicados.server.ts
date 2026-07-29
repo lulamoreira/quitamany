@@ -38,9 +38,10 @@ function pareceObjetoInexistente(err: unknown): boolean {
   const mensagemExplicita =
     msg.includes("does not exist") ||
     msg.includes("unsupported get request") ||
-    msg.includes("cannot be loaded due to missing permissions") === false && msg.includes("object with id");
+    msg.includes("object with id");
 
   return e.code === CODIGO_OBJETO_INEXISTENTE && mensagemExplicita;
+
 }
 
 export async function verificarPublicados(): Promise<ResumoVerificacao> {
