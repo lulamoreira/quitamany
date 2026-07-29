@@ -15,6 +15,8 @@ import { DesktopPageHeader } from "@/components/desktop-shell";
 import { AgendaKanban } from "@/components/agenda/agenda-kanban";
 import { AgendaCalendarDesktop } from "@/components/agenda/agenda-calendar";
 import { PostActions, StatusBadge } from "@/components/agenda/post-actions";
+import { useRealtimePosts } from "@/hooks/use-realtime-posts";
+
 
 export const Route = createFileRoute("/_authenticated/agenda")({
   head: () => ({
