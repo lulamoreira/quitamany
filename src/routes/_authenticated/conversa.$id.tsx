@@ -32,6 +32,9 @@ function ConversaPage() {
   const [texto, setTexto] = useState("");
   const [sending, setSending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  // Só uma das versões (mobile ou desktop) é montada por vez, então um único
+  // ref atende os dois composers.
+  const respostaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const { data: conversa, isLoading: loadingConversa } = useQuery({
     queryKey: ["qm-conversa", id],
