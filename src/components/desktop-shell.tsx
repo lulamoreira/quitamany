@@ -177,10 +177,10 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
                     to={it.to}
                     title={collapsed ? it.label : undefined}
                     className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                      "flex items-center gap-3 rounded-full px-3 py-2 text-sm transition-colors",
                       active
-                        ? "bg-primary/10 text-foreground"
-                        : "text-sidebar-foreground/80 hover:bg-accent hover:text-foreground",
+                        ? "bg-primary font-semibold text-primary-foreground shadow-sm"
+                        : "font-medium text-foreground/70 hover:bg-muted hover:text-foreground",
                       collapsed && "justify-center px-0",
                     )}
                   >
@@ -194,7 +194,7 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
 
           <div
             className={cn(
-              "flex items-center gap-2 rounded-xl bg-accent/40 p-2",
+              "flex items-center gap-2 rounded-xl bg-muted p-2",
               collapsed && "justify-center bg-transparent p-0",
             )}
           >
