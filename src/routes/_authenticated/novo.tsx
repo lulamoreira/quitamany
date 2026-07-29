@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Loader2, Upload, Video } from "lucide-react";
 import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/novo")({
   validateSearch: (s: Record<string, unknown>) => ({ id: (s.id as string) || undefined }),
@@ -26,6 +27,8 @@ const HASHTAG_SETS: Record<string, string> = {
     "#quitanda3d #lojaonline #compresmall #compredequemfazbem #brasil",
 };
 
+const mb = (bytes: number) => (bytes / (1024 * 1024)).toFixed(1);
+
 function NovoPost() {
   const { id: editId } = Route.useSearch();
   const navigate = useNavigate();
@@ -38,6 +41,7 @@ function NovoPost() {
   const [uploading, setUploading] = useState(false);
   const [progresso, setProgresso] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [arrastando, setArrastando] = useState(false);
 
 
   useEffect(() => {
@@ -61,47 +65,86 @@ function NovoPost() {
       });
   }, [editId]);
 
+  // Sem isto, soltar um arquivo fora da área pontilhada faz o navegador abrir o
+  // vídeo em outra aba e o usuário perde o formulário.
+  useEffect(() => {
+    const bloquear = (e: DragEvent) => e.preventDefault();
+    window.addEventListener("dragover", bloquear);
+    window.addEventListener("drop", bloquear);
+    return () => {
+      window.removeEventListener("dragover", bloquear);
+      window.removeEventListener("drop", bloquear);
+    };
+  }, []);
+
+  const descreverErro = (e: unknown): string => {
+    if (typeof e === "string") return e;
+    if (e && typeof e === "object") {
+      const err = e as { message?: unknown; name?: unknown };
+      if (typeof err.message === "string" && err.message) return err.message;
+      if (typeof err.name === "string" && err.name) return err.name;
+      try {
+        const json = JSON.stringify(e);
+        if (json && json !== "{}") return json;
+      } catch {
+        /* ignora */
+      }
+    }
+    return String(e);
+  };
+
   const handleUpload = async (fileOriginal: File) => {
-    if (fileOriginal.size > 200 * 1024 * 1024) {
-      toast.error("O vídeo precisa ter até 200 MB (antes da conversão)");
+    const nome = fileOriginal.name.toLowerCase();
+    const pareceVideo =
+      fileOriginal.type.startsWith("video/") ||
+      /\.(mp4|mov|webm|mkv|avi|m4v)$/i.test(nome);
+    if (!pareceVideo) {
+      toast.error("Selecione um arquivo de vídeo.");
       return;
     }
+
+    if (fileOriginal.size > 200 * 1024 * 1024) {
+      toast.warning(
+        `Vídeo grande (${mb(fileOriginal.size)} MB). Vamos comprimir automaticamente — isso pode levar alguns minutos, mantenha esta aba aberta.`,
+      );
+    }
+
     setUploading(true);
     setProgresso(null);
     try {
-      let file = fileOriginal;
-      const nome = fileOriginal.name.toLowerCase();
-      const precisaConverter = !(fileOriginal.type === "video/mp4" || nome.endsWith(".mp4"));
-      if (precisaConverter) {
-        const { garantirMp4 } = await import("@/lib/video-converter");
-        setProgresso("Preparando conversor…");
-        file = await garantirMp4(fileOriginal, ({ ratio, note }) => {
-          if (note) setProgresso(note);
-          else setProgresso(`Convertendo para MP4… ${Math.round(ratio * 100)}%`);
-        });
-        setProgresso("Enviando MP4…");
-      }
-      if (file.size > 100 * 1024 * 1024) {
-        setUploading(false);
-        setProgresso(null);
-        toast.error("Depois da conversão o vídeo ainda passou de 100 MB — reduza a duração ou qualidade");
-        return;
-      }
+      const { prepararVideo } = await import("@/lib/video-converter");
+      setProgresso("Preparando conversor…");
+      const resultado = await prepararVideo(fileOriginal, ({ ratio, note }) => {
+        const pct = Math.round(ratio * 100);
+        setProgresso(note ? (ratio > 0 ? `${note} ${pct}%` : note) : `Convertendo… ${pct}%`);
+      });
+
+      const file = resultado.arquivo;
+      setProgresso("Enviando…");
+
       const path = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
       const { error } = await supabase.storage.from("videos-instagram").upload(path, file, {
-        contentType: "video/mp4",
+        contentType: file.type || "video/mp4",
         upsert: false,
       });
       if (error) {
+        console.error(error);
         toast.error("Falha no upload: " + error.message);
         return;
       }
       const { data } = supabase.storage.from("videos-instagram").getPublicUrl(path);
       setVideoPath(path);
       setVideoUrl(data.publicUrl);
-      toast.success(precisaConverter ? "Vídeo convertido e enviado!" : "Vídeo enviado!");
-    } catch (e: any) {
-      toast.error("Falha ao processar vídeo: " + (e?.message ?? "erro desconhecido"));
+      if (resultado.comprimido) {
+        toast.success(
+          `Vídeo pronto: de ${mb(resultado.tamanhoOriginal)} MB para ${mb(resultado.tamanhoFinal)} MB.`,
+        );
+      } else {
+        toast.success("Vídeo enviado!");
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error("Falha ao processar vídeo: " + descreverErro(e));
     } finally {
       setUploading(false);
       setProgresso(null);
@@ -148,7 +191,7 @@ function NovoPost() {
 
       <Card>
         <CardContent className="space-y-4 p-4">
-          <Label>Vídeo (MP4, MOV ou WebM — convertemos automaticamente)</Label>
+          <Label>Vídeo — convertemos e comprimimos automaticamente</Label>
           {videoUrl ? (
             <div className="space-y-2">
               <video src={videoUrl} controls className="max-h-64 w-full rounded-md bg-black" />
@@ -164,23 +207,57 @@ function NovoPost() {
               </Button>
             </div>
           ) : (
-            <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border py-8 hover:bg-accent/30">
+            <label
+              className={cn(
+                "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed py-8 transition-colors",
+                arrastando
+                  ? "border-primary bg-primary/10"
+                  : "border-border hover:bg-accent/30",
+              )}
+              onDragEnter={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!uploading) setArrastando(true);
+              }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!uploading) setArrastando(true);
+              }}
+              onDragLeave={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setArrastando(false);
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setArrastando(false);
+                if (uploading) return;
+                const arquivo = e.dataTransfer.files?.[0];
+                if (arquivo) handleUpload(arquivo);
+              }}
+            >
               {uploading ? (
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               ) : (
                 <Upload className="h-6 w-6 text-muted-foreground" />
               )}
               <span className="text-sm text-muted-foreground">
-                {uploading ? (progresso ?? "Enviando…") : "Toque para escolher um vídeo"}
+                {uploading
+                  ? (progresso ?? "Enviando…")
+                  : arrastando
+                    ? "Solte o vídeo aqui"
+                    : "Toque ou arraste um vídeo"}
               </span>
               {!uploading && (
                 <span className="text-[11px] text-muted-foreground">
-                  Aceita MP4, MOV, WebM, MKV. Até 200 MB (converte para MP4 aqui mesmo).
+                  MP4, MOV, WebM, MKV, AVI. Vídeos grandes são comprimidos aqui mesmo.
                 </span>
               )}
               <input
                 type="file"
-                accept="video/*,.webm,.mkv,.mov"
+                accept="video/*,.mp4,.mov,.webm,.mkv,.avi,.m4v"
                 className="hidden"
                 disabled={uploading}
                 onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])}
