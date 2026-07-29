@@ -303,6 +303,47 @@ export type Database = {
         }
         Relationships: []
       }
+      post_tentativas: {
+        Row: {
+          criado_em: string
+          criado_por: string | null
+          detalhe: Json | null
+          etapa: string | null
+          evento: Database["public"]["Enums"]["tentativa_evento"]
+          id: string
+          mensagem: string
+          post_id: string
+        }
+        Insert: {
+          criado_em?: string
+          criado_por?: string | null
+          detalhe?: Json | null
+          etapa?: string | null
+          evento: Database["public"]["Enums"]["tentativa_evento"]
+          id?: string
+          mensagem?: string
+          post_id: string
+        }
+        Update: {
+          criado_em?: string
+          criado_por?: string | null
+          detalhe?: Json | null
+          etapa?: string | null
+          evento?: Database["public"]["Enums"]["tentativa_evento"]
+          id?: string
+          mensagem?: string
+          post_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_tentativas_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts_agendados"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       posts_agendados: {
         Row: {
           agendado_para: string | null
@@ -422,6 +463,7 @@ export type Database = {
         | "processando"
         | "publicado"
         | "erro"
+      tentativa_evento: "falha" | "reenvio" | "publicado" | "removido"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -555,6 +597,7 @@ export const Constants = {
       msg_autor: ["robo", "humano"],
       msg_direcao: ["recebida", "enviada"],
       post_status: ["rascunho", "agendado", "processando", "publicado", "erro"],
+      tentativa_evento: ["falha", "reenvio", "publicado", "removido"],
     },
   },
 } as const

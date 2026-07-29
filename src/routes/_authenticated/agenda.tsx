@@ -17,6 +17,7 @@ import { AgendaCalendarDesktop } from "@/components/agenda/agenda-calendar";
 import { PostActions, StatusBadge } from "@/components/agenda/post-actions";
 import { useRealtimePosts } from "@/hooks/use-realtime-posts";
 import { BotaoAtualizar } from "@/components/agenda/botao-atualizar";
+import { ResumoUltimoErro } from "@/components/agenda/historico-tentativas";
 
 
 
@@ -272,8 +273,8 @@ function AgendaPage() {
                           ? `Publicado em ${format(new Date(p.publicado_em), "dd 'de' MMM", { locale: ptBR })}`
                           : "Rascunho"}
                     </p>
-                    {p.status === "erro" && p.erro_msg && (
-                      <p className="mt-1 line-clamp-1 text-xs text-destructive">{p.erro_msg}</p>
+                    {p.status === "erro" && (
+                      <ResumoUltimoErro postId={p.id} titulo={p.titulo} erro={p.erro_msg} />
                     )}
                     <div className="mt-2">
                       <PostActions post={p as any} />

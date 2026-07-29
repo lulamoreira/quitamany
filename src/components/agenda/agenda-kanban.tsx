@@ -1,3 +1,4 @@
+import { ResumoUltimoErro } from "@/components/agenda/historico-tentativas";
 import { useMemo, useState } from "react";
 import {
   DndContext,
@@ -303,8 +304,8 @@ function PostCardVisual({ post, elevated }: { post: Post; elevated?: boolean }) 
           <p className="mt-1 line-clamp-2 text-xs font-semibold leading-tight">
             {post.titulo || post.legenda?.slice(0, 60) || "Sem título"}
           </p>
-          {post.status === "erro" && post.erro_msg && (
-            <p className="mt-1 line-clamp-1 text-[10px] font-medium text-destructive">{post.erro_msg}</p>
+          {post.status === "erro" && (
+            <ResumoUltimoErro postId={post.id} titulo={post.titulo} erro={post.erro_msg} />
           )}
         </div>
       </div>

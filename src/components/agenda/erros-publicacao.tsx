@@ -20,6 +20,8 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { executarMotorAgora } from "@/lib/publicador.functions";
 import { cn } from "@/lib/utils";
+import { registrarTentativaCliente } from "@/lib/tentativas";
+import { HistoricoTentativas } from "@/components/agenda/historico-tentativas";
 
 /** Post com falha de publicação (subset das colunas usadas aqui). */
 export interface PostComErro {
@@ -85,6 +87,15 @@ export function ErrosPublicacao({ posts, onAtualizar, className }: ErrosPublicac
         })
         .eq("id", post.id);
       if (error) throw new Error(error.message);
+
+      // Deixa rastro na linha do tempo do post antes de acionar o motor.
+      await registrarTentativaCliente({
+        postId: post.id,
+        evento: "reenvio",
+        etapa: "manual",
+        mensagem: "Reenvio manual após falha",
+        detalhe: { erro_anterior: post.erro_msg ?? null, container_anterior: post.container_id ?? null },
+      });
 
       // Tentar acionar o motor imediatamente; se o usuário não for admin,
       // o post continua na fila do cron (a cada 5 minutos).
@@ -169,6 +180,7 @@ export function ErrosPublicacao({ posts, onAtualizar, className }: ErrosPublicac
                         <Copy className="mr-2 h-3 w-3" />
                         Copiar detalhes
                       </Button>
+                      <HistoricoTentativas postId={p.id} titulo={p.titulo} />
                       <Button size="sm" onClick={() => setConfirmar(p)}>
                         <RotateCcw className="mr-2 h-3 w-3" />
                         Reenviar

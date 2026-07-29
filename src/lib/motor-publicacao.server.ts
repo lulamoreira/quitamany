@@ -1,5 +1,6 @@
 // Server-only motor de publicação. Não importar do cliente.
 import { GRAPH } from "@/lib/graph";
+import { registrarTentativa } from "@/lib/tentativas.server";
 
 async function faseA(supabaseAdmin: any, cfg: any) {
   const { data: posts } = await supabaseAdmin
@@ -18,6 +19,12 @@ async function faseA(supabaseAdmin: any, cfg: any) {
         .from("posts_agendados")
         .update({ status: "erro", erro_msg: "Vídeo ausente" })
         .eq("id", p.id);
+      await registrarTentativa(supabaseAdmin, {
+        postId: p.id,
+        evento: "falha",
+        etapa: "criar_container",
+        mensagem: "Vídeo ausente",
+      });
       continue;
     }
     const caption = (p.legenda || "") + (p.hashtags ? "\n.\n" + p.hashtags : "");
@@ -36,6 +43,13 @@ async function faseA(supabaseAdmin: any, cfg: any) {
         .from("posts_agendados")
         .update({ status: "erro", erro_msg: "Token expirado" })
         .eq("id", p.id);
+      await registrarTentativa(supabaseAdmin, {
+        postId: p.id,
+        evento: "falha",
+        etapa: "criar_container",
+        mensagem: "Token da Meta expirado",
+        detalhe: { code: 190, error: body.error ?? null },
+      });
       break;
     }
     if (!resp.ok || body.error) {
@@ -43,6 +57,13 @@ async function faseA(supabaseAdmin: any, cfg: any) {
         .from("posts_agendados")
         .update({ status: "erro", erro_msg: body.error?.message || "Falha ao criar container" })
         .eq("id", p.id);
+      await registrarTentativa(supabaseAdmin, {
+        postId: p.id,
+        evento: "falha",
+        etapa: "criar_container",
+        mensagem: body.error?.message || "Falha ao criar container",
+        detalhe: { status: resp.status, error: body.error ?? null },
+      });
       continue;
     }
     await supabaseAdmin
@@ -87,6 +108,13 @@ async function faseB(supabaseAdmin: any, cfg: any) {
             .from("posts_agendados")
             .update({ status: "erro", erro_msg: pubBody.error?.message || "Falha ao publicar" })
             .eq("id", p.id);
+          await registrarTentativa(supabaseAdmin, {
+            postId: p.id,
+            evento: "falha",
+            etapa: "publicar",
+            mensagem: pubBody.error?.message || "Falha ao publicar",
+            detalhe: { status: pubResp.status, error: pubBody.error ?? null, container_id: p.container_id },
+          });
           continue;
         }
         mediaId = pubBody.id;
@@ -118,12 +146,26 @@ async function faseB(supabaseAdmin: any, cfg: any) {
           publicado_em: new Date().toISOString(),
         })
         .eq("id", p.id);
+      await registrarTentativa(supabaseAdmin, {
+        postId: p.id,
+        evento: "publicado",
+        etapa: "publicar",
+        mensagem: "Publicado no Instagram",
+        detalhe: { media_id: mediaId, permalink },
+      });
       publicados++;
     } else if (code === "ERROR") {
       await supabaseAdmin
         .from("posts_agendados")
         .update({ status: "erro", erro_msg: "Instagram rejeitou o vídeo" })
         .eq("id", p.id);
+      await registrarTentativa(supabaseAdmin, {
+        postId: p.id,
+        evento: "falha",
+        etapa: "processamento",
+        mensagem: "Instagram rejeitou o vídeo",
+        detalhe: { status_code: code, container_id: p.container_id },
+      });
     }
   }
   return { publicados, tokenExpired };

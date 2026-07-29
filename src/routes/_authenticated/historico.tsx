@@ -14,6 +14,8 @@ import { ErrosPublicacao } from "@/components/agenda/erros-publicacao";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { verificarPublicacoes } from "@/lib/publicador.functions";
+import { HistoricoTentativas } from "@/components/agenda/historico-tentativas";
+import { registrarTentativaCliente } from "@/lib/tentativas";
 
 
 
@@ -53,6 +55,12 @@ function Historico() {
       .update({ status: "agendado", erro_msg: null, container_id: null })
       .eq("id", id);
     if (error) return toast.error(error.message);
+    await registrarTentativaCliente({
+      postId: id,
+      evento: "reenvio",
+      etapa: "manual",
+      mensagem: "Reenvio manual solicitado no Histórico",
+    });
     toast.success("Post reagendado para nova tentativa");
     qc.invalidateQueries({ queryKey: ["historico"] });
   };
@@ -189,6 +197,7 @@ function Historico() {
                       Tentar de novo
                     </Button>
                   )}
+                  <HistoricoTentativas postId={p.id} titulo={p.titulo} />
                   <div className="ml-auto">
                     <PostActions post={p as any} />
                   </div>

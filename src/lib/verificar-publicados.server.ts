@@ -120,6 +120,14 @@ export async function verificarPublicados(): Promise<ResumoVerificacao> {
           .eq("id", p.id);
         if (updErr) resumo.erros.push(updErr.message);
         else {
+          const { registrarTentativa } = await import("@/lib/tentativas.server");
+          await registrarTentativa(supabaseAdmin, {
+            postId: p.id,
+            evento: "removido",
+            etapa: "verificacao",
+            mensagem: "Publicação não existe mais no Instagram",
+            detalhe: { error: err as Record<string, unknown> },
+          });
           resumo.removidos++;
           resumo.verificados++;
         }
