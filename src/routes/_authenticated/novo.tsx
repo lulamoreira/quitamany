@@ -182,6 +182,15 @@ function NovoPost() {
     navigate({ to: "/agenda" });
   };
 
+  const preview = (
+    <PostPreview
+      videoUrl={videoUrl || undefined}
+      legenda={legenda}
+      hashtags={hashtags}
+      contaUsername={contaUsername}
+    />
+  );
+
   return (
     <div className="space-y-6">
       <header>
@@ -189,6 +198,22 @@ function NovoPost() {
         <p className="text-sm text-muted-foreground">Prepare o Reel para @quitanda3d</p>
       </header>
 
+      {/* Preview recolhido no mobile */}
+      <div className="lg:hidden">
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full"
+          onClick={() => setPreviewAberto((v) => !v)}
+        >
+          <Eye className="mr-2 h-4 w-4" />
+          {previewAberto ? "Ocultar preview" : "Ver preview"}
+        </Button>
+        {previewAberto && <div className="mt-3">{preview}</div>}
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-3 lg:items-start">
+        <div className="min-w-0 space-y-6 lg:col-span-2">
       <Card>
         <CardContent className="space-y-4 p-4">
           <Label>Vídeo — convertemos e comprimimos automaticamente</Label>
