@@ -23,6 +23,7 @@ import {
 } from "@/components/landing/ilustracoes";
 import heroBg from "@/assets/hero-bg.png.asset.json";
 import ctaBg from "@/assets/cta-bg.png.asset.json";
+import comoFuncionaBg from "@/assets/como-funciona-bg.png.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -166,33 +167,44 @@ function LandingPage() {
       {/* COMO FUNCIONA */}
       <section
         id="como-funciona"
-        style={{ background: C.creme, color: C.tinta }}
+        className="relative isolate"
+        style={{
+          backgroundImage: `url(${comoFuncionaBg.url})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
       >
+        {/* overlay para contraste */}
+        <div
+          aria-hidden
+          className="absolute inset-0 -z-10"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(11,11,15,0.85) 0%, rgba(11,11,15,0.7) 50%, rgba(11,11,15,0.85) 100%)",
+          }}
+        />
         <div className="mx-auto max-w-6xl px-5 py-16 md:py-24">
           <h2
-            style={{ ...displayStyle, fontSize: "clamp(2rem, 5vw, 3.75rem)" }}
+            style={{ ...displayStyle, fontSize: "clamp(2rem, 5vw, 3.75rem)", color: C.branco }}
             className="max-w-2xl"
           >
             Como funciona.
           </h2>
           <div className="mt-10 grid gap-5 md:grid-cols-3">
-            <StepCard
+            <GlassStepCard
               n="01"
-              bg={C.branco}
               title="Conecte sua conta"
               text="Autorize sua conta profissional do Instagram pelo Login do Facebook."
               ilustracao={<IlustraConectar className="h-24 w-24 md:h-28 md:w-28" />}
             />
-            <StepCard
+            <GlassStepCard
               n="02"
-              bg={C.amarelo}
               title="Defina as regras"
               text="Escolha palavras-chave e as respostas automáticas para DMs e comentários."
               ilustracao={<IlustraPalavraChave className="h-24 w-24 md:h-28 md:w-28" />}
             />
-            <StepCard
+            <GlassStepCard
               n="03"
-              bg="#FFD9DA"
               title="Assuma quando quiser"
               text="O app responde por você. Na caixa de entrada, você entra na conversa quando precisar."
               ilustracao={<IlustraCaixaEntrada className="h-24 w-24 md:h-28 md:w-28" />}
@@ -440,6 +452,35 @@ function StepCard({
         className="mt-2 text-[15px] leading-relaxed"
         style={{ color: C.tinta, opacity: 0.75 }}
       >
+        {text}
+      </p>
+    </div>
+  );
+}
+
+function GlassStepCard({
+  n,
+  title,
+  text,
+  ilustracao,
+}: {
+  n: string;
+  title: string;
+  text: string;
+  ilustracao?: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-3xl border border-white/10 bg-white/10 p-7 backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.25)]">
+      {ilustracao ? <div className="mb-4">{ilustracao}</div> : null}
+      <div
+        className="text-sm font-black tracking-widest text-white/60"
+      >
+        {n}
+      </div>
+      <h3 className="mt-4 text-xl font-black tracking-tight text-white">
+        {title}
+      </h3>
+      <p className="mt-2 text-[15px] leading-relaxed text-white/80">
         {text}
       </p>
     </div>
