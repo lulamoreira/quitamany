@@ -38,6 +38,7 @@ function NovoPost() {
   const [uploading, setUploading] = useState(false);
   const [progresso, setProgresso] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [arrastando, setArrastando] = useState(false);
 
 
   useEffect(() => {
@@ -61,47 +62,86 @@ function NovoPost() {
       });
   }, [editId]);
 
+  // Sem isto, soltar um arquivo fora da área pontilhada faz o navegador abrir o
+  // vídeo em outra aba e o usuário perde o formulário.
+  useEffect(() => {
+    const bloquear = (e: DragEvent) => e.preventDefault();
+    window.addEventListener("dragover", bloquear);
+    window.addEventListener("drop", bloquear);
+    return () => {
+      window.removeEventListener("dragover", bloquear);
+      window.removeEventListener("drop", bloquear);
+    };
+  }, []);
+
+  const descreverErro = (e: unknown): string => {
+    if (typeof e === "string") return e;
+    if (e && typeof e === "object") {
+      const err = e as { message?: unknown; name?: unknown };
+      if (typeof err.message === "string" && err.message) return err.message;
+      if (typeof err.name === "string" && err.name) return err.name;
+      try {
+        const json = JSON.stringify(e);
+        if (json && json !== "{}") return json;
+      } catch {
+        /* ignora */
+      }
+    }
+    return String(e);
+  };
+
   const handleUpload = async (fileOriginal: File) => {
-    if (fileOriginal.size > 200 * 1024 * 1024) {
-      toast.error("O vídeo precisa ter até 200 MB (antes da conversão)");
+    const nome = fileOriginal.name.toLowerCase();
+    const pareceVideo =
+      fileOriginal.type.startsWith("video/") ||
+      /\.(mp4|mov|webm|mkv|avi|m4v)$/i.test(nome);
+    if (!pareceVideo) {
+      toast.error("Selecione um arquivo de vídeo.");
       return;
     }
+
+    if (fileOriginal.size > 200 * 1024 * 1024) {
+      toast.warning(
+        `Vídeo grande (${mb(fileOriginal.size)} MB). Vamos comprimir automaticamente — isso pode levar alguns minutos, mantenha esta aba aberta.`,
+      );
+    }
+
     setUploading(true);
     setProgresso(null);
     try {
-      let file = fileOriginal;
-      const nome = fileOriginal.name.toLowerCase();
-      const precisaConverter = !(fileOriginal.type === "video/mp4" || nome.endsWith(".mp4"));
-      if (precisaConverter) {
-        const { garantirMp4 } = await import("@/lib/video-converter");
-        setProgresso("Preparando conversor…");
-        file = await garantirMp4(fileOriginal, ({ ratio, note }) => {
-          if (note) setProgresso(note);
-          else setProgresso(`Convertendo para MP4… ${Math.round(ratio * 100)}%`);
-        });
-        setProgresso("Enviando MP4…");
-      }
-      if (file.size > 100 * 1024 * 1024) {
-        setUploading(false);
-        setProgresso(null);
-        toast.error("Depois da conversão o vídeo ainda passou de 100 MB — reduza a duração ou qualidade");
-        return;
-      }
+      const { prepararVideo } = await import("@/lib/video-converter");
+      setProgresso("Preparando conversor…");
+      const resultado = await prepararVideo(fileOriginal, ({ ratio, note }) => {
+        const pct = Math.round(ratio * 100);
+        setProgresso(note ? (ratio > 0 ? `${note} ${pct}%` : note) : `Convertendo… ${pct}%`);
+      });
+
+      const file = resultado.arquivo;
+      setProgresso("Enviando…");
+
       const path = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
       const { error } = await supabase.storage.from("videos-instagram").upload(path, file, {
-        contentType: "video/mp4",
+        contentType: file.type || "video/mp4",
         upsert: false,
       });
       if (error) {
+        console.error(error);
         toast.error("Falha no upload: " + error.message);
         return;
       }
       const { data } = supabase.storage.from("videos-instagram").getPublicUrl(path);
       setVideoPath(path);
       setVideoUrl(data.publicUrl);
-      toast.success(precisaConverter ? "Vídeo convertido e enviado!" : "Vídeo enviado!");
-    } catch (e: any) {
-      toast.error("Falha ao processar vídeo: " + (e?.message ?? "erro desconhecido"));
+      if (resultado.comprimido) {
+        toast.success(
+          `Vídeo pronto: de ${mb(resultado.tamanhoOriginal)} MB para ${mb(resultado.tamanhoFinal)} MB.`,
+        );
+      } else {
+        toast.success("Vídeo enviado!");
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error("Falha ao processar vídeo: " + descreverErro(e));
     } finally {
       setUploading(false);
       setProgresso(null);
