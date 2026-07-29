@@ -503,32 +503,7 @@ function NovoPost() {
               placeholder="Escreva a legenda do post…"
             />
             <div className="flex flex-wrap items-center gap-2">
-              <Popover open={emojisAbertos} onOpenChange={setEmojisAbertos}>
-                <PopoverTrigger asChild>
-                  <Button type="button" variant="outline" size="sm">
-                    <Smile className="mr-1.5 h-4 w-4" />
-                    Emoji
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent align="start" className="w-[248px] p-2">
-                  <div className="grid grid-cols-6 gap-1">
-                    {EMOJIS.map((emoji) => (
-                      <button
-                        key={emoji}
-                        type="button"
-                        aria-label={`Inserir ${emoji}`}
-                        className="rounded-md p-1.5 text-lg transition-colors hover:bg-accent"
-                        onClick={() => {
-                          setEmojisAbertos(false);
-                          inserirNaLegenda(emoji);
-                        }}
-                      >
-                        {emoji}
-                      </button>
-                    ))}
-                  </div>
-                </PopoverContent>
-              </Popover>
+              <EmojiPicker onSelect={inserirNaLegenda} />
               <Button type="button" variant="outline" size="sm" onClick={() => inserirNaLegenda("#")}>
                 <Hash className="mr-1.5 h-4 w-4" />
                 Hashtag
