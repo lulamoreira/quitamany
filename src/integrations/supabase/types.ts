@@ -318,9 +318,11 @@ export type Database = {
           media_id: string | null
           permalink: string | null
           publicado_em: string | null
+          removido_no_instagram: boolean
           status: Database["public"]["Enums"]["post_status"]
           titulo: string | null
           updated_at: string
+          verificado_em: string | null
           video_path: string | null
           video_url: string | null
         }
@@ -338,9 +340,11 @@ export type Database = {
           media_id?: string | null
           permalink?: string | null
           publicado_em?: string | null
+          removido_no_instagram?: boolean
           status?: Database["public"]["Enums"]["post_status"]
           titulo?: string | null
           updated_at?: string
+          verificado_em?: string | null
           video_path?: string | null
           video_url?: string | null
         }
@@ -358,9 +362,11 @@ export type Database = {
           media_id?: string | null
           permalink?: string | null
           publicado_em?: string | null
+          removido_no_instagram?: boolean
           status?: Database["public"]["Enums"]["post_status"]
           titulo?: string | null
           updated_at?: string
+          verificado_em?: string | null
           video_path?: string | null
           video_url?: string | null
         }
