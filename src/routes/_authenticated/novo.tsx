@@ -248,15 +248,18 @@ function NovoPost() {
     setAgendadoPara(format(d, "yyyy-MM-dd'T'HH:mm"));
   };
 
-  /** Persiste o post. Devolve true em caso de sucesso. */
-  const persistir = async (status: "rascunho" | "agendado"): Promise<boolean> => {
+  /** Persiste o post. Devolve o id salvo, ou null em caso de falha. */
+  const persistir = async (
+    status: "rascunho" | "agendado",
+    opcoes?: { silencioso?: boolean },
+  ): Promise<string | null> => {
     if (status === "agendado" && !videoUrl) {
       toast.error("Envie um vídeo antes de agendar");
-      return false;
+      return null;
     }
     if (status === "agendado" && !agendadoPara) {
       toast.error("Escolha data e hora");
-      return false;
+      return null;
     }
     setSaving(true);
     const { data: user } = await supabase.auth.getUser();
@@ -271,23 +274,58 @@ function NovoPost() {
       criado_por: user.user!.id,
     };
     const res = editId
-      ? await supabase.from("posts_agendados").update(payload).eq("id", editId)
-      : await supabase.from("posts_agendados").insert(payload);
+      ? await supabase.from("posts_agendados").update(payload).eq("id", editId).select("id").single()
+      : await supabase.from("posts_agendados").insert(payload).select("id").single();
     setSaving(false);
     if (res.error) {
       toast.error(res.error.message);
-      return false;
+      return null;
     }
     // Salvo: some o estado "não salvo" antes de qualquer navegação.
     baseRef.current = { titulo, legenda, hashtags, videoUrl, agendadoPara };
     temAlteracoesRef.current = false;
-    toast.success(status === "agendado" ? "Post agendado!" : "Rascunho salvo");
-    return true;
+    if (!opcoes?.silencioso) {
+      toast.success(status === "agendado" ? "Post agendado!" : "Rascunho salvo");
+    }
+    return res.data?.id ?? editId ?? null;
   };
 
   const salvar = async (status: "rascunho" | "agendado") => {
     if (await persistir(status)) navigate({ to: "/agenda" });
   };
+
+  /** Salva e enfileira para publicação imediata. Não toca no motor existente. */
+  const publicarImediatamente = async () => {
+    setConfirmarPublicar(false);
+    const id = await persistir("rascunho", { silencioso: true });
+    if (!id) return;
+    setPublicando(true);
+    try {
+      const res = await publicarAgoraFn({ data: { id } });
+      if (!res.ok) {
+        toast.error(res.error || "Não foi possível enviar para publicação");
+        return;
+      }
+      // Motor é restrito a admin: falha de permissão é esperada e ignorada.
+      let motorRodou = false;
+      try {
+        await executarMotorFn({});
+        motorRodou = true;
+      } catch {
+        motorRodou = false;
+      }
+      toast.success(
+        motorRodou
+          ? "Publicado! Confira no seu perfil."
+          : "Enviado para publicação. Sai no próximo ciclo, em alguns minutos.",
+      );
+      temAlteracoesRef.current = false;
+      navigate({ to: "/historico" });
+    } finally {
+      setPublicando(false);
+    }
+  };
+
 
   const bloqueio = useBlocker({
     shouldBlockFn: () => temAlteracoesRef.current,
