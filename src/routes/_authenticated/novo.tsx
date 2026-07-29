@@ -170,7 +170,7 @@ function NovoPost() {
       setVideoUrl(data.publicUrl);
       if (resultado.comprimido) {
         toast.success(
-          `Vídeo pronto: de ${mb(resultado.tamanhoOriginal)} MB para ${mb(resultado.tamanhoFinal)} MB.`,
+          `Vídeo pronto: de ${mb(resultado.tamanhoOriginal)} para ${mb(resultado.tamanhoFinal)}.`,
         );
       } else {
         toast.success("Vídeo enviado!");
