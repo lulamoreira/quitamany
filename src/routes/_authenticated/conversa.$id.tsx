@@ -131,7 +131,7 @@ function ConversaPage() {
           <div className="flex items-center gap-3 border-b bg-card px-4 py-3">
             <Avatar className="h-10 w-10">
               {contato?.foto_url ? <AvatarImage src={contato.foto_url} alt={nome} /> : null}
-              <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">{inicial}</AvatarFallback>
+              <AvatarFallback className="bg-primary/10 text-foreground text-xs font-bold">{inicial}</AvatarFallback>
             </Avatar>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-bold">
@@ -240,7 +240,7 @@ function ConversaPage() {
         </Button>
         <Avatar className="h-10 w-10">
           {contato?.foto_url ? <AvatarImage src={contato.foto_url} alt={nome} /> : null}
-          <AvatarFallback className="bg-primary/10 text-primary">{inicial}</AvatarFallback>
+          <AvatarFallback className="bg-primary/10 text-foreground">{inicial}</AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
           <p className="truncate font-semibold">
@@ -406,7 +406,7 @@ function ConversaSidebarList({ activeId }: { activeId: string }) {
               >
                 <Avatar className="h-10 w-10 shrink-0">
                   {c.contatos?.foto_url ? <AvatarImage src={c.contatos.foto_url} alt={nome} /> : null}
-                  <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">{inicial}</AvatarFallback>
+                  <AvatarFallback className="bg-primary/10 text-foreground text-xs font-bold">{inicial}</AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline gap-1.5">
@@ -498,7 +498,7 @@ const addTag = async () => {
       <div className="text-center">
         <Avatar className="mx-auto h-16 w-16">
           {contato?.foto_url ? <AvatarImage src={contato?.foto_url} alt={nome} /> : null}
-          <AvatarFallback className="bg-primary/10 text-primary text-lg font-bold">{inicial}</AvatarFallback>
+          <AvatarFallback className="bg-primary/10 text-foreground text-lg font-bold">{inicial}</AvatarFallback>
         </Avatar>
         <p className="mt-2 text-sm font-bold">{contato?.username ? `@${contato?.username}` : nome}</p>
         {contato?.nome && contato?.username && (
@@ -515,7 +515,7 @@ const addTag = async () => {
             <button
               key={t}
               onClick={() => removeTag(t)}
-              className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary hover:bg-primary/20"
+              className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-foreground hover:bg-primary/20"
             >
               {t} ×
             </button>
@@ -616,7 +616,7 @@ const addTag = async () => {
             <p className="text-xs font-medium text-muted-foreground">Etiquetas</p>
             <div className="mt-1 flex flex-wrap gap-1">
               {(contato?.etiquetas ?? []).map((t: string) => (
-                <button key={t} onClick={() => removeTag(t)} className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary hover:bg-primary/20">
+                <button key={t} onClick={() => removeTag(t)} className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-foreground hover:bg-primary/20">
                   {t} ×
                 </button>
               ))}

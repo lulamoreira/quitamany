@@ -58,7 +58,7 @@ function AtalhoCard({
       className="group cursor-pointer border-transparent p-4 shadow-[var(--shadow-card)] transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-        <Icon className="h-5 w-5 text-primary" />
+        <Icon className="h-5 w-5 text-foreground" />
       </div>
       <p className="mt-3 text-sm font-bold">{titulo}</p>
       <p className="mt-0.5 text-xs text-muted-foreground">{descricao}</p>
@@ -229,7 +229,7 @@ function DashboardPage() {
         <Link to="/novo">
           <Card className="group h-full cursor-pointer border-transparent p-5 shadow-[var(--shadow-card)] transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-soft)]">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-foreground">
                 <PlusCircle className="h-6 w-6" />
               </div>
               <div className="min-w-0 flex-1">
@@ -244,7 +244,7 @@ function DashboardPage() {
         <Link to="/conversas">
           <Card className="group h-full cursor-pointer border-transparent p-5 shadow-[var(--shadow-card)] transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-soft)]">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-foreground">
                 <MessageCircle className="h-6 w-6" />
               </div>
               <div className="min-w-0 flex-1">

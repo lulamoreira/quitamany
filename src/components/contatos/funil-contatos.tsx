@@ -195,7 +195,7 @@ function ContatoCardVisual({ c, elevated }: { c: Contato; elevated?: boolean }) 
       <div className="flex items-center gap-2">
         <Avatar className="h-9 w-9 shrink-0">
           {c.foto_url ? <AvatarImage src={c.foto_url} alt={nome} /> : null}
-          <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">{inicial}</AvatarFallback>
+          <AvatarFallback className="bg-primary/10 text-foreground text-xs font-bold">{inicial}</AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
           <p className="truncate text-xs font-semibold">{c.username ? `@${c.username}` : nome}</p>

@@ -200,7 +200,7 @@ function DayCell({
             className="opacity-0 transition-opacity group-hover:opacity-100"
             title="Criar post neste dia"
           >
-            <PlusCircle className="h-4 w-4 text-muted-foreground hover:text-primary" />
+            <PlusCircle className="h-4 w-4 text-muted-foreground hover:text-foreground" />
           </button>
         )}
       </div>

@@ -93,7 +93,7 @@ function AutomacoesPage() {
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
+                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-foreground">
                       {TIPO_LABEL[a.tipo]}
                     </span>
                     {a.ativa ? (
@@ -260,7 +260,7 @@ function EditorDialog({ automacao, open, onOpenChange, onSaved }: {
               {botoes.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-1">
                   {botoes.map((b) => (
-                    <span key={b.titulo} className="rounded-full border border-primary/40 bg-background px-3 py-1 text-xs font-medium text-primary">
+                    <span key={b.titulo} className="rounded-full border border-primary/40 bg-background px-3 py-1 text-xs font-medium text-foreground">
                       {b.titulo}
                     </span>
                   ))}
@@ -280,7 +280,7 @@ function EditorDialog({ automacao, open, onOpenChange, onSaved }: {
             <div className="mt-2 flex flex-wrap gap-1">
               {botoes.map((b, i) => (
                 <button key={i} onClick={() => setBotoes(botoes.filter((_, x) => x !== i))}
-                  className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">
+                  className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs text-foreground">
                   {b.titulo} <X className="h-3 w-3" />
                 </button>
               ))}

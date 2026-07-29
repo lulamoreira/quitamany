@@ -84,7 +84,7 @@ function ContatosPage() {
                   onClick={() => setView("funil")}
                   className={cn(
                     "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors",
-                    view === "funil" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-accent",
+                    view === "funil" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted",
                   )}
                 >
                   <LayoutGrid className="h-3.5 w-3.5" /> Funil
@@ -93,7 +93,7 @@ function ContatosPage() {
                   onClick={() => setView("lista")}
                   className={cn(
                     "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors",
-                    view === "lista" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-accent",
+                    view === "lista" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted",
                   )}
                 >
                   <LayoutList className="h-3.5 w-3.5" /> Lista
@@ -134,13 +134,13 @@ function ContatosPage() {
                       <tr
                         key={c.id}
                         onClick={() => abrirConversa(c.id)}
-                        className="cursor-pointer border-b transition-colors hover:bg-accent/40"
+                        className="cursor-pointer border-b transition-colors hover:bg-muted/60"
                       >
                         <td className="px-4 py-2.5">
                           <div className="flex items-center gap-2">
                             <Avatar className="h-8 w-8">
                               {c.foto_url ? <AvatarImage src={c.foto_url} alt={nome} /> : null}
-                              <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-bold">{inicial}</AvatarFallback>
+                              <AvatarFallback className="bg-primary/10 text-foreground text-[10px] font-bold">{inicial}</AvatarFallback>
                             </Avatar>
                             <span className="font-medium">{c.username ? `@${c.username}` : nome}</span>
                             {c.opt_out ? (
@@ -151,7 +151,7 @@ function ContatosPage() {
                         <td className="px-4 py-2.5">
                           <div className="flex flex-wrap gap-1">
                             {(c.etiquetas ?? []).map((t) => (
-                              <span key={t} className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+                              <span key={t} className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-foreground">
                                 {t}
                               </span>
                             ))}
@@ -222,7 +222,7 @@ function ContatosPage() {
               <Card key={c.id} className="flex items-center gap-3 border-transparent p-3 shadow-[var(--shadow-card)]">
                 <Avatar className="h-11 w-11">
                   {c.foto_url ? <AvatarImage src={c.foto_url} alt={nome} /> : null}
-                  <AvatarFallback className="bg-primary/10 text-primary">{inicial}</AvatarFallback>
+                  <AvatarFallback className="bg-primary/10 text-foreground">{inicial}</AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-semibold">
@@ -233,7 +233,7 @@ function ContatosPage() {
                   </p>
                   <div className="mt-0.5 flex flex-wrap gap-1">
                     {(c.etiquetas ?? []).map((t) => (
-                      <span key={t} className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">{t}</span>
+                      <span key={t} className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-foreground">{t}</span>
                     ))}
                   </div>
                 </div>

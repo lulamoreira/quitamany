@@ -98,7 +98,7 @@ export function PostPreview({
           {tags && (!precisaTruncar || expandido) && (
             <>
               {" "}
-              <span className="break-words font-medium text-primary">{tags}</span>
+              <span className="break-words font-medium text-foreground">{tags}</span>
             </>
           )}
         </p>

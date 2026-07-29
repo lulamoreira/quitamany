@@ -148,17 +148,14 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
                         to={it.to}
                         title={collapsed ? it.label : undefined}
                         className={cn(
-                          "relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                          "relative flex items-center gap-3 rounded-full px-3 py-2 text-sm transition-colors",
                           active
-                            ? "bg-primary/10 text-primary"
-                            : "text-sidebar-foreground/80 hover:bg-accent hover:text-foreground",
+                            ? "bg-primary font-semibold text-primary-foreground shadow-sm"
+                            : "font-medium text-foreground/70 hover:bg-muted hover:text-foreground",
                           collapsed && "justify-center px-0",
                         )}
                       >
-                        {active && (
-                          <span className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r-full bg-primary" />
-                        )}
-                        <Icon className={cn("h-4 w-4 shrink-0", active && "text-primary")} />
+                        <Icon className={cn("h-4 w-4 shrink-0", active ? "text-primary-foreground" : "text-current")} />
                         {!collapsed && <span className="truncate">{it.label}</span>}
                       </Link>
                     </li>
@@ -180,10 +177,10 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
                     to={it.to}
                     title={collapsed ? it.label : undefined}
                     className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                      "flex items-center gap-3 rounded-full px-3 py-2 text-sm transition-colors",
                       active
-                        ? "bg-primary/10 text-primary"
-                        : "text-sidebar-foreground/80 hover:bg-accent hover:text-foreground",
+                        ? "bg-primary font-semibold text-primary-foreground shadow-sm"
+                        : "font-medium text-foreground/70 hover:bg-muted hover:text-foreground",
                       collapsed && "justify-center px-0",
                     )}
                   >
@@ -197,12 +194,12 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
 
           <div
             className={cn(
-              "flex items-center gap-2 rounded-xl bg-accent/40 p-2",
+              "flex items-center gap-2 rounded-xl bg-muted p-2",
               collapsed && "justify-center bg-transparent p-0",
             )}
           >
             <Avatar className="h-9 w-9 shrink-0">
-              <AvatarFallback className="bg-primary/10 font-bold text-primary">{inicial}</AvatarFallback>
+              <AvatarFallback className="bg-primary/10 font-bold text-foreground">{inicial}</AvatarFallback>
             </Avatar>
             {!collapsed && (
               <div className="min-w-0 flex-1">

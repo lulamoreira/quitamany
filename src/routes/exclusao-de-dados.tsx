@@ -46,7 +46,7 @@ function ExclusaoPage() {
               Envie um e-mail para{" "}
               <a
                 href="mailto:[EMAIL_DE_CONTATO]"
-                className="text-primary underline"
+                className="text-foreground underline"
               >
                 [EMAIL_DE_CONTATO]
               </a>{" "}
@@ -92,7 +92,7 @@ function ExclusaoPage() {
             Fale conosco pelo mesmo e-mail:{" "}
             <a
               href="mailto:[EMAIL_DE_CONTATO]"
-              className="text-primary underline"
+              className="text-foreground underline"
             >
               [EMAIL_DE_CONTATO]
             </a>
@@ -101,7 +101,7 @@ function ExclusaoPage() {
         </section>
 
         <footer className="border-t pt-4 text-sm">
-          <Link to="/" className="text-primary hover:underline">
+          <Link to="/" className="text-foreground hover:underline">
             ← Voltar
           </Link>
         </footer>

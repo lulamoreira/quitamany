@@ -111,11 +111,18 @@ function NavItem({
     <Link
       to={to}
       className={cn(
-        "flex flex-col items-center gap-1 py-3 text-[10px] font-medium transition-colors",
-        active ? "text-primary" : "text-muted-foreground hover:text-foreground",
+        "flex flex-col items-center gap-1 py-2 text-[10px] transition-colors",
+        active ? "font-semibold text-foreground" : "font-medium text-muted-foreground hover:text-foreground",
       )}
     >
-      <Icon className="h-5 w-5" strokeWidth={active ? 2.5 : 2} />
+      <span
+        className={cn(
+          "flex h-7 w-12 items-center justify-center rounded-full transition-colors",
+          active && "bg-primary text-primary-foreground",
+        )}
+      >
+        <Icon className="h-5 w-5" strokeWidth={active ? 2.5 : 2} />
+      </span>
       <span>{label}</span>
     </Link>
   );
@@ -172,7 +179,7 @@ function MaisButton({ open, onOpenChange }: { open: boolean; onOpenChange: (v: b
           <Link
             to="/painel"
             onClick={() => onOpenChange(false)}
-            className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium hover:bg-accent"
+            className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium hover:bg-muted"
           >
             <HomeIcon className="h-5 w-5 text-muted-foreground" />
             <span>Início</span>
@@ -182,7 +189,7 @@ function MaisButton({ open, onOpenChange }: { open: boolean; onOpenChange: (v: b
               key={it.to}
               to={it.to}
               onClick={() => onOpenChange(false)}
-              className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium hover:bg-accent"
+              className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium hover:bg-muted"
             >
               <it.icon className="h-5 w-5 text-muted-foreground" />
               <span>{it.label}</span>
@@ -192,7 +199,7 @@ function MaisButton({ open, onOpenChange }: { open: boolean; onOpenChange: (v: b
 
         <div className="mt-2 flex items-center gap-3 rounded-2xl border p-3">
           <Avatar className="h-10 w-10">
-            <AvatarFallback className="bg-primary/10 font-bold text-primary">
+            <AvatarFallback className="bg-primary/10 font-bold text-foreground">
               {(email[0] ?? "?").toUpperCase()}
             </AvatarFallback>
           </Avatar>
