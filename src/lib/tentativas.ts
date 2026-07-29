@@ -52,3 +52,43 @@ export async function listarTentativas(postId: string): Promise<Tentativa[]> {
   if (error) throw new Error(error.message);
   return (data ?? []) as unknown as Tentativa[];
 }
+
+/** Contagem de tentativas e data da última falha, por post. */
+export interface ResumoTentativas {
+  /** Quantas vezes o post foi efetivamente enviado/reenviado. */
+  total: number;
+  /** Data ISO da falha mais recente, se houver. */
+  ultimaFalha: string | null;
+}
+
+/**
+ * Resumo agregado de todos os posts em uma única consulta.
+ *
+ * Evita N requisições (uma por card). Consideramos como "tentativa" os eventos
+ * de falha, reenvio e publicação — são os que representam um envio à Meta.
+ */
+export async function resumoTentativasPorPost(): Promise<Record<string, ResumoTentativas>> {
+  const { data, error } = await supabase
+    .from("post_tentativas")
+    .select("post_id, evento, criado_em")
+    .in("evento", ["falha", "reenvio", "publicado"])
+    .order("criado_em", { ascending: false })
+    .limit(3000);
+  if (error) throw new Error(error.message);
+
+  const mapa: Record<string, ResumoTentativas> = {};
+  for (const linha of (data ?? []) as Array<{
+    post_id: string;
+    evento: TentativaEvento;
+    criado_em: string;
+  }>) {
+    const atual = mapa[linha.post_id] ?? { total: 0, ultimaFalha: null };
+    atual.total += 1;
+    // Consulta vem ordenada do mais recente para o mais antigo:
+    // a primeira falha encontrada já é a mais recente.
+    if (linha.evento === "falha" && !atual.ultimaFalha) atual.ultimaFalha = linha.criado_em;
+    mapa[linha.post_id] = atual;
+  }
+  return mapa;
+}
+
