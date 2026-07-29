@@ -31,6 +31,8 @@ function AgendaPage() {
   const [month] = useState(new Date());
   const [importando, setImportando] = useState(false);
   const queryClient = useQueryClient();
+  useRealtimePosts();
+
 
   async function importarCalendario() {
     setImportando(true);
