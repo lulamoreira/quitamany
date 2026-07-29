@@ -57,6 +57,35 @@ function Historico() {
     qc.invalidateQueries({ queryKey: ["historico"] });
   };
 
+  const verificarFn = useServerFn(verificarPublicacoes);
+  const [verificando, setVerificando] = useState(false);
+
+  const verificar = async () => {
+    setVerificando(true);
+    try {
+      const r = (await verificarFn({})) as {
+        verificados: number;
+        removidos: number;
+        interrompidoPorToken: boolean;
+        erros?: string[];
+      };
+      if (r.interrompidoPorToken) {
+        toast.error("Token da Meta expirado. Reconecte a conta em Ajustes.");
+      } else if (r.removidos > 0) {
+        toast.warning(
+          `${r.removidos} publicação(ões) removida(s) no Instagram · ${r.verificados} verificada(s)`,
+        );
+      } else {
+        toast.success(`${r.verificados} publicação(ões) verificada(s). Nenhuma removida.`);
+      }
+      qc.invalidateQueries({ queryKey: ["historico"] });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao verificar publicações");
+    } finally {
+      setVerificando(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <header className="flex flex-wrap items-start justify-between gap-2">
@@ -64,8 +93,19 @@ function Historico() {
           <h1 className="text-2xl font-bold">Histórico</h1>
           <p className="text-sm text-muted-foreground">Publicados e falhas</p>
         </div>
-        <BotaoAtualizar onAtualizar={() => refetch()} />
+        <div className="flex flex-wrap items-center gap-2">
+          <Button size="sm" variant="outline" onClick={verificar} disabled={verificando}>
+            {verificando ? (
+              <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+            ) : (
+              <ScanSearch className="mr-2 h-3 w-3" />
+            )}
+            Verificar publicações
+          </Button>
+          <BotaoAtualizar onAtualizar={() => refetch()} />
+        </div>
       </header>
+
 
       <ErrosPublicacao
         posts={posts.filter((p) => p.status === "erro") as any}
