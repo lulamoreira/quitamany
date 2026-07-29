@@ -145,13 +145,19 @@ async function reencodar(
   }
 }
 
+/**
+ * Troca só o contêiner, sem descomprimir nada. Funciona quando a origem já é
+ * H.264 + AAC (caso da maioria dos vídeos de celular) e leva segundos.
+ */
+const ARGS_REMUX = ["-c", "copy", "-movflags", "+faststart"];
+
 const ARGS_PADRAO = [
   "-vf",
   "scale='min(1080,iw)':-2",
   "-c:v",
   "libx264",
   "-preset",
-  "veryfast",
+  "ultrafast",
   "-crf",
   "23",
   "-pix_fmt",
@@ -182,6 +188,7 @@ const ARGS_FORTE = [
   "-b:a",
   "96k",
 ];
+
 
 /**
  * Garante um MP4 dentro do limite de upload, comprimindo em escada quando preciso.
