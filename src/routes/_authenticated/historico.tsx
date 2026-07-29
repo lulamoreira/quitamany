@@ -100,22 +100,45 @@ function Historico() {
                         : format(new Date(p.criado_em), "dd/MM/yyyy", { locale: ptBR })}
                     </p>
                   </div>
-                  <StatusBadge status={p.status} />
+                  <div className="flex shrink-0 flex-col items-end gap-1">
+                    <StatusBadge status={p.status} />
+                    {(p as any).removido_no_instagram && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                        <EyeOff className="h-3 w-3" />
+                        Removido no Instagram
+                      </span>
+                    )}
+                  </div>
                 </div>
+                {(p as any).removido_no_instagram && (p as any).verificado_em && (
+                  <p className="text-[11px] text-muted-foreground">
+                    Detectado em{" "}
+                    {format(new Date((p as any).verificado_em), "dd/MM/yyyy 'às' HH:mm", {
+                      locale: ptBR,
+                    })}
+                  </p>
+                )}
                 {p.status === "erro" && p.erro_msg && (
                   <p className="rounded-md bg-red-500/10 p-2 text-xs text-red-700 dark:text-red-300">
                     {p.erro_msg}
                   </p>
                 )}
                 <div className="flex flex-wrap items-center gap-2">
-                  {p.permalink && (
-                    <Button asChild size="sm" variant="outline">
-                      <a href={p.permalink} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="mr-2 h-3 w-3" />
-                        Ver no Instagram
-                      </a>
-                    </Button>
-                  )}
+                  {p.permalink &&
+                    ((p as any).removido_no_instagram ? (
+                      // Post apagado no Instagram: o link levaria a uma página inexistente.
+                      <span className="text-xs text-muted-foreground/70 line-through">
+                        Publicação removida do Instagram
+                      </span>
+                    ) : (
+                      <Button asChild size="sm" variant="outline">
+                        <a href={p.permalink} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="mr-2 h-3 w-3" />
+                          Ver no Instagram
+                        </a>
+                      </Button>
+                    ))}
+
                   {p.status === "erro" && (
                     <Button size="sm" variant="outline" onClick={() => tentarNovamente(p.id)}>
                       <RotateCcw className="mr-2 h-3 w-3" />
