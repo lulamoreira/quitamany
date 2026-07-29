@@ -15,8 +15,53 @@ const LOTE = 25;
 export interface ResumoVerificacao {
   verificados: number;
   removidos: number;
+  /** Quantos posts tiveram curtidas/comentários/compartilhamentos atualizados. */
+  metricasAtualizadas: number;
   interrompidoPorToken: boolean;
   erros: string[];
+}
+
+/** Métricas de desempenho de uma publicação. `null` = indisponível na Meta. */
+interface MetricasMidia {
+  curtidas: number | null;
+  comentarios: number | null;
+  compartilhamentos: number | null;
+  reposts: number | null;
+}
+
+function numeroOuNulo(v: unknown): number | null {
+  return typeof v === "number" && Number.isFinite(v) ? v : null;
+}
+
+/**
+ * Lê métricas de insights (compartilhamentos/reposts). Insights só existem
+ * para alguns tipos de mídia e podem falhar por permissão — qualquer falha é
+ * tratada como "indisponível", nunca como erro do fluxo de verificação.
+ */
+async function lerInsights(
+  mediaId: string,
+  token: string,
+): Promise<{ compartilhamentos: number | null; reposts: number | null }> {
+  const buscar = async (metric: string): Promise<number | null> => {
+    try {
+      const resp = await fetch(
+        `${GRAPH}/${mediaId}/insights?metric=${metric}&access_token=${encodeURIComponent(token)}`,
+      );
+      const body = await resp.json().catch(() => null);
+      const valor = body?.data?.[0]?.values?.[0]?.value;
+      return numeroOuNulo(valor);
+    } catch {
+      return null;
+    }
+  };
+
+  // Chamadas separadas: uma métrica inválida para o tipo de mídia derruba
+  // a requisição inteira quando pedidas juntas.
+  const [compartilhamentos, reposts] = await Promise.all([
+    buscar("shares"),
+    buscar("reposts"),
+  ]);
+  return { compartilhamentos, reposts };
 }
 
 /** Códigos que indicam problema transitório/credencial, nunca "post apagado". */
@@ -48,6 +93,7 @@ export async function verificarPublicados(): Promise<ResumoVerificacao> {
   const resumo: ResumoVerificacao = {
     verificados: 0,
     removidos: 0,
+    metricasAtualizadas: 0,
     interrompidoPorToken: false,
     erros: [],
   };
@@ -90,7 +136,7 @@ export async function verificarPublicados(): Promise<ResumoVerificacao> {
     let body: any;
     try {
       const resp = await fetch(
-        `${GRAPH}/${mediaId}?fields=id&access_token=${encodeURIComponent(cfg.access_token)}`,
+        `${GRAPH}/${mediaId}?fields=id,like_count,comments_count&access_token=${encodeURIComponent(cfg.access_token)}`,
       );
       body = await resp.json().catch(() => null);
       if (!body) {
@@ -139,12 +185,28 @@ export async function verificarPublicados(): Promise<ResumoVerificacao> {
     }
 
     if (body.id) {
+      // O post existe: aproveitamos a mesma rodada para atualizar o desempenho.
+      const insights = await lerInsights(mediaId, cfg.access_token);
+      const metricas: MetricasMidia = {
+        curtidas: numeroOuNulo(body.like_count),
+        comentarios: numeroOuNulo(body.comments_count),
+        compartilhamentos: insights.compartilhamentos,
+        reposts: insights.reposts,
+      };
+      const temAlguma = Object.values(metricas).some((v) => v !== null);
+
       const { error: updErr } = await supabaseAdmin
         .from("posts_agendados")
-        .update({ verificado_em: agora })
+        .update({
+          verificado_em: agora,
+          ...(temAlguma ? { ...metricas, metricas_em: agora } : {}),
+        })
         .eq("id", p.id);
       if (updErr) resumo.erros.push(updErr.message);
-      else resumo.verificados++;
+      else {
+        resumo.verificados++;
+        if (temAlguma) resumo.metricasAtualizadas++;
+      }
     }
   }
 

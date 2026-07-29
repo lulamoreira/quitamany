@@ -347,9 +347,12 @@ export type Database = {
       posts_agendados: {
         Row: {
           agendado_para: string | null
+          comentarios: number | null
+          compartilhamentos: number | null
           container_id: string | null
           criado_em: string
           criado_por: string | null
+          curtidas: number | null
           erro_msg: string | null
           hashtags: string
           id: string
@@ -357,9 +360,11 @@ export type Database = {
           instagram_permalink: string | null
           legenda: string
           media_id: string | null
+          metricas_em: string | null
           permalink: string | null
           publicado_em: string | null
           removido_no_instagram: boolean
+          reposts: number | null
           status: Database["public"]["Enums"]["post_status"]
           titulo: string | null
           updated_at: string
@@ -369,9 +374,12 @@ export type Database = {
         }
         Insert: {
           agendado_para?: string | null
+          comentarios?: number | null
+          compartilhamentos?: number | null
           container_id?: string | null
           criado_em?: string
           criado_por?: string | null
+          curtidas?: number | null
           erro_msg?: string | null
           hashtags?: string
           id?: string
@@ -379,9 +387,11 @@ export type Database = {
           instagram_permalink?: string | null
           legenda?: string
           media_id?: string | null
+          metricas_em?: string | null
           permalink?: string | null
           publicado_em?: string | null
           removido_no_instagram?: boolean
+          reposts?: number | null
           status?: Database["public"]["Enums"]["post_status"]
           titulo?: string | null
           updated_at?: string
@@ -391,9 +401,12 @@ export type Database = {
         }
         Update: {
           agendado_para?: string | null
+          comentarios?: number | null
+          compartilhamentos?: number | null
           container_id?: string | null
           criado_em?: string
           criado_por?: string | null
+          curtidas?: number | null
           erro_msg?: string | null
           hashtags?: string
           id?: string
@@ -401,9 +414,11 @@ export type Database = {
           instagram_permalink?: string | null
           legenda?: string
           media_id?: string | null
+          metricas_em?: string | null
           permalink?: string | null
           publicado_em?: string | null
           removido_no_instagram?: boolean
+          reposts?: number | null
           status?: Database["public"]["Enums"]["post_status"]
           titulo?: string | null
           updated_at?: string
