@@ -1,7 +1,0 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
-
-export const Route = createFileRoute("/_authenticated/publicador/")({
-  beforeLoad: () => {
-    throw redirect({ to: "/agenda" });
-  },
-});

@@ -18,7 +18,7 @@ import { PostActions, StatusBadge } from "@/components/agenda/post-actions";
 
 export const Route = createFileRoute("/_authenticated/agenda")({
   head: () => ({
-    meta: [{ title: "Agenda · Publicador" }],
+    meta: [{ title: "Agenda · QuitaMany" }],
   }),
   component: AgendaPage,
 });
