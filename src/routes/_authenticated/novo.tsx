@@ -26,6 +26,8 @@ const HASHTAG_SETS: Record<string, string> = {
     "#quitanda3d #lojaonline #compresmall #compredequemfazbem #brasil",
 };
 
+const mb = (bytes: number) => (bytes / (1024 * 1024)).toFixed(1);
+
 function NovoPost() {
   const { id: editId } = Route.useSearch();
   const navigate = useNavigate();
