@@ -8,9 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, Upload, Video } from "lucide-react";
+import { Eye, Loader2, Upload, Video } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { PostPreview } from "@/components/agenda/post-preview";
 
 export const Route = createFileRoute("/_authenticated/novo")({
   validateSearch: (s: Record<string, unknown>) => ({ id: (s.id as string) || undefined }),
@@ -42,6 +43,23 @@ function NovoPost() {
   const [progresso, setProgresso] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [arrastando, setArrastando] = useState(false);
+  const [previewAberto, setPreviewAberto] = useState(false);
+  const [contaUsername, setContaUsername] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    let ativo = true;
+    supabase
+      .from("ig_config")
+      .select("conta_username")
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (ativo && data?.conta_username) setContaUsername(data.conta_username);
+      });
+    return () => {
+      ativo = false;
+    };
+  }, []);
 
 
   useEffect(() => {
@@ -182,6 +200,15 @@ function NovoPost() {
     navigate({ to: "/agenda" });
   };
 
+  const preview = (
+    <PostPreview
+      videoUrl={videoUrl || undefined}
+      legenda={legenda}
+      hashtags={hashtags}
+      contaUsername={contaUsername}
+    />
+  );
+
   return (
     <div className="space-y-6">
       <header>
@@ -189,6 +216,22 @@ function NovoPost() {
         <p className="text-sm text-muted-foreground">Prepare o Reel para @quitanda3d</p>
       </header>
 
+      {/* Preview recolhido no mobile */}
+      <div className="lg:hidden">
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full"
+          onClick={() => setPreviewAberto((v) => !v)}
+        >
+          <Eye className="mr-2 h-4 w-4" />
+          {previewAberto ? "Ocultar preview" : "Ver preview"}
+        </Button>
+        {previewAberto && <div className="mt-3">{preview}</div>}
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-3 lg:items-start">
+        <div className="min-w-0 space-y-6 lg:col-span-2">
       <Card>
         <CardContent className="space-y-4 p-4">
           <Label>Vídeo — convertemos e comprimimos automaticamente</Label>
@@ -346,6 +389,17 @@ function NovoPost() {
           <Video className="mr-2 h-4 w-4" />
           Agendar
         </Button>
+      </div>
+        </div>
+
+        <aside className="hidden min-w-0 lg:block">
+          <div className="sticky top-6 space-y-2">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Preview
+            </p>
+            {preview}
+          </div>
+        </aside>
       </div>
     </div>
   );
