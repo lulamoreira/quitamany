@@ -88,8 +88,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "QuitaMany — Automação de atendimento no Instagram" },
       { name: "twitter:description", content: "Automação de atendimento para Instagram: responda mensagens diretas e comentários automaticamente, agende publicações e centralize tudo em uma caixa de entrada." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/f28e1bd0-7411-4e5e-99cb-88f2cac82b1c" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/f28e1bd0-7411-4e5e-99cb-88f2cac82b1c" },
+      { property: "og:image", content: "https://quitamany.lovable.app/__l5e/assets-v1/d69ca07b-403d-4718-bcd9-f780ffdb2e05/og-quitamany.png" },
+      { name: "twitter:image", content: "https://quitamany.lovable.app/__l5e/assets-v1/d69ca07b-403d-4718-bcd9-f780ffdb2e05/og-quitamany.png" },
     ],
     links: [
       {
