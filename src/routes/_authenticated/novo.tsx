@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate, useBlocker } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -18,10 +19,11 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Eye, Loader2, Upload, Video } from "lucide-react";
+import { Eye, Loader2, Send, Upload, Video } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { PostPreview } from "@/components/agenda/post-preview";
+import { publicarAgora, executarMotorAgora } from "@/lib/publicador.functions";
 import { ehModuloObsoleto, MENSAGEM_VERSAO_OBSOLETA } from "@/lib/versao-obsoleta";
 import {
   AVISO_DEMORA_BYTES,
@@ -64,6 +66,10 @@ function NovoPost() {
   const [arrastando, setArrastando] = useState(false);
   const [previewAberto, setPreviewAberto] = useState(false);
   const [contaUsername, setContaUsername] = useState<string | undefined>(undefined);
+  const [confirmarPublicar, setConfirmarPublicar] = useState(false);
+  const [publicando, setPublicando] = useState(false);
+  const publicarAgoraFn = useServerFn(publicarAgora);
+  const executarMotorFn = useServerFn(executarMotorAgora);
 
   // Snapshot do último estado salvo (ou carregado). Comparar contra ele evita
   // avisos em falso, que são piores que a ausência do aviso.
@@ -522,11 +528,30 @@ function NovoPost() {
         <Button variant="outline" onClick={() => salvar("rascunho")} disabled={saving} className="flex-1">
           Salvar rascunho
         </Button>
-        <Button onClick={() => salvar("agendado")} disabled={saving} className="flex-1">
+        <Button onClick={() => salvar("agendado")} disabled={saving || publicando} className="flex-1">
           <Video className="mr-2 h-4 w-4" />
           Agendar
         </Button>
+        <Button
+          variant="secondary"
+          onClick={() => setConfirmarPublicar(true)}
+          disabled={saving || publicando || !videoUrl}
+          title={videoUrl ? undefined : "Envie um vídeo antes de publicar"}
+          className="flex-1"
+        >
+          {publicando ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Send className="mr-2 h-4 w-4" />
+          )}
+          Publicar agora
+        </Button>
       </div>
+      {!videoUrl && (
+        <p className="text-xs text-muted-foreground">
+          "Publicar agora" fica disponível depois que o vídeo for enviado.
+        </p>
+      )}
         </div>
 
         <aside className="hidden min-w-0 lg:block">
@@ -538,6 +563,29 @@ function NovoPost() {
           </div>
         </aside>
       </div>
+
+      <AlertDialog open={confirmarPublicar} onOpenChange={setConfirmarPublicar}>
+        <AlertDialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-md">
+          <AlertDialogHeader className="min-w-0">
+            <AlertDialogTitle>Publicar agora?</AlertDialogTitle>
+            <AlertDialogDescription className="break-words">
+              O post vai para o Instagram imediatamente e não dá para desfazer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="min-w-0 flex-col flex-wrap gap-2 sm:flex-row">
+            <AlertDialogCancel disabled={publicando}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                void publicarImediatamente();
+              }}
+              disabled={publicando || saving}
+            >
+              Publicar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={bloqueio.status === "blocked"}>
         <AlertDialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-md">
