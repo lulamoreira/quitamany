@@ -171,9 +171,20 @@ function NovoPost() {
       return;
     }
 
-    if (fileOriginal.size > 200 * 1024 * 1024) {
+    // 1) Acima do teto de conversão: só a recusa, sem promessa falsa.
+    if (fileOriginal.size > LIMITE_CONVERSAO_BYTES) {
+      toast.error(mensagemVideoMuitoGrande(fileOriginal.size));
+      return;
+    }
+
+    // 2) Haverá conversão? (não é mp4, ou é mp4 acima do teto de upload)
+    const jaMp4 = fileOriginal.type === "video/mp4" || nome.endsWith(".mp4");
+    const precisaConverter = !jaMp4 || fileOriginal.size > LIMITE_UPLOAD_BYTES;
+
+    // 3) Avisar da demora apenas quando ela realmente vai acontecer.
+    if (precisaConverter && fileOriginal.size > AVISO_DEMORA_BYTES) {
       toast.warning(
-        `Vídeo grande (${mb(fileOriginal.size)}). Vamos comprimir automaticamente — isso pode levar alguns minutos, mantenha esta aba aberta.`,
+        `Vídeo de ${formatarTamanho(fileOriginal.size)}. Vamos converter e comprimir aqui mesmo — pode levar alguns minutos, mantenha esta aba aberta.`,
       );
     }
 
