@@ -66,6 +66,8 @@ export type ConversionProgress = { ratio: number; note?: string };
 export type ResultadoPreparo = {
   arquivo: File;
   comprimido: boolean;
+  /** true quando só trocamos o contêiner (sem recompressão, sem perda). */
+  remuxado?: boolean;
   tamanhoOriginal: number;
   tamanhoFinal: number;
 };
@@ -73,6 +75,13 @@ export type ResultadoPreparo = {
 export function mb(bytes: number): string {
   return (bytes / (1024 * 1024)).toFixed(1);
 }
+
+/** Log padronizado de medição de cada etapa. */
+function medir(etapa: string, inicio: number, antes: number, depois: number, extra = "") {
+  const s = ((Date.now() - inicio) / 1000).toFixed(1);
+  console.log(`[video] ${etapa}: ${s}s, ${mb(antes)} MB -> ${mb(depois)} MB${extra}`);
+}
+
 
 
 /** Descarta a instância (worker possivelmente morto) para a próxima tentativa começar limpa. */
