@@ -1,10 +1,11 @@
 // Conversor de vídeo no navegador (webm/mov/avi/… → mp4 H.264/AAC) via ffmpeg.wasm.
 // Carregado sob demanda para não pesar no bundle inicial.
 //
-// IMPORTANTE: `classWorkerURL` é obrigatório. O Vite empacota o worker do
-// @ffmpeg/ffmpeg como worker de MÓDULO, mas o núcleo UMD só pode ser carregado
-// por um worker CLÁSSICO (importScripts). Sem isso o worker morre antes de
-// inicializar e a conversão falha silenciosamente.
+// IMPORTANTE: o @ffmpeg/ffmpeg 0.12.x cria o worker SEMPRE como worker de
+// MÓDULO. Em worker de módulo não existe `importScripts`, então o núcleo UMD
+// nunca carrega ("Cannot find module"). Por isso apontamos `classWorkerURL`
+// para o worker ESM hospedado localmente (worker precisa ser da mesma origem)
+// e `coreURL` para o build ESM do núcleo (o UMD é incompatível).
 
 import wasmAsset from "@/assets/ffmpeg-core.wasm.asset.json";
 
@@ -21,8 +22,8 @@ async function getFfmpeg(): Promise<any> {
     const { FFmpeg } = await import("@ffmpeg/ffmpeg");
     const ffmpeg = new FFmpeg();
     await ffmpeg.load({
-      classWorkerURL: "/ffmpeg/814.ffmpeg.js",
-      coreURL: "/ffmpeg/ffmpeg-core.js",
+      classWorkerURL: "/ffmpeg/esm/worker.js",
+      coreURL: "https://unpkg.com/@ffmpeg/core@0.12.10/dist/esm/ffmpeg-core.js",
       wasmURL: wasmAsset.url,
     });
     ffmpegInstance = ffmpeg;
