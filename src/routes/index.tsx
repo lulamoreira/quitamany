@@ -458,6 +458,35 @@ function StepCard({
   );
 }
 
+function GlassStepCard({
+  n,
+  title,
+  text,
+  ilustracao,
+}: {
+  n: string;
+  title: string;
+  text: string;
+  ilustracao?: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-3xl border border-white/10 bg-white/10 p-7 backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.25)]">
+      {ilustracao ? <div className="mb-4">{ilustracao}</div> : null}
+      <div
+        className="text-sm font-black tracking-widest text-white/60"
+      >
+        {n}
+      </div>
+      <h3 className="mt-4 text-xl font-black tracking-tight text-white">
+        {title}
+      </h3>
+      <p className="mt-2 text-[15px] leading-relaxed text-white/80">
+        {text}
+      </p>
+    </div>
+  );
+}
+
 function Feature({
   icon,
   title,
