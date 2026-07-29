@@ -194,7 +194,7 @@ function ConversaPage() {
                     ) : (
                       <span className="whitespace-pre-wrap">{m.texto}</span>
                     )}
-                    <div className={cn("mt-1 text-[10px]", isOut ? "text-white/70" : "text-muted-foreground")}>
+                    <div className={cn("mt-1 text-[10px]", isOut ? "text-bubble-out-foreground/70" : "text-muted-foreground")}>
                       {formatRelative(m.criado_em, { addSuffix: true })}
                     </div>
                   </div>
@@ -310,7 +310,7 @@ function ConversaPage() {
                 ) : (
                   <span className="whitespace-pre-wrap">{m.texto}</span>
                 )}
-                <div className={cn("mt-1 text-[10px]", isOut ? "text-white/70" : "text-muted-foreground")}>
+                <div className={cn("mt-1 text-[10px]", isOut ? "text-bubble-out-foreground/70" : "text-muted-foreground")}>
                   {formatRelative(m.criado_em, { addSuffix: true })}
                 </div>
               </div>
