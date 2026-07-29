@@ -19,7 +19,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { listarTentativas, type Tentativa, type TentativaEvento } from "@/lib/tentativas";
+import {
+  listarTentativas,
+  resumoTentativasPorPost,
+  type Tentativa,
+  type TentativaEvento,
+} from "@/lib/tentativas";
 import { cn } from "@/lib/utils";
 
 interface HistoricoTentativasProps {
