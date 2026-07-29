@@ -97,6 +97,19 @@ function ConversaPage() {
     }
   };
 
+  /** Insere um trecho na posição do cursor da resposta, mantendo o foco. */
+  const inserirNaResposta = (trecho: string) => {
+    const el = respostaRef.current;
+    const inicio = el ? el.selectionStart : texto.length;
+    const fim = el ? el.selectionEnd : texto.length;
+    setTexto(texto.slice(0, inicio) + trecho + texto.slice(fim));
+    const cursor = inicio + trecho.length;
+    requestAnimationFrame(() => {
+      el?.focus();
+      el?.setSelectionRange(cursor, cursor);
+    });
+  };
+
   const handleModo = async (modo: "automatico" | "humano") => {
     const res: any = await trocarModo({ data: { conversa_id: id, modo } });
     if (res?.ok) {
