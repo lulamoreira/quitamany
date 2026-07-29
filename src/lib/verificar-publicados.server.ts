@@ -185,12 +185,28 @@ export async function verificarPublicados(): Promise<ResumoVerificacao> {
     }
 
     if (body.id) {
+      // O post existe: aproveitamos a mesma rodada para atualizar o desempenho.
+      const insights = await lerInsights(mediaId, cfg.access_token);
+      const metricas: MetricasMidia = {
+        curtidas: numeroOuNulo(body.like_count),
+        comentarios: numeroOuNulo(body.comments_count),
+        compartilhamentos: insights.compartilhamentos,
+        reposts: insights.reposts,
+      };
+      const temAlguma = Object.values(metricas).some((v) => v !== null);
+
       const { error: updErr } = await supabaseAdmin
         .from("posts_agendados")
-        .update({ verificado_em: agora })
+        .update({
+          verificado_em: agora,
+          ...(temAlguma ? { ...metricas, metricas_em: agora } : {}),
+        })
         .eq("id", p.id);
       if (updErr) resumo.erros.push(updErr.message);
-      else resumo.verificados++;
+      else {
+        resumo.verificados++;
+        if (temAlguma) resumo.metricasAtualizadas++;
+      }
     }
   }
 
