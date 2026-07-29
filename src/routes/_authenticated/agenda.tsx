@@ -87,7 +87,15 @@ function AgendaPage() {
       if (error) throw error;
       return data;
     },
+    // Enquanto houver post aguardando publicação, atualiza sozinho.
+    refetchInterval: (query) => {
+      const lista = (query.state.data ?? []) as Array<{ status: string }>;
+      const pendente = lista.some((p) => p.status === "agendado" || p.status === "processando");
+      return pendente ? 15000 : 60000;
+    },
+    refetchOnWindowFocus: true,
   });
+
 
   // ---- Desktop ----
   if (isDesktop) {
