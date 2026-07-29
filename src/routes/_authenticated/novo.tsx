@@ -69,7 +69,7 @@ function NovoPost() {
   const [previewAberto, setPreviewAberto] = useState(false);
   const [contaUsername, setContaUsername] = useState<string | undefined>(undefined);
   const [confirmarPublicar, setConfirmarPublicar] = useState(false);
-  const [emojisAbertos, setEmojisAbertos] = useState(false);
+  
   const legendaRef = useRef<HTMLTextAreaElement | null>(null);
   const [publicando, setPublicando] = useState(false);
   const publicarAgoraFn = useServerFn(publicarAgora);
