@@ -95,43 +95,45 @@ function LandingPage() {
       </header>
 
       {/* HERO */}
-      <section style={{ background: C.tinta, color: C.branco }}>
-        <div className="mx-auto grid max-w-6xl gap-12 px-5 py-16 md:grid-cols-2 md:items-center md:py-24">
-          <div>
-            <h1
-              style={{ ...displayStyle, fontSize: "clamp(2.5rem, 7vw, 5.5rem)" }}
-              className="text-white"
-            >
-              Seu Instagram respondendo sozinho.
-            </h1>
-            <p
-              className="mt-6 max-w-lg text-white/70"
-              style={{ fontSize: "1.1rem", lineHeight: 1.6 }}
-            >
-              Automação de atendimento para Instagram: responda mensagens
-              diretas e comentários automaticamente, agende publicações e
-              centralize tudo em uma caixa de entrada.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                to={ctaTo}
-                style={{ background: C.amarelo, color: C.tinta }}
-                className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-base font-semibold transition hover:opacity-90"
-              >
-                {ctaLabel} <ArrowRight className="h-4 w-4" />
-              </Link>
-              <a
-                href="#como-funciona"
-                className="inline-flex items-center gap-2 rounded-full border border-white/25 px-6 py-3 text-base font-semibold text-white transition hover:bg-white/10"
-              >
-                Como funciona
-              </a>
-            </div>
-          </div>
+      <section
+        className="relative flex h-screen min-h-[640px] w-full items-center justify-center overflow-hidden bg-cover bg-center"
+        style={{
+          backgroundImage: `url(${heroBg.url})`,
+          color: C.branco,
+        }}
+      >
+        {/* Overlay escuro com blur */}
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" aria-hidden="true" />
 
-          {/* Phone mockup */}
-          <div className="flex justify-center md:justify-end">
-            <PhoneMockup />
+        <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center px-5 py-16 text-center">
+          <h1
+            style={{ ...displayStyle, fontSize: "clamp(2.5rem, 7vw, 5.5rem)" }}
+            className="text-white drop-shadow-[0_2px_20px_rgba(0,0,0,0.5)]"
+          >
+            Seu Instagram respondendo sozinho.
+          </h1>
+          <p
+            className="mt-6 max-w-2xl text-white/90 drop-shadow-[0_1px_10px_rgba(0,0,0,0.5)]"
+            style={{ fontSize: "1.15rem", lineHeight: 1.6 }}
+          >
+            Automação de atendimento para Instagram: responda mensagens
+            diretas e comentários automaticamente, agende publicações e
+            centralize tudo em uma caixa de entrada.
+          </p>
+          <div className="mt-10 flex flex-wrap justify-center gap-3">
+            <Link
+              to={ctaTo}
+              style={{ background: C.amarelo, color: C.tinta }}
+              className="inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-base font-semibold shadow-lg transition hover:opacity-90"
+            >
+              {ctaLabel} <ArrowRight className="h-4 w-4" />
+            </Link>
+            <a
+              href="#como-funciona"
+              className="inline-flex items-center gap-2 rounded-full border border-white/40 bg-white/10 px-7 py-3.5 text-base font-semibold text-white backdrop-blur-sm transition hover:bg-white/20"
+            >
+              Como funciona
+            </a>
           </div>
         </div>
       </section>
