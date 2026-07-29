@@ -19,8 +19,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Eye, Hash, Loader2, Pilcrow, Send, Smile, Upload, Video } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Eye, Hash, Loader2, Pilcrow, Send, Upload, Video } from "lucide-react";
+import { EmojiPicker } from "@/components/emoji-picker";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { PostPreview } from "@/components/agenda/post-preview";
