@@ -174,21 +174,25 @@ function AgendaPage() {
 
   return (
     <div className="space-y-6">
-      <header className="flex items-start justify-between gap-3">
+      <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Agenda</h1>
           <p className="text-sm text-muted-foreground">Seus próximos posts no Instagram</p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={importarCalendario}
-          disabled={importando}
-        >
-          <FileDown className="mr-2 h-4 w-4" />
-          {importando ? "Importando…" : "Importar calendário editorial"}
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <BotaoAtualizar onAtualizar={() => refetch()} somenteIcone />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={importarCalendario}
+            disabled={importando}
+          >
+            <FileDown className="mr-2 h-4 w-4" />
+            {importando ? "Importando…" : "Importar calendário editorial"}
+          </Button>
+        </div>
       </header>
+
 
       <Card>
         <CardContent className="p-4">
