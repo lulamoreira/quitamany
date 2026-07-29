@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useMyRole } from "@/hooks/use-role";
+import { useContaInstagram } from "@/hooks/use-conta-instagram";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
