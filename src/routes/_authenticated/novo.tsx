@@ -23,6 +23,13 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { PostPreview } from "@/components/agenda/post-preview";
 import { ehModuloObsoleto, MENSAGEM_VERSAO_OBSOLETA } from "@/lib/versao-obsoleta";
+import {
+  AVISO_DEMORA_BYTES,
+  LIMITE_CONVERSAO_BYTES,
+  LIMITE_UPLOAD_BYTES,
+  formatarTamanho,
+  mensagemVideoMuitoGrande,
+} from "@/lib/video-limites";
 
 export const Route = createFileRoute("/_authenticated/novo")({
   validateSearch: (s: Record<string, unknown>) => ({ id: (s.id as string) || undefined }),
