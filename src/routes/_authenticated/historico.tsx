@@ -8,6 +8,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import { PostActions, StatusBadge } from "@/components/agenda/post-actions";
+import { useRealtimePosts } from "@/hooks/use-realtime-posts";
 
 export const Route = createFileRoute("/_authenticated/historico")({
   head: () => ({ meta: [{ title: "Histórico · QuitaMany" }] }),
@@ -16,6 +17,8 @@ export const Route = createFileRoute("/_authenticated/historico")({
 
 function Historico() {
   const qc = useQueryClient();
+  useRealtimePosts();
+
   const { data: posts = [], isLoading } = useQuery({
     queryKey: ["historico"],
     queryFn: async () => {
