@@ -232,13 +232,16 @@ function NovoPost() {
       const { data } = supabase.storage.from("videos-instagram").getPublicUrl(path);
       setVideoPath(path);
       setVideoUrl(data.publicUrl);
-      if (resultado.comprimido) {
+      if (resultado.remuxado) {
+        toast.success("Vídeo pronto, sem perda de qualidade.");
+      } else if (resultado.comprimido) {
         toast.success(
           `Vídeo pronto: de ${mb(resultado.tamanhoOriginal)} para ${mb(resultado.tamanhoFinal)}.`,
         );
       } else {
         toast.success("Vídeo enviado!");
       }
+
     } catch (e) {
       console.error(e);
       if (ehModuloObsoleto(e)) {
