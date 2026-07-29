@@ -16,6 +16,8 @@ import { AgendaKanban } from "@/components/agenda/agenda-kanban";
 import { AgendaCalendarDesktop } from "@/components/agenda/agenda-calendar";
 import { PostActions, StatusBadge } from "@/components/agenda/post-actions";
 import { useRealtimePosts } from "@/hooks/use-realtime-posts";
+import { BotaoAtualizar } from "@/components/agenda/botao-atualizar";
+
 
 
 export const Route = createFileRoute("/_authenticated/agenda")({
@@ -81,7 +83,7 @@ function AgendaPage() {
 
   // Desktop precisa de TODOS (inclui publicado e erro para o kanban).
   // Mobile mantém filtro original.
-  const { data: posts = [], isLoading } = useQuery({
+  const { data: posts = [], isLoading, refetch } = useQuery({
     queryKey: ["posts-agendados", "all"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -134,10 +136,12 @@ function AgendaPage() {
                   <CalendarDays className="h-3.5 w-3.5" /> Calendário
                 </button>
               </div>
+              <BotaoAtualizar onAtualizar={() => refetch()} />
               <Button variant="outline" size="sm" onClick={importarCalendario} disabled={importando}>
                 <FileDown className="mr-1.5 h-3.5 w-3.5" />
                 {importando ? "Importando…" : "Importar calendário"}
               </Button>
+
               <Button size="sm" onClick={() => navigate({ to: "/novo" })}>
                 <PlusCircle className="mr-1.5 h-3.5 w-3.5" /> Novo post
               </Button>
@@ -170,21 +174,25 @@ function AgendaPage() {
 
   return (
     <div className="space-y-6">
-      <header className="flex items-start justify-between gap-3">
+      <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Agenda</h1>
           <p className="text-sm text-muted-foreground">Seus próximos posts no Instagram</p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={importarCalendario}
-          disabled={importando}
-        >
-          <FileDown className="mr-2 h-4 w-4" />
-          {importando ? "Importando…" : "Importar calendário editorial"}
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <BotaoAtualizar onAtualizar={() => refetch()} somenteIcone />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={importarCalendario}
+            disabled={importando}
+          >
+            <FileDown className="mr-2 h-4 w-4" />
+            {importando ? "Importando…" : "Importar calendário editorial"}
+          </Button>
+        </div>
       </header>
+
 
       <Card>
         <CardContent className="p-4">

@@ -9,6 +9,8 @@ import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import { PostActions, StatusBadge } from "@/components/agenda/post-actions";
 import { useRealtimePosts } from "@/hooks/use-realtime-posts";
+import { BotaoAtualizar } from "@/components/agenda/botao-atualizar";
+
 
 export const Route = createFileRoute("/_authenticated/historico")({
   head: () => ({ meta: [{ title: "Histórico · QuitaMany" }] }),
@@ -19,7 +21,7 @@ function Historico() {
   const qc = useQueryClient();
   const { conectado } = useRealtimePosts();
 
-  const { data: posts = [], isLoading } = useQuery({
+  const { data: posts = [], isLoading, refetch } = useQuery({
     queryKey: ["historico"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -51,10 +53,14 @@ function Historico() {
 
   return (
     <div className="space-y-4">
-      <header>
-        <h1 className="text-2xl font-bold">Histórico</h1>
-        <p className="text-sm text-muted-foreground">Publicados e falhas</p>
+      <header className="flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <h1 className="text-2xl font-bold">Histórico</h1>
+          <p className="text-sm text-muted-foreground">Publicados e falhas</p>
+        </div>
+        <BotaoAtualizar onAtualizar={() => refetch()} />
       </header>
+
 
       {isLoading ? (
         <p className="text-sm text-muted-foreground">Carregando…</p>
