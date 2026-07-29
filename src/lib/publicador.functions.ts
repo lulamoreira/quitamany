@@ -78,6 +78,16 @@ export const executarMotorAgora = createServerFn({ method: "POST" })
     return await executarMotor();
   });
 
+// Verifica manualmente se os posts publicados ainda existem no Instagram.
+export const verificarPublicacoes = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async () => {
+    const { verificarPublicados } = await import("./verificar-publicados.server");
+    return await verificarPublicados();
+  });
+
+
+
 // Backfill único: busca permalink do Instagram para posts publicados que ainda não têm.
 export const recuperarPermalinks = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
