@@ -234,7 +234,7 @@ function DashboardPage() {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-semibold">Novo post</p>
-                <p className="text-xs text-muted-foreground">Agende um Reel para @quitanda3d</p>
+                <p className="text-xs text-muted-foreground">{conectado ? `Agende um Reel para @${cfg.conta_username}` : "Agende um Reel"}</p>
               </div>
               <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
             </div>

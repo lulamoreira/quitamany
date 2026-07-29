@@ -384,7 +384,7 @@ function NovoPost() {
     <div className="space-y-6">
       <header>
         <h1 className="text-2xl font-bold">{editId ? "Editar post" : "Novo post"}</h1>
-        <p className="text-sm text-muted-foreground">Prepare o Reel para @quitanda3d</p>
+        <p className="text-sm text-muted-foreground">{contaUsername ? `Prepare o Reel para @${contaUsername}` : "Prepare o Reel"}</p>
       </header>
 
       {/* Preview recolhido no mobile */}
