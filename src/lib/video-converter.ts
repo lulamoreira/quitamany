@@ -66,6 +66,8 @@ export type ConversionProgress = { ratio: number; note?: string };
 export type ResultadoPreparo = {
   arquivo: File;
   comprimido: boolean;
+  /** true quando só trocamos o contêiner (sem recompressão, sem perda). */
+  remuxado?: boolean;
   tamanhoOriginal: number;
   tamanhoFinal: number;
 };
@@ -73,6 +75,13 @@ export type ResultadoPreparo = {
 export function mb(bytes: number): string {
   return (bytes / (1024 * 1024)).toFixed(1);
 }
+
+/** Log padronizado de medição de cada etapa. */
+function medir(etapa: string, inicio: number, antes: number, depois: number, extra = "") {
+  const s = ((Date.now() - inicio) / 1000).toFixed(1);
+  console.log(`[video] ${etapa}: ${s}s, ${mb(antes)} MB -> ${mb(depois)} MB${extra}`);
+}
+
 
 
 /** Descarta a instância (worker possivelmente morto) para a próxima tentativa começar limpa. */
@@ -136,13 +145,19 @@ async function reencodar(
   }
 }
 
+/**
+ * Troca só o contêiner, sem descomprimir nada. Funciona quando a origem já é
+ * H.264 + AAC (caso da maioria dos vídeos de celular) e leva segundos.
+ */
+const ARGS_REMUX = ["-c", "copy", "-movflags", "+faststart"];
+
 const ARGS_PADRAO = [
   "-vf",
   "scale='min(1080,iw)':-2",
   "-c:v",
   "libx264",
   "-preset",
-  "veryfast",
+  "ultrafast",
   "-crf",
   "23",
   "-pix_fmt",
@@ -174,6 +189,7 @@ const ARGS_FORTE = [
   "96k",
 ];
 
+
 /**
  * Garante um MP4 dentro do limite de upload, comprimindo em escada quando preciso.
  */
@@ -200,21 +216,57 @@ export async function prepararVideo(
     throw new Error(mensagemVideoMuitoGrande(tamanhoOriginal));
   }
 
-  onProgress?.({ ratio: 0, note: "Preparando conversor…" });
-  const ffmpeg = await getFfmpeg();
+  onProgress?.({ ratio: 0, note: "Preparando vídeo…" });
+  let ffmpeg = await getFfmpeg();
   const { fetchFile } = await import("@ffmpeg/util");
 
   const inputName = `entrada-${Date.now()}${extensaoDe(fileOriginal.name)}`;
-  await ffmpeg.writeFile(inputName, await fetchFile(fileOriginal));
+  const bytesEntrada = await fetchFile(fileOriginal);
+  await ffmpeg.writeFile(inputName, bytesEntrada);
 
   try {
+    // ESTÁGIO 0.5 — remux (sem recompressão). Só troca o contêiner; se a origem
+    // já for H.264/AAC, resolve em segundos e sem perda de qualidade.
+    const inicioRemux = Date.now();
+    try {
+      const dataRemux = await reencodar(
+        ffmpeg,
+        inputName,
+        ARGS_REMUX,
+        onProgress,
+        "Preparando vídeo…",
+      );
+      if (dataRemux.byteLength > 0 && dataRemux.byteLength <= LIMITE_BYTES) {
+        medir("remux", inicioRemux, tamanhoOriginal, dataRemux.byteLength, " (aceito)");
+        const blobRemux = new Blob([dataRemux as unknown as BlobPart], { type: "video/mp4" });
+        const nomeRemux = fileOriginal.name.replace(/\.[a-z0-9]+$/i, "") + ".mp4";
+        const arquivoRemux = new File([blobRemux], nomeRemux, { type: "video/mp4" });
+        return {
+          arquivo: arquivoRemux,
+          comprimido: false,
+          remuxado: true,
+          tamanhoOriginal,
+          tamanhoFinal: arquivoRemux.size,
+        };
+      }
+      medir("remux", inicioRemux, tamanhoOriginal, dataRemux.byteLength, " (recusado: grande demais)");
+    } catch (e) {
+      medir("remux", inicioRemux, tamanhoOriginal, 0, " (falhou, seguindo para reencode)");
+      // reencodar() descarta a instância em caso de erro: recria e reescreve a entrada.
+      ffmpeg = await getFfmpeg();
+      await ffmpeg.writeFile(inputName, bytesEntrada);
+    }
+
     // ESTÁGIO 1 — conversão padrão
     onProgress?.({ ratio: 0, note: "Convertendo…" });
+    const inicio1 = Date.now();
     let data = await reencodar(ffmpeg, inputName, ARGS_PADRAO, onProgress, "Convertendo…");
+    medir("reencode 1080p", inicio1, tamanhoOriginal, data.byteLength);
 
     // ESTÁGIO 2 — compressão forte
     if (data.byteLength > LIMITE_BYTES) {
       onProgress?.({ ratio: 0, note: "Ainda está grande, comprimindo mais…" });
+      const inicio2 = Date.now();
       data = await reencodar(
         ffmpeg,
         inputName,
@@ -222,6 +274,7 @@ export async function prepararVideo(
         onProgress,
         "Ainda está grande, comprimindo mais…",
       );
+      medir("reencode 720p", inicio2, tamanhoOriginal, data.byteLength);
     }
 
     // ESTÁGIO 3 — desistência explícita
@@ -247,6 +300,7 @@ export async function prepararVideo(
     await ffmpeg.deleteFile(inputName).catch(() => {});
   }
 }
+
 
 /** Compatibilidade com o uso antigo. */
 export async function garantirMp4(
