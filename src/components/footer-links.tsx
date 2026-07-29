@@ -2,8 +2,8 @@ import { Link } from "@tanstack/react-router";
 
 export function FooterLinks() {
   return (
-    <footer className="border-t bg-card/50 py-4 text-center text-xs text-muted-foreground">
-      <div className="mx-auto flex max-w-2xl items-center justify-center gap-3">
+    <footer className="border-t bg-card/50 px-4 py-4 text-center text-xs text-muted-foreground">
+      <div className="mx-auto flex max-w-2xl flex-wrap items-center justify-center gap-x-3 gap-y-1">
         <Link to="/privacidade" className="hover:text-foreground hover:underline">
           Privacidade
         </Link>
