@@ -84,7 +84,7 @@ function MobileBottomNav() {
   const isActive = (to: string, exact?: boolean) => (exact ? path === to : path.startsWith(to));
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t bg-card/95 backdrop-blur">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
       <div className="mx-auto grid max-w-2xl grid-cols-5 items-end">
         <NavItem to="/conversas" icon={MessageCircle} label="Conversas" active={isActive("/conversas") || path.startsWith("/conversa/")} />
         <NavItem to="/automacoes" icon={Zap} label="Automações" active={isActive("/automacoes")} />
