@@ -108,7 +108,7 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
   const chatLayout = location.pathname.startsWith("/conversa");
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className={cn("flex bg-background", chatLayout ? "h-screen overflow-hidden" : "min-h-screen")}>
       <aside
         className={cn(
           "sticky top-0 z-30 flex h-screen flex-col border-r border-border bg-sidebar text-sidebar-foreground transition-[width] duration-200",
@@ -246,24 +246,31 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
         className={cn(
           "flex min-w-0 flex-1 flex-col",
           // --shell-pad: respiro lateral/vertical padrão do conteúdo autenticado.
-          // Telas de conversa (3 colunas) usam 0 para não perder área útil.
+          // Telas de conversa (3 colunas) usam 0 para não perder área útil e
+          // precisam de min-h-0 para que a altura seja o espaço restante real.
           chatLayout
-            ? "[--shell-pad:0px]"
+            ? "min-h-0 [--shell-pad:0px]"
             : "[--shell-pad:1.5rem] lg:[--shell-pad:2.5rem]",
         )}
       >
-        <div className="flex min-w-0 flex-1 flex-col px-[var(--shell-pad)] py-[var(--shell-pad)]">
+        <div
+          className={cn(
+            "flex min-w-0 flex-1 flex-col px-[var(--shell-pad)] py-[var(--shell-pad)]",
+            chatLayout && "min-h-0",
+          )}
+        >
           <div
             className={cn(
               "mx-auto flex w-full min-w-0 flex-1 flex-col",
-              chatLayout ? "max-w-none" : "max-w-[1280px] gap-6",
+              chatLayout ? "min-h-0 max-w-none" : "max-w-[1280px] gap-6",
             )}
           >
             {children}
           </div>
         </div>
-        <FooterLinks />
+        {!chatLayout && <FooterLinks />}
       </div>
+
 
     </div>
   );
