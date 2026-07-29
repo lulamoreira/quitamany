@@ -16,6 +16,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { verificarPublicacoes } from "@/lib/publicador.functions";
 import { HistoricoTentativas } from "@/components/agenda/historico-tentativas";
 import { registrarTentativaCliente } from "@/lib/tentativas";
+import { MetricasPost } from "@/components/agenda/metricas-post";
 
 
 
@@ -74,6 +75,7 @@ function Historico() {
       const r = (await verificarFn({})) as {
         verificados: number;
         removidos: number;
+        metricasAtualizadas: number;
         interrompidoPorToken: boolean;
         erros?: string[];
       };
@@ -84,7 +86,12 @@ function Historico() {
           `${r.removidos} publicação(ões) removida(s) no Instagram · ${r.verificados} verificada(s)`,
         );
       } else {
-        toast.success(`${r.verificados} publicação(ões) verificada(s). Nenhuma removida.`);
+        toast.success(
+          `${r.verificados} publicação(ões) verificada(s)` +
+            (r.metricasAtualizadas
+              ? ` · ${r.metricasAtualizadas} com métricas atualizadas`
+              : ". Nenhuma removida."),
+        );
       }
       qc.invalidateQueries({ queryKey: ["historico"] });
     } catch (e) {
@@ -169,6 +176,15 @@ function Historico() {
                       locale: ptBR,
                     })}
                   </p>
+                )}
+                {p.status === "publicado" && (
+                  <MetricasPost
+                    curtidas={(p as any).curtidas}
+                    comentarios={(p as any).comentarios}
+                    compartilhamentos={(p as any).compartilhamentos}
+                    reposts={(p as any).reposts}
+                    metricasEm={(p as any).metricas_em}
+                  />
                 )}
                 {p.status === "erro" && p.erro_msg && (
                   <p className="rounded-md bg-red-500/10 p-2 text-xs text-red-700 dark:text-red-300">
