@@ -134,10 +134,12 @@ function AgendaPage() {
                   <CalendarDays className="h-3.5 w-3.5" /> Calendário
                 </button>
               </div>
+              <BotaoAtualizar onAtualizar={() => refetch()} />
               <Button variant="outline" size="sm" onClick={importarCalendario} disabled={importando}>
                 <FileDown className="mr-1.5 h-3.5 w-3.5" />
                 {importando ? "Importando…" : "Importar calendário"}
               </Button>
+
               <Button size="sm" onClick={() => navigate({ to: "/novo" })}>
                 <PlusCircle className="mr-1.5 h-3.5 w-3.5" /> Novo post
               </Button>
