@@ -51,7 +51,7 @@ const HASHTAG_SETS: Record<string, string> = {
   "Produto e decoração":
     "#decoracao #decoracaocriativa #presente #presentecriativo #decorhome #casa #achadinhos",
   "Loja e comunidade":
-    "#quitanda3d #lojaonline #compresmall #compredequemfazbem #brasil",
+    "#lojaonline #compresmall #compredequemfazbem #brasil",
 };
 
 /** Formatação de tamanho vem do módulo de limites — um lugar só. */
