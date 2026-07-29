@@ -1,14 +1,18 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 /**
- * Assina as mudanças em tempo real da tabela de publicações agendadas.
+ * Assina em tempo real as mudanças da tabela de publicações agendadas.
  * Sempre que uma linha for criada, alterada ou removida, as consultas
- * relacionadas são invalidadas — sem precisar recarregar a página.
+ * de Agenda e Histórico são invalidadas — sem polling e sem recarregar.
+ *
+ * Retorna `conectado`, que permite às telas manterem um polling de
+ * segurança apenas quando o canal em tempo real não estiver ativo.
  */
-export function useRealtimePosts(extraKeys: string[] = []) {
+export function useRealtimePosts(): { conectado: boolean } {
   const qc = useQueryClient();
+  const [conectado, setConectado] = useState(false);
 
   useEffect(() => {
     const canal = supabase
@@ -19,14 +23,17 @@ export function useRealtimePosts(extraKeys: string[] = []) {
         () => {
           qc.invalidateQueries({ queryKey: ["posts-agendados"] });
           qc.invalidateQueries({ queryKey: ["historico"] });
-          for (const k of extraKeys) qc.invalidateQueries({ queryKey: [k] });
         },
       )
-      .subscribe();
+      .subscribe((status) => {
+        setConectado(status === "SUBSCRIBED");
+      });
 
     return () => {
+      setConectado(false);
       supabase.removeChannel(canal);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [qc, extraKeys.join("|")]);
+  }, [qc]);
+
+  return { conectado };
 }
