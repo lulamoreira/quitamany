@@ -372,6 +372,17 @@ function NovoPost() {
           Agendar
         </Button>
       </div>
+        </div>
+
+        <aside className="hidden min-w-0 lg:block">
+          <div className="sticky top-6 space-y-2">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Preview
+            </p>
+            {preview}
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }
