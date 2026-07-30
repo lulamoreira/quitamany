@@ -69,7 +69,7 @@ function AuthPage() {
       options: { emailRedirectTo: window.location.origin + "/" },
     });
     setLoading(false);
-    if (error) return toast.error(error.message);
+    if (error) return toast.error(traduzirErroAuth(error.message));
     toast.success("Link mágico enviado! Confira sua caixa de entrada.");
   };
 
@@ -85,7 +85,7 @@ function AuthPage() {
             options: { emailRedirectTo: window.location.origin + "/" },
           });
     setLoading(false);
-    if (error) return toast.error(error.message);
+    if (error) return toast.error(traduzirErroAuth(error.message));
     if (mode === "signup") toast.success("Conta criada! Aguarde aprovação do administrador.");
     navigate({ to: "/painel" });
   };
