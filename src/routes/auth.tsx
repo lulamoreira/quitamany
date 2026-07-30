@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FooterLinks } from "@/components/footer-links";
 import { toast } from "sonner";
+import { traduzirErroAuth } from "@/lib/auth-erros";
 import { Instagram, Loader2, Mail } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
