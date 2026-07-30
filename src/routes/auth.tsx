@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FooterLinks } from "@/components/footer-links";
 import { toast } from "sonner";
+import { traduzirErroAuth } from "@/lib/auth-erros";
 import { Instagram, Loader2, Mail } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
@@ -68,7 +69,7 @@ function AuthPage() {
       options: { emailRedirectTo: window.location.origin + "/" },
     });
     setLoading(false);
-    if (error) return toast.error(error.message);
+    if (error) return toast.error(traduzirErroAuth(error.message));
     toast.success("Link mágico enviado! Confira sua caixa de entrada.");
   };
 
@@ -84,7 +85,7 @@ function AuthPage() {
             options: { emailRedirectTo: window.location.origin + "/" },
           });
     setLoading(false);
-    if (error) return toast.error(error.message);
+    if (error) return toast.error(traduzirErroAuth(error.message));
     if (mode === "signup") toast.success("Conta criada! Aguarde aprovação do administrador.");
     navigate({ to: "/painel" });
   };
