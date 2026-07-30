@@ -31,6 +31,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { testarConexao, renovarToken, executarMotorAgora, recuperarPermalinks } from "@/lib/publicador.functions";
+import { listarEquipe } from "@/lib/equipe.functions";
 import {
   obterWebhookInfo,
   salvarPageId,
@@ -761,14 +762,21 @@ function MotorPublicacao() {
 function Equipe() {
   const qc = useQueryClient();
   const [inviteEmail, setInviteEmail] = useState("");
+  const [meuId, setMeuId] = useState<string | null>(null);
+  const listar = useServerFn(listarEquipe);
 
-  const { data: roles = [] } = useQuery({
+  useEffect(() => {
+    supabase.auth.getUser().then((r) => setMeuId(r.data.user?.id ?? null));
+  }, []);
+
+  const { data, isLoading } = useQuery({
     queryKey: ["all-roles"],
-    queryFn: async () => {
-      const { data } = await supabase.from("user_roles").select("*").order("criado_em", { ascending: false });
-      return data || [];
-    },
+    queryFn: async () => await listar({}),
   });
+
+  const erro = data && !data.ok ? data.error : null;
+  const roles = data && data.ok ? data.roles : [];
+
 
   const alterarPapel = async (userId: string, novoPapel: "admin" | "editor" | "pendente") => {
     await supabase.from("user_roles").delete().eq("user_id", userId);
@@ -797,11 +805,30 @@ function Equipe() {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          {roles.length === 0 && <p className="text-sm text-muted-foreground">Nenhum usuário cadastrado ainda.</p>}
+          {erro && <p className="text-sm text-destructive">{erro}</p>}
+          {!erro && isLoading && <p className="text-sm text-muted-foreground">Carregando…</p>}
+          {!erro && !isLoading && roles.length === 0 && (
+            <p className="text-sm text-muted-foreground">Nenhum usuário cadastrado ainda.</p>
+          )}
           {roles.map((r: any) => (
             <div key={r.id} className="flex items-center justify-between gap-2 rounded-lg border p-3">
               <div className="min-w-0 flex-1">
-                <p className="truncate font-mono text-xs">{r.user_id.slice(0, 8)}…</p>
+                {r.email ? (
+                  <p className="flex items-center gap-2 truncate text-sm font-medium">
+                    <span className="truncate">{r.email}</span>
+                    {meuId === r.user_id && (
+                      <Badge variant="outline" className="shrink-0 text-[10px]">você</Badge>
+                    )}
+                  </p>
+                ) : (
+                  <p className="flex items-center gap-2 truncate text-xs">
+                    <span className="font-mono">{r.user_id.slice(0, 8)}…</span>
+                    <Badge variant="outline" className="shrink-0 text-[10px]">conta removida</Badge>
+                    {meuId === r.user_id && (
+                      <Badge variant="outline" className="shrink-0 text-[10px]">você</Badge>
+                    )}
+                  </p>
+                )}
                 <p className="text-xs text-muted-foreground">
                   desde {format(new Date(r.criado_em), "dd/MM/yyyy", { locale: ptBR })}
                 </p>
