@@ -761,14 +761,21 @@ function MotorPublicacao() {
 function Equipe() {
   const qc = useQueryClient();
   const [inviteEmail, setInviteEmail] = useState("");
+  const [meuId, setMeuId] = useState<string | null>(null);
+  const listar = useServerFn(listarEquipe);
 
-  const { data: roles = [] } = useQuery({
+  useEffect(() => {
+    supabase.auth.getUser().then((r) => setMeuId(r.data.user?.id ?? null));
+  }, []);
+
+  const { data, isLoading } = useQuery({
     queryKey: ["all-roles"],
-    queryFn: async () => {
-      const { data } = await supabase.from("user_roles").select("*").order("criado_em", { ascending: false });
-      return data || [];
-    },
+    queryFn: async () => await listar({}),
   });
+
+  const erro = data && !data.ok ? data.error : null;
+  const roles = data && data.ok ? data.roles : [];
+
 
   const alterarPapel = async (userId: string, novoPapel: "admin" | "editor" | "pendente") => {
     await supabase.from("user_roles").delete().eq("user_id", userId);
