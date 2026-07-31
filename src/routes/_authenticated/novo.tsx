@@ -122,6 +122,7 @@ function NovoPost() {
   const [tipoMidia, setTipoMidia] = useState<TipoMidia>("reels");
   const [imagens, setImagens] = useState<MidiaItem[]>([]);
   const [enviandoImagem, setEnviandoImagem] = useState(false);
+  const [arrastandoImagem, setArrastandoImagem] = useState(false);
   /** Índice da imagem sendo arrastada no carrossel; null quando não há arraste. */
   const [arrastandoIndice, setArrastandoIndice] = useState<number | null>(null);
   const [filaUpload, setFilaUpload] = useState<ItemUpload[]>([]);
@@ -780,7 +781,39 @@ function NovoPost() {
             )}
 
             {imagens.length < (tipoMidia === "imagem" ? 1 : MAX_ITENS_CARROSSEL) && (
-              <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border py-8 transition-colors hover:bg-accent/30">
+              <label
+                className={cn(
+                  "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed py-8 transition-colors",
+                  arrastandoImagem
+                    ? "border-primary bg-primary/10"
+                    : "border-border hover:bg-accent/30",
+                )}
+                onDragEnter={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (!enviandoImagem) setArrastandoImagem(true);
+                }}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (!enviandoImagem) setArrastandoImagem(true);
+                }}
+                onDragLeave={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setArrastandoImagem(false);
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setArrastandoImagem(false);
+                  if (enviandoImagem) return;
+                  const arquivos = Array.from(e.dataTransfer.files ?? []);
+                  const limite =
+                    (tipoMidia === "imagem" ? 1 : MAX_ITENS_CARROSSEL) - imagens.length;
+                  if (arquivos.length) handleUploadImagens(arquivos, limite);
+                }}
+              >
                 {enviandoImagem ? (
                   <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                 ) : (
@@ -789,9 +822,13 @@ function NovoPost() {
                 <span className="text-sm text-muted-foreground">
                   {enviandoImagem
                     ? "Enviando…"
-                    : tipoMidia === "imagem"
-                      ? "Toque para escolher a imagem"
-                      : "Toque para adicionar imagens"}
+                    : arrastandoImagem
+                      ? tipoMidia === "imagem"
+                        ? "Solte a imagem aqui"
+                        : "Solte as imagens aqui"
+                      : tipoMidia === "imagem"
+                        ? "Toque ou arraste a imagem"
+                        : "Toque ou arraste imagens"}
                 </span>
                 <span className="text-[11px] text-muted-foreground">
                   JPG, JPEG, PNG, WebP ou HEIC do iPhone — convertemos e reduzimos
