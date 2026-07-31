@@ -497,19 +497,32 @@ function NovoPost() {
 
   const preview = (
     <PostPreview
+      tipoMidia={tipoMidia}
       videoUrl={videoUrl || undefined}
+      imagens={imagens.map((i) => i.url)}
       legenda={legenda}
       hashtags={hashtags}
       contaUsername={contaUsername}
     />
   );
 
+  const opcoesTipo: Array<{ tipo: TipoMidia; Icone: typeof Film }> = [
+    { tipo: "reels", Icone: Film },
+    { tipo: "imagem", Icone: ImageIcon },
+    { tipo: "carrossel", Icone: Images },
+  ];
+
   return (
     <div className="space-y-6">
       <header>
         <h1 className="text-2xl font-bold">{editId ? "Editar post" : "Novo post"}</h1>
-        <p className="text-sm text-muted-foreground">{contaUsername ? `Prepare o Reel para @${contaUsername}` : "Prepare o Reel"}</p>
+        <p className="text-sm text-muted-foreground">
+          {contaUsername
+            ? `Prepare a publicação para @${contaUsername}`
+            : "Prepare a publicação"}
+        </p>
       </header>
+
 
       {/* Preview recolhido no mobile */}
       <div className="lg:hidden">
