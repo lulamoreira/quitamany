@@ -689,11 +689,11 @@ function NovoPost() {
                       : "Toque para adicionar imagens"}
                 </span>
                 <span className="text-[11px] text-muted-foreground">
-                  Até {formatarTamanho(LIMITE_IMAGEM_BYTES)} por imagem.
+                  Aceita fotos de celular — reduzimos o tamanho automaticamente.
                 </span>
                 <input
                   type="file"
-                  accept="image/jpeg,image/png"
+                  accept="image/*"
                   multiple={tipoMidia === "carrossel"}
                   className="hidden"
                   disabled={enviandoImagem}
