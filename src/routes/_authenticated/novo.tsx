@@ -719,6 +719,9 @@ function NovoPost() {
 
         </CardContent>
       </Card>
+      )}
+
+
 
       <Card>
         <CardContent className="space-y-4 p-4">
