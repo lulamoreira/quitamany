@@ -22,6 +22,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import {
+  ChevronLeft,
+  ChevronRight,
   Eye,
   Film,
   Hash,
