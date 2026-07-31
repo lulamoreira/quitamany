@@ -416,7 +416,12 @@ function NovoPost() {
       video_path: videoPath || null,
       video_url: videoUrl || null,
       tipo_midia: tipoMidia,
-      midia_itens: tipoMidia === "reels" ? null : imagens,
+      // O jsonb aceita qualquer JSON; o cast só satisfaz o tipo gerado.
+      midia_itens:
+        tipoMidia === "reels"
+          ? null
+          : (imagens.map((i) => ({ url: i.url })) as unknown as Json),
+
       agendado_para: agendadoPara ? new Date(agendadoPara).toISOString() : null,
       status,
       criado_por: user.user!.id,
