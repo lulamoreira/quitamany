@@ -15,9 +15,12 @@ import { Route as ExclusaoDeDadosRouteImport } from './routes/exclusao-de-dados'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiRecolorImageRouteImport } from './routes/api/recolor-image'
+import { Route as ApiIdentifyObjetoRouteImport } from './routes/api/identify-objeto'
 import { Route as AuthenticatedPainelRouteImport } from './routes/_authenticated/painel'
 import { Route as AuthenticatedNovoRouteImport } from './routes/_authenticated/novo'
 import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
+import { Route as AuthenticatedGerarFotosRouteImport } from './routes/_authenticated/gerar-fotos'
 import { Route as AuthenticatedConversasRouteImport } from './routes/_authenticated/conversas'
 import { Route as AuthenticatedContatosRouteImport } from './routes/_authenticated/contatos'
 import { Route as AuthenticatedAutomacoesRouteImport } from './routes/_authenticated/automacoes'
@@ -64,6 +67,16 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiRecolorImageRoute = ApiRecolorImageRouteImport.update({
+  id: '/api/recolor-image',
+  path: '/api/recolor-image',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiIdentifyObjetoRoute = ApiIdentifyObjetoRouteImport.update({
+  id: '/api/identify-objeto',
+  path: '/api/identify-objeto',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedPainelRoute = AuthenticatedPainelRouteImport.update({
   id: '/painel',
   path: '/painel',
@@ -77,6 +90,11 @@ const AuthenticatedNovoRoute = AuthenticatedNovoRouteImport.update({
 const AuthenticatedHistoricoRoute = AuthenticatedHistoricoRouteImport.update({
   id: '/historico',
   path: '/historico',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedGerarFotosRoute = AuthenticatedGerarFotosRouteImport.update({
+  id: '/gerar-fotos',
+  path: '/gerar-fotos',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedConversasRoute = AuthenticatedConversasRouteImport.update({
@@ -179,9 +197,12 @@ export interface FileRoutesByFullPath {
   '/automacoes': typeof AuthenticatedAutomacoesRoute
   '/contatos': typeof AuthenticatedContatosRoute
   '/conversas': typeof AuthenticatedConversasRoute
+  '/gerar-fotos': typeof AuthenticatedGerarFotosRoute
   '/historico': typeof AuthenticatedHistoricoRoute
   '/novo': typeof AuthenticatedNovoRoute
   '/painel': typeof AuthenticatedPainelRoute
+  '/api/identify-objeto': typeof ApiIdentifyObjetoRoute
+  '/api/recolor-image': typeof ApiRecolorImageRoute
   '/conversa/$id': typeof AuthenticatedConversaIdRoute
   '/quitamany/ajustes': typeof AuthenticatedQuitamanyAjustesRoute
   '/quitamany/automacoes': typeof AuthenticatedQuitamanyAutomacoesRoute
@@ -205,9 +226,12 @@ export interface FileRoutesByTo {
   '/automacoes': typeof AuthenticatedAutomacoesRoute
   '/contatos': typeof AuthenticatedContatosRoute
   '/conversas': typeof AuthenticatedConversasRoute
+  '/gerar-fotos': typeof AuthenticatedGerarFotosRoute
   '/historico': typeof AuthenticatedHistoricoRoute
   '/novo': typeof AuthenticatedNovoRoute
   '/painel': typeof AuthenticatedPainelRoute
+  '/api/identify-objeto': typeof ApiIdentifyObjetoRoute
+  '/api/recolor-image': typeof ApiRecolorImageRoute
   '/conversa/$id': typeof AuthenticatedConversaIdRoute
   '/quitamany/ajustes': typeof AuthenticatedQuitamanyAjustesRoute
   '/quitamany/automacoes': typeof AuthenticatedQuitamanyAutomacoesRoute
@@ -233,9 +257,12 @@ export interface FileRoutesById {
   '/_authenticated/automacoes': typeof AuthenticatedAutomacoesRoute
   '/_authenticated/contatos': typeof AuthenticatedContatosRoute
   '/_authenticated/conversas': typeof AuthenticatedConversasRoute
+  '/_authenticated/gerar-fotos': typeof AuthenticatedGerarFotosRoute
   '/_authenticated/historico': typeof AuthenticatedHistoricoRoute
   '/_authenticated/novo': typeof AuthenticatedNovoRoute
   '/_authenticated/painel': typeof AuthenticatedPainelRoute
+  '/api/identify-objeto': typeof ApiIdentifyObjetoRoute
+  '/api/recolor-image': typeof ApiRecolorImageRoute
   '/_authenticated/conversa/$id': typeof AuthenticatedConversaIdRoute
   '/_authenticated/quitamany/ajustes': typeof AuthenticatedQuitamanyAjustesRoute
   '/_authenticated/quitamany/automacoes': typeof AuthenticatedQuitamanyAutomacoesRoute
@@ -261,9 +288,12 @@ export interface FileRouteTypes {
     | '/automacoes'
     | '/contatos'
     | '/conversas'
+    | '/gerar-fotos'
     | '/historico'
     | '/novo'
     | '/painel'
+    | '/api/identify-objeto'
+    | '/api/recolor-image'
     | '/conversa/$id'
     | '/quitamany/ajustes'
     | '/quitamany/automacoes'
@@ -287,9 +317,12 @@ export interface FileRouteTypes {
     | '/automacoes'
     | '/contatos'
     | '/conversas'
+    | '/gerar-fotos'
     | '/historico'
     | '/novo'
     | '/painel'
+    | '/api/identify-objeto'
+    | '/api/recolor-image'
     | '/conversa/$id'
     | '/quitamany/ajustes'
     | '/quitamany/automacoes'
@@ -314,9 +347,12 @@ export interface FileRouteTypes {
     | '/_authenticated/automacoes'
     | '/_authenticated/contatos'
     | '/_authenticated/conversas'
+    | '/_authenticated/gerar-fotos'
     | '/_authenticated/historico'
     | '/_authenticated/novo'
     | '/_authenticated/painel'
+    | '/api/identify-objeto'
+    | '/api/recolor-image'
     | '/_authenticated/conversa/$id'
     | '/_authenticated/quitamany/ajustes'
     | '/_authenticated/quitamany/automacoes'
@@ -337,6 +373,8 @@ export interface RootRouteChildren {
   ExclusaoDeDadosRoute: typeof ExclusaoDeDadosRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   TermosRoute: typeof TermosRoute
+  ApiIdentifyObjetoRoute: typeof ApiIdentifyObjetoRoute
+  ApiRecolorImageRoute: typeof ApiRecolorImageRoute
   ApiPublicMetaCallbackRoute: typeof ApiPublicMetaCallbackRoute
   ApiPublicVersaoRoute: typeof ApiPublicVersaoRoute
   ApiPublicHooksPublicarPostsRoute: typeof ApiPublicHooksPublicarPostsRoute
@@ -388,6 +426,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/recolor-image': {
+      id: '/api/recolor-image'
+      path: '/api/recolor-image'
+      fullPath: '/api/recolor-image'
+      preLoaderRoute: typeof ApiRecolorImageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/identify-objeto': {
+      id: '/api/identify-objeto'
+      path: '/api/identify-objeto'
+      fullPath: '/api/identify-objeto'
+      preLoaderRoute: typeof ApiIdentifyObjetoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/painel': {
       id: '/_authenticated/painel'
       path: '/painel'
@@ -407,6 +459,13 @@ declare module '@tanstack/react-router' {
       path: '/historico'
       fullPath: '/historico'
       preLoaderRoute: typeof AuthenticatedHistoricoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/gerar-fotos': {
+      id: '/_authenticated/gerar-fotos'
+      path: '/gerar-fotos'
+      fullPath: '/gerar-fotos'
+      preLoaderRoute: typeof AuthenticatedGerarFotosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/conversas': {
@@ -530,6 +589,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAutomacoesRoute: typeof AuthenticatedAutomacoesRoute
   AuthenticatedContatosRoute: typeof AuthenticatedContatosRoute
   AuthenticatedConversasRoute: typeof AuthenticatedConversasRoute
+  AuthenticatedGerarFotosRoute: typeof AuthenticatedGerarFotosRoute
   AuthenticatedHistoricoRoute: typeof AuthenticatedHistoricoRoute
   AuthenticatedNovoRoute: typeof AuthenticatedNovoRoute
   AuthenticatedPainelRoute: typeof AuthenticatedPainelRoute
@@ -547,6 +607,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAutomacoesRoute: AuthenticatedAutomacoesRoute,
   AuthenticatedContatosRoute: AuthenticatedContatosRoute,
   AuthenticatedConversasRoute: AuthenticatedConversasRoute,
+  AuthenticatedGerarFotosRoute: AuthenticatedGerarFotosRoute,
   AuthenticatedHistoricoRoute: AuthenticatedHistoricoRoute,
   AuthenticatedNovoRoute: AuthenticatedNovoRoute,
   AuthenticatedPainelRoute: AuthenticatedPainelRoute,
@@ -568,6 +629,8 @@ const rootRouteChildren: RootRouteChildren = {
   ExclusaoDeDadosRoute: ExclusaoDeDadosRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   TermosRoute: TermosRoute,
+  ApiIdentifyObjetoRoute: ApiIdentifyObjetoRoute,
+  ApiRecolorImageRoute: ApiRecolorImageRoute,
   ApiPublicMetaCallbackRoute: ApiPublicMetaCallbackRoute,
   ApiPublicVersaoRoute: ApiPublicVersaoRoute,
   ApiPublicHooksPublicarPostsRoute: ApiPublicHooksPublicarPostsRoute,
