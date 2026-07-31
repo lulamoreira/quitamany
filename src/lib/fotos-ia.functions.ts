@@ -27,6 +27,7 @@ export const criarRascunhoDeImagens = createServerFn({ method: "POST" })
         titulo: null,
         legenda: "",
         hashtags: "",
+        criado_por: context.userId,
       })
       .select("id")
       .single();
