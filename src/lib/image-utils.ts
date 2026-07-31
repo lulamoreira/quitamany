@@ -174,3 +174,88 @@ export async function reduzirImagem(file: File): Promise<File> {
     aberta.liberar();
   }
 }
+
+// ───────────────────────────────────────────────────────────────────────────────
+// Helpers usados pelo módulo "Fotos com IA" (geração/recolorização).
+// Separados de reduzirImagem: aqui o alvo é um data URL enviado ao gateway de IA,
+// não um File para o Storage.
+// ───────────────────────────────────────────────────────────────────────────────
+
+export const MAX_FILE_BYTES = 10 * 1024 * 1024;
+export const MAX_DIMENSION = 1536;
+export type ImageValidation = { ok: true } | { ok: false; message: string };
+
+export function validateFile(file: File): ImageValidation {
+  const name = file.name.toLowerCase();
+  if (name.endsWith(".heic") || name.endsWith(".heif") || /heic|heif/.test(file.type)) {
+    return {
+      ok: false,
+      message:
+        "Formato HEIC não suportado. No iPhone: Ajustes > Câmera > Formatos > Mais Compatível, ou converta para JPG.",
+    };
+  }
+  if (!["image/jpeg", "image/jpg", "image/png", "image/webp"].includes(file.type)) {
+    return { ok: false, message: "Formato inválido. Envie JPG, PNG ou WEBP." };
+  }
+  if (file.size > MAX_FILE_BYTES) return { ok: false, message: "Arquivo muito grande. O limite é 10MB." };
+  return { ok: true };
+}
+
+export function resizeToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const objectUrl = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const scale = Math.min(1, MAX_DIMENSION / Math.max(img.width, img.height));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        const ctx = canvas.getContext("2d");
+        if (!ctx) throw new Error("Canvas não disponível neste navegador.");
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/jpeg", 0.9));
+      } catch (error) {
+        reject(error instanceof Error ? error : new Error("Falha ao processar a imagem."));
+      } finally {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error("Não foi possível ler esta imagem."));
+    };
+    img.src = objectUrl;
+  });
+}
+
+export function dataUrlToBlob(dataUrl: string): Blob {
+  const [meta, base64] = dataUrl.split(",");
+  const mime = meta.match(/:(.*?);/)?.[1] ?? "image/jpeg";
+  const bytes = atob(base64);
+  const buffer = new Uint8Array(bytes.length);
+  for (let i = 0; i < bytes.length; i += 1) buffer[i] = bytes.charCodeAt(i);
+  return new Blob([buffer], { type: mime });
+}
+
+export function downloadBlob(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+export function slugify(value: string): string {
+  return (
+    value
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "") || "objeto"
+  );
+}

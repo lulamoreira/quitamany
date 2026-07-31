@@ -15,6 +15,7 @@ import { Route as ExclusaoDeDadosRouteImport } from './routes/exclusao-de-dados'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiRecolorImageRouteImport } from './routes/api/recolor-image'
 import { Route as ApiIdentifyObjetoRouteImport } from './routes/api/identify-objeto'
 import { Route as AuthenticatedPainelRouteImport } from './routes/_authenticated/painel'
 import { Route as AuthenticatedNovoRouteImport } from './routes/_authenticated/novo'
@@ -63,6 +64,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiRecolorImageRoute = ApiRecolorImageRouteImport.update({
+  id: '/api/recolor-image',
+  path: '/api/recolor-image',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiIdentifyObjetoRoute = ApiIdentifyObjetoRouteImport.update({
@@ -189,6 +195,7 @@ export interface FileRoutesByFullPath {
   '/novo': typeof AuthenticatedNovoRoute
   '/painel': typeof AuthenticatedPainelRoute
   '/api/identify-objeto': typeof ApiIdentifyObjetoRoute
+  '/api/recolor-image': typeof ApiRecolorImageRoute
   '/conversa/$id': typeof AuthenticatedConversaIdRoute
   '/quitamany/ajustes': typeof AuthenticatedQuitamanyAjustesRoute
   '/quitamany/automacoes': typeof AuthenticatedQuitamanyAutomacoesRoute
@@ -216,6 +223,7 @@ export interface FileRoutesByTo {
   '/novo': typeof AuthenticatedNovoRoute
   '/painel': typeof AuthenticatedPainelRoute
   '/api/identify-objeto': typeof ApiIdentifyObjetoRoute
+  '/api/recolor-image': typeof ApiRecolorImageRoute
   '/conversa/$id': typeof AuthenticatedConversaIdRoute
   '/quitamany/ajustes': typeof AuthenticatedQuitamanyAjustesRoute
   '/quitamany/automacoes': typeof AuthenticatedQuitamanyAutomacoesRoute
@@ -245,6 +253,7 @@ export interface FileRoutesById {
   '/_authenticated/novo': typeof AuthenticatedNovoRoute
   '/_authenticated/painel': typeof AuthenticatedPainelRoute
   '/api/identify-objeto': typeof ApiIdentifyObjetoRoute
+  '/api/recolor-image': typeof ApiRecolorImageRoute
   '/_authenticated/conversa/$id': typeof AuthenticatedConversaIdRoute
   '/_authenticated/quitamany/ajustes': typeof AuthenticatedQuitamanyAjustesRoute
   '/_authenticated/quitamany/automacoes': typeof AuthenticatedQuitamanyAutomacoesRoute
@@ -274,6 +283,7 @@ export interface FileRouteTypes {
     | '/novo'
     | '/painel'
     | '/api/identify-objeto'
+    | '/api/recolor-image'
     | '/conversa/$id'
     | '/quitamany/ajustes'
     | '/quitamany/automacoes'
@@ -301,6 +311,7 @@ export interface FileRouteTypes {
     | '/novo'
     | '/painel'
     | '/api/identify-objeto'
+    | '/api/recolor-image'
     | '/conversa/$id'
     | '/quitamany/ajustes'
     | '/quitamany/automacoes'
@@ -329,6 +340,7 @@ export interface FileRouteTypes {
     | '/_authenticated/novo'
     | '/_authenticated/painel'
     | '/api/identify-objeto'
+    | '/api/recolor-image'
     | '/_authenticated/conversa/$id'
     | '/_authenticated/quitamany/ajustes'
     | '/_authenticated/quitamany/automacoes'
@@ -350,6 +362,7 @@ export interface RootRouteChildren {
   PrivacidadeRoute: typeof PrivacidadeRoute
   TermosRoute: typeof TermosRoute
   ApiIdentifyObjetoRoute: typeof ApiIdentifyObjetoRoute
+  ApiRecolorImageRoute: typeof ApiRecolorImageRoute
   ApiPublicMetaCallbackRoute: typeof ApiPublicMetaCallbackRoute
   ApiPublicVersaoRoute: typeof ApiPublicVersaoRoute
   ApiPublicHooksPublicarPostsRoute: typeof ApiPublicHooksPublicarPostsRoute
@@ -399,6 +412,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/recolor-image': {
+      id: '/api/recolor-image'
+      path: '/api/recolor-image'
+      fullPath: '/api/recolor-image'
+      preLoaderRoute: typeof ApiRecolorImageRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/identify-objeto': {
@@ -589,6 +609,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacidadeRoute: PrivacidadeRoute,
   TermosRoute: TermosRoute,
   ApiIdentifyObjetoRoute: ApiIdentifyObjetoRoute,
+  ApiRecolorImageRoute: ApiRecolorImageRoute,
   ApiPublicMetaCallbackRoute: ApiPublicMetaCallbackRoute,
   ApiPublicVersaoRoute: ApiPublicVersaoRoute,
   ApiPublicHooksPublicarPostsRoute: ApiPublicHooksPublicarPostsRoute,
