@@ -368,13 +368,15 @@ function NovoPost() {
         marcar(i, "preparando");
         try {
           file = await reduzirImagem(original);
-        } catch {
-          marcar(i, "erro", "Formato não suportado");
+        } catch (e) {
+          console.error("Falha ao preparar imagem:", original.name, e);
+          marcar(i, "erro", "Não foi possível abrir");
           toast.error(
-            `"${original.name}": formato não suportado pelo navegador. No iPhone: Ajustes > Câmera > Formatos > Mais Compatível, ou converta para JPG antes de enviar.`,
+            `"${original.name}": não conseguimos abrir esta imagem. Converta para JPG ou PNG e tente de novo.`,
           );
           continue;
         }
+
         // Rede de segurança: se mesmo reduzida a imagem for grande demais, não insistir.
         if (file.size > LIMITE_IMAGEM_BYTES) {
           marcar(i, "erro", `Ainda com ${formatarTamanho(file.size)}`);
