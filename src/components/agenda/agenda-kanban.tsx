@@ -20,6 +20,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Input } from "@/components/ui/input";
 import { FileText, CalendarClock, CheckCircle2, AlertTriangle, Ban, Loader2, ExternalLink, EyeOff } from "lucide-react";
 import { PostActions, StatusBadge } from "./post-actions";
+import { TipoMidiaBadge } from "./tipo-midia-badge";
+
 import { format, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
