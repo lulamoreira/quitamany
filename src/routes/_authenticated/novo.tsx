@@ -21,9 +21,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import { Progress } from "@/components/ui/progress";
 import {
+  Check,
   ChevronLeft,
   ChevronRight,
+  Clock,
   Eye,
   Film,
   Hash,
@@ -81,6 +84,25 @@ const HASHTAG_SETS: Record<string, string> = {
 /** Formatação de tamanho vem do módulo de limites — um lugar só. */
 const mb = formatarTamanho;
 
+/** Etapas visíveis de cada imagem na fila de upload. */
+type EstadoUpload = "pendente" | "preparando" | "enviando" | "concluido" | "erro";
+
+interface ItemUpload {
+  nome: string;
+  tamanho: number;
+  estado: EstadoUpload;
+  /** Detalhe curto: motivo do erro ou tamanho final. */
+  mensagem?: string;
+}
+
+const ROTULO_ESTADO_UPLOAD: Record<EstadoUpload, string> = {
+  pendente: "Na fila",
+  preparando: "Reduzindo…",
+  enviando: "Enviando…",
+  concluido: "Enviada",
+  erro: "Falhou",
+};
+
 function NovoPost() {
   const { id: editId } = Route.useSearch();
   const navigate = useNavigate();
@@ -102,6 +124,7 @@ function NovoPost() {
   const [enviandoImagem, setEnviandoImagem] = useState(false);
   /** Índice da imagem sendo arrastada no carrossel; null quando não há arraste. */
   const [arrastandoIndice, setArrastandoIndice] = useState<number | null>(null);
+  const [filaUpload, setFilaUpload] = useState<ItemUpload[]>([]);
 
   const legendaRef = useRef<HTMLTextAreaElement | null>(null);
   const [publicando, setPublicando] = useState(false);
@@ -328,14 +351,25 @@ function NovoPost() {
     const aceitos = arquivos.slice(0, Math.max(0, limite));
     if (aceitos.length === 0) return;
     setEnviandoImagem(true);
+    // Fila visível: o usuário precisa saber qual foto está sendo enviada agora.
+    setFilaUpload(
+      aceitos.map((f) => ({ nome: f.name, tamanho: f.size, estado: "pendente" as EstadoUpload })),
+    );
+    const marcar = (indice: number, estado: EstadoUpload, mensagem?: string) =>
+      setFilaUpload((atual) =>
+        atual.map((item, i) => (i === indice ? { ...item, estado, mensagem } : item)),
+      );
     try {
       const novos: MidiaItem[] = [];
-      for (const original of aceitos) {
+      for (let i = 0; i < aceitos.length; i++) {
+        const original = aceitos[i];
         // Reduzir antes de validar: foto de celular quase sempre passa de 8 MB.
         let file: File;
+        marcar(i, "preparando");
         try {
           file = await reduzirImagem(original);
         } catch {
+          marcar(i, "erro", "Formato não suportado");
           toast.error(
             `"${original.name}": formato não suportado pelo navegador. No iPhone: Ajustes > Câmera > Formatos > Mais Compatível, ou converta para JPG antes de enviar.`,
           );
@@ -343,21 +377,25 @@ function NovoPost() {
         }
         // Rede de segurança: se mesmo reduzida a imagem for grande demais, não insistir.
         if (file.size > LIMITE_IMAGEM_BYTES) {
+          marcar(i, "erro", `Ainda com ${formatarTamanho(file.size)}`);
           toast.error(
             `"${original.name}" continua com ${formatarTamanho(file.size)} depois da redução — use outra foto.`,
           );
           continue;
         }
+        marcar(i, "enviando");
         const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
         const { error } = await supabase.storage
           .from("videos-instagram")
           .upload(path, file, { contentType: file.type, upsert: false });
         if (error) {
           console.error(error);
+          marcar(i, "erro", error.message);
           toast.error("Falha no upload: " + error.message);
           continue;
         }
         const { data } = supabase.storage.from("videos-instagram").getPublicUrl(path);
+        marcar(i, "concluido", formatarTamanho(file.size));
         novos.push({ url: data.publicUrl });
       }
       if (novos.length > 0) {
@@ -369,6 +407,8 @@ function NovoPost() {
       toast.error("Falha ao enviar imagem: " + descreverErro(e));
     } finally {
       setEnviandoImagem(false);
+      // Se tudo deu certo, a fila se apaga sozinha; erros ficam visíveis para leitura.
+      setFilaUpload((atual) => (atual.some((i) => i.estado === "erro") ? atual : []));
     }
   };
 
@@ -672,6 +712,69 @@ function NovoPost() {
                   ))}
                 </ul>
               </>
+            )}
+
+            {filaUpload.length > 0 && (
+              <div className="space-y-2 rounded-lg border border-border bg-muted/40 p-3">
+                <div className="flex items-center justify-between text-xs font-medium">
+                  <span>
+                    {enviandoImagem ? "Enviando imagens" : "Resultado do envio"}
+                  </span>
+                  <span className="text-muted-foreground">
+                    {filaUpload.filter((i) => i.estado === "concluido" || i.estado === "erro").length}
+                    /{filaUpload.length}
+                  </span>
+                </div>
+                <Progress
+                  value={
+                    (filaUpload.filter((i) => i.estado === "concluido" || i.estado === "erro")
+                      .length /
+                      filaUpload.length) *
+                    100
+                  }
+                  aria-label="Progresso do envio das imagens"
+                />
+                <ul className="space-y-1.5">
+                  {filaUpload.map((item, i) => (
+                    <li
+                      key={`${item.nome}-${i}`}
+                      className="flex items-center gap-2 text-[11px] leading-tight"
+                    >
+                      {item.estado === "concluido" ? (
+                        <Check className="h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
+                      ) : item.estado === "erro" ? (
+                        <X className="h-3.5 w-3.5 shrink-0 text-destructive" aria-hidden />
+                      ) : item.estado === "pendente" ? (
+                        <Clock className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
+                      ) : (
+                        <Loader2
+                          className="h-3.5 w-3.5 shrink-0 animate-spin text-muted-foreground"
+                          aria-hidden
+                        />
+                      )}
+                      <span className="min-w-0 flex-1 truncate">{item.nome}</span>
+                      <span
+                        className={cn(
+                          "shrink-0 text-muted-foreground",
+                          item.estado === "erro" && "text-destructive",
+                        )}
+                      >
+                        {ROTULO_ESTADO_UPLOAD[item.estado]}
+                        {item.mensagem ? ` · ${item.mensagem}` : ""}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                {!enviandoImagem && (
+                  <button
+                    type="button"
+                    onClick={() => setFilaUpload([])}
+                    className="text-[11px] text-muted-foreground underline"
+                  >
+                    Fechar
+                  </button>
+                )}
+              </div>
             )}
 
             {imagens.length < (tipoMidia === "imagem" ? 1 : MAX_ITENS_CARROSSEL) && (
