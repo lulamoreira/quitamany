@@ -328,14 +328,25 @@ function NovoPost() {
     const aceitos = arquivos.slice(0, Math.max(0, limite));
     if (aceitos.length === 0) return;
     setEnviandoImagem(true);
+    // Fila visível: o usuário precisa saber qual foto está sendo enviada agora.
+    setFilaUpload(
+      aceitos.map((f) => ({ nome: f.name, tamanho: f.size, estado: "pendente" as EstadoUpload })),
+    );
+    const marcar = (indice: number, estado: EstadoUpload, mensagem?: string) =>
+      setFilaUpload((atual) =>
+        atual.map((item, i) => (i === indice ? { ...item, estado, mensagem } : item)),
+      );
     try {
       const novos: MidiaItem[] = [];
-      for (const original of aceitos) {
+      for (let i = 0; i < aceitos.length; i++) {
+        const original = aceitos[i];
         // Reduzir antes de validar: foto de celular quase sempre passa de 8 MB.
         let file: File;
+        marcar(i, "preparando");
         try {
           file = await reduzirImagem(original);
         } catch {
+          marcar(i, "erro", "Formato não suportado");
           toast.error(
             `"${original.name}": formato não suportado pelo navegador. No iPhone: Ajustes > Câmera > Formatos > Mais Compatível, ou converta para JPG antes de enviar.`,
           );
@@ -343,21 +354,25 @@ function NovoPost() {
         }
         // Rede de segurança: se mesmo reduzida a imagem for grande demais, não insistir.
         if (file.size > LIMITE_IMAGEM_BYTES) {
+          marcar(i, "erro", `Ainda com ${formatarTamanho(file.size)}`);
           toast.error(
             `"${original.name}" continua com ${formatarTamanho(file.size)} depois da redução — use outra foto.`,
           );
           continue;
         }
+        marcar(i, "enviando");
         const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
         const { error } = await supabase.storage
           .from("videos-instagram")
           .upload(path, file, { contentType: file.type, upsert: false });
         if (error) {
           console.error(error);
+          marcar(i, "erro", error.message);
           toast.error("Falha no upload: " + error.message);
           continue;
         }
         const { data } = supabase.storage.from("videos-instagram").getPublicUrl(path);
+        marcar(i, "concluido", formatarTamanho(file.size));
         novos.push({ url: data.publicUrl });
       }
       if (novos.length > 0) {
@@ -369,6 +384,8 @@ function NovoPost() {
       toast.error("Falha ao enviar imagem: " + descreverErro(e));
     } finally {
       setEnviandoImagem(false);
+      // Se tudo deu certo, a fila se apaga sozinha; erros ficam visíveis para leitura.
+      setFilaUpload((atual) => (atual.some((i) => i.estado === "erro") ? atual : []));
     }
   };
 
