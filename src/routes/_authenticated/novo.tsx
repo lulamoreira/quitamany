@@ -22,6 +22,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import {
+  ChevronLeft,
+  ChevronRight,
   Eye,
   Film,
   Hash,
@@ -40,6 +42,7 @@ import { cn } from "@/lib/utils";
 import { PostPreview } from "@/components/agenda/post-preview";
 import { publicarAgora, executarMotorAgora } from "@/lib/publicador.functions";
 import { ehModuloObsoleto, MENSAGEM_VERSAO_OBSOLETA } from "@/lib/versao-obsoleta";
+import { reduzirImagem } from "@/lib/image-utils";
 import {
   LIMITE_IMAGEM_BYTES,
   MAX_ITENS_CARROSSEL,
@@ -97,6 +100,8 @@ function NovoPost() {
   const [tipoMidia, setTipoMidia] = useState<TipoMidia>("reels");
   const [imagens, setImagens] = useState<MidiaItem[]>([]);
   const [enviandoImagem, setEnviandoImagem] = useState(false);
+  /** Índice da imagem sendo arrastada no carrossel; null quando não há arraste. */
+  const [arrastandoIndice, setArrastandoIndice] = useState<number | null>(null);
 
   const legendaRef = useRef<HTMLTextAreaElement | null>(null);
   const [publicando, setPublicando] = useState(false);
@@ -307,20 +312,39 @@ function NovoPost() {
    * Envia imagens para o Storage (mesmo bucket dos vídeos) e devolve as URLs.
    * Sem conversão: foto vai direto, só validamos tipo e tamanho.
    */
+  /** Move uma imagem de posição, preservando a ordem das demais. */
+  const moverImagem = (de: number | null, para: number) => {
+    if (de === null || de === para) return;
+    setImagens((atuais) => {
+      if (de < 0 || para < 0 || de >= atuais.length || para >= atuais.length) return atuais;
+      const copia = [...atuais];
+      const [item] = copia.splice(de, 1);
+      copia.splice(para, 0, item);
+      return copia;
+    });
+  };
+
   const handleUploadImagens = async (arquivos: File[], limite: number) => {
     const aceitos = arquivos.slice(0, Math.max(0, limite));
     if (aceitos.length === 0) return;
     setEnviandoImagem(true);
     try {
       const novos: MidiaItem[] = [];
-      for (const file of aceitos) {
-        if (!/^image\/(jpeg|png)$/.test(file.type)) {
-          toast.error(`"${file.name}": use JPEG ou PNG.`);
+      for (const original of aceitos) {
+        // Reduzir antes de validar: foto de celular quase sempre passa de 8 MB.
+        let file: File;
+        try {
+          file = await reduzirImagem(original);
+        } catch {
+          toast.error(
+            `"${original.name}": formato não suportado pelo navegador. No iPhone: Ajustes > Câmera > Formatos > Mais Compatível, ou converta para JPG antes de enviar.`,
+          );
           continue;
         }
+        // Rede de segurança: se mesmo reduzida a imagem for grande demais, não insistir.
         if (file.size > LIMITE_IMAGEM_BYTES) {
           toast.error(
-            `"${file.name}" tem ${formatarTamanho(file.size)} — o limite é ${formatarTamanho(LIMITE_IMAGEM_BYTES)}.`,
+            `"${original.name}" continua com ${formatarTamanho(file.size)} depois da redução — use outra foto.`,
           );
           continue;
         }
@@ -575,25 +599,79 @@ function NovoPost() {
             </Label>
 
             {imagens.length > 0 && (
-              <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-                {imagens.map((item, i) => (
-                  <li key={item.url} className="relative">
-                    <img
-                      src={item.url}
-                      alt={`Imagem ${i + 1} do post`}
-                      className="aspect-square w-full rounded-md border border-border object-cover"
-                    />
-                    <button
-                      type="button"
-                      aria-label={`Remover imagem ${i + 1}`}
-                      onClick={() => setImagens((a) => a.filter((x) => x.url !== item.url))}
-                      className="absolute right-1 top-1 grid h-6 w-6 place-items-center rounded-full bg-foreground/80 text-background"
+              <>
+                {tipoMidia === "carrossel" && imagens.length > 1 && (
+                  <p className="text-[11px] text-muted-foreground">
+                    Arraste as fotos para definir a ordem de publicação.
+                  </p>
+                )}
+                <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                  {imagens.map((item, i) => (
+                    <li
+                      key={item.url}
+                      draggable={tipoMidia === "carrossel"}
+                      onDragStart={() => setArrastandoIndice(i)}
+                      onDragOver={(e) => {
+                        if (arrastandoIndice === null) return;
+                        e.preventDefault();
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        moverImagem(arrastandoIndice, i);
+                        setArrastandoIndice(null);
+                      }}
+                      onDragEnd={() => setArrastandoIndice(null)}
+                      className={cn(
+                        "relative",
+                        tipoMidia === "carrossel" && "cursor-grab active:cursor-grabbing",
+                        arrastandoIndice === i && "opacity-50",
+                      )}
                     >
-                      <X className="h-3.5 w-3.5" aria-hidden />
-                    </button>
-                  </li>
-                ))}
-              </ul>
+                      <img
+                        src={item.url}
+                        alt={`Imagem ${i + 1} do post`}
+                        className="aspect-square w-full rounded-md border border-border object-cover"
+                        draggable={false}
+                      />
+                      {tipoMidia === "carrossel" && (
+                        <span className="absolute bottom-1 left-1 rounded-full bg-foreground/80 px-1.5 text-[10px] font-semibold text-background">
+                          {i + 1}
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        aria-label={`Remover imagem ${i + 1}`}
+                        onClick={() => setImagens((a) => a.filter((x) => x.url !== item.url))}
+                        className="absolute right-1 top-1 grid h-6 w-6 place-items-center rounded-full bg-foreground/80 text-background"
+                      >
+                        <X className="h-3.5 w-3.5" aria-hidden />
+                      </button>
+                      {tipoMidia === "carrossel" && imagens.length > 1 && (
+                        <div className="absolute bottom-1 right-1 flex gap-1">
+                          <button
+                            type="button"
+                            aria-label={`Mover imagem ${i + 1} para trás`}
+                            disabled={i === 0}
+                            onClick={() => moverImagem(i, i - 1)}
+                            className="grid h-5 w-5 place-items-center rounded-full bg-foreground/80 text-background disabled:opacity-30"
+                          >
+                            <ChevronLeft className="h-3 w-3" aria-hidden />
+                          </button>
+                          <button
+                            type="button"
+                            aria-label={`Mover imagem ${i + 1} para frente`}
+                            disabled={i === imagens.length - 1}
+                            onClick={() => moverImagem(i, i + 1)}
+                            className="grid h-5 w-5 place-items-center rounded-full bg-foreground/80 text-background disabled:opacity-30"
+                          >
+                            <ChevronRight className="h-3 w-3" aria-hidden />
+                          </button>
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </>
             )}
 
             {imagens.length < (tipoMidia === "imagem" ? 1 : MAX_ITENS_CARROSSEL) && (
@@ -611,11 +689,11 @@ function NovoPost() {
                       : "Toque para adicionar imagens"}
                 </span>
                 <span className="text-[11px] text-muted-foreground">
-                  Até {formatarTamanho(LIMITE_IMAGEM_BYTES)} por imagem.
+                  Aceita fotos de celular — reduzimos o tamanho automaticamente.
                 </span>
                 <input
                   type="file"
-                  accept="image/jpeg,image/png"
+                  accept="image/*"
                   multiple={tipoMidia === "carrossel"}
                   className="hidden"
                   disabled={enviandoImagem}
