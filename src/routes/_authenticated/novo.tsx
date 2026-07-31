@@ -711,6 +711,69 @@ function NovoPost() {
               </>
             )}
 
+            {filaUpload.length > 0 && (
+              <div className="space-y-2 rounded-lg border border-border bg-muted/40 p-3">
+                <div className="flex items-center justify-between text-xs font-medium">
+                  <span>
+                    {enviandoImagem ? "Enviando imagens" : "Resultado do envio"}
+                  </span>
+                  <span className="text-muted-foreground">
+                    {filaUpload.filter((i) => i.estado === "concluido" || i.estado === "erro").length}
+                    /{filaUpload.length}
+                  </span>
+                </div>
+                <Progress
+                  value={
+                    (filaUpload.filter((i) => i.estado === "concluido" || i.estado === "erro")
+                      .length /
+                      filaUpload.length) *
+                    100
+                  }
+                  aria-label="Progresso do envio das imagens"
+                />
+                <ul className="space-y-1.5">
+                  {filaUpload.map((item, i) => (
+                    <li
+                      key={`${item.nome}-${i}`}
+                      className="flex items-center gap-2 text-[11px] leading-tight"
+                    >
+                      {item.estado === "concluido" ? (
+                        <Check className="h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
+                      ) : item.estado === "erro" ? (
+                        <X className="h-3.5 w-3.5 shrink-0 text-destructive" aria-hidden />
+                      ) : item.estado === "pendente" ? (
+                        <Clock className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
+                      ) : (
+                        <Loader2
+                          className="h-3.5 w-3.5 shrink-0 animate-spin text-muted-foreground"
+                          aria-hidden
+                        />
+                      )}
+                      <span className="min-w-0 flex-1 truncate">{item.nome}</span>
+                      <span
+                        className={cn(
+                          "shrink-0 text-muted-foreground",
+                          item.estado === "erro" && "text-destructive",
+                        )}
+                      >
+                        {ROTULO_ESTADO_UPLOAD[item.estado]}
+                        {item.mensagem ? ` · ${item.mensagem}` : ""}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                {!enviandoImagem && (
+                  <button
+                    type="button"
+                    onClick={() => setFilaUpload([])}
+                    className="text-[11px] text-muted-foreground underline"
+                  >
+                    Fechar
+                  </button>
+                )}
+              </div>
+            )}
+
             {imagens.length < (tipoMidia === "imagem" ? 1 : MAX_ITENS_CARROSSEL) && (
               <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border py-8 transition-colors hover:bg-accent/30">
                 {enviandoImagem ? (
