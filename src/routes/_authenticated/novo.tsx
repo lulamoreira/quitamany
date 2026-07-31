@@ -301,6 +301,56 @@ function NovoPost() {
     }
   };
 
+  /**
+   * Envia imagens para o Storage (mesmo bucket dos vídeos) e devolve as URLs.
+   * Sem conversão: foto vai direto, só validamos tipo e tamanho.
+   */
+  const handleUploadImagens = async (arquivos: File[], limite: number) => {
+    const aceitos = arquivos.slice(0, Math.max(0, limite));
+    if (aceitos.length === 0) return;
+    setEnviandoImagem(true);
+    try {
+      const novos: MidiaItem[] = [];
+      for (const file of aceitos) {
+        if (!/^image\/(jpeg|png)$/.test(file.type)) {
+          toast.error(`"${file.name}": use JPEG ou PNG.`);
+          continue;
+        }
+        if (file.size > LIMITE_IMAGEM_BYTES) {
+          toast.error(
+            `"${file.name}" tem ${formatarTamanho(file.size)} — o limite é ${formatarTamanho(LIMITE_IMAGEM_BYTES)}.`,
+          );
+          continue;
+        }
+        const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+        const { error } = await supabase.storage
+          .from("videos-instagram")
+          .upload(path, file, { contentType: file.type, upsert: false });
+        if (error) {
+          console.error(error);
+          toast.error("Falha no upload: " + error.message);
+          continue;
+        }
+        const { data } = supabase.storage.from("videos-instagram").getPublicUrl(path);
+        novos.push({ url: data.publicUrl });
+      }
+      if (novos.length > 0) {
+        setImagens((atuais) => [...atuais, ...novos].slice(0, MAX_ITENS_CARROSSEL));
+        toast.success(novos.length === 1 ? "Imagem enviada!" : `${novos.length} imagens enviadas!`);
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error("Falha ao enviar imagem: " + descreverErro(e));
+    } finally {
+      setEnviandoImagem(false);
+    }
+  };
+
+  /** Troca o formato do post sem perder o que já foi enviado no outro formato. */
+  const trocarTipo = (novo: TipoMidia) => {
+    setTipoMidia(novo);
+    if (novo === "imagem") setImagens((atuais) => atuais.slice(0, 1));
+  };
 
   const setAtalho = (hora: number) => {
     const d = new Date();
@@ -326,13 +376,31 @@ function NovoPost() {
     });
   };
 
+  /**
+   * A mídia está completa para ir ao ar?
+   * Reels segue exigindo vídeo, como sempre exigiu.
+   */
+  const midiaPronta =
+    tipoMidia === "reels"
+      ? Boolean(videoUrl)
+      : tipoMidia === "imagem"
+        ? imagens.length === 1
+        : imagens.length >= MIN_ITENS_CARROSSEL && imagens.length <= MAX_ITENS_CARROSSEL;
+
+  const avisoMidia =
+    tipoMidia === "reels"
+      ? "Envie um vídeo antes de continuar"
+      : tipoMidia === "imagem"
+        ? "Envie 1 imagem antes de continuar"
+        : `O carrossel precisa de ${MIN_ITENS_CARROSSEL} a ${MAX_ITENS_CARROSSEL} imagens`;
+
   /** Persiste o post. Devolve o id salvo, ou null em caso de falha. */
   const persistir = async (
     status: "rascunho" | "agendado",
     opcoes?: { silencioso?: boolean },
   ): Promise<string | null> => {
-    if (status === "agendado" && !videoUrl) {
-      toast.error("Envie um vídeo antes de agendar");
+    if (status === "agendado" && !midiaPronta) {
+      toast.error(avisoMidia);
       return null;
     }
     if (status === "agendado" && !agendadoPara) {
@@ -347,6 +415,8 @@ function NovoPost() {
       hashtags,
       video_path: videoPath || null,
       video_url: videoUrl || null,
+      tipo_midia: tipoMidia,
+      midia_itens: tipoMidia === "reels" ? null : imagens,
       agendado_para: agendadoPara ? new Date(agendadoPara).toISOString() : null,
       status,
       criado_por: user.user!.id,
@@ -360,7 +430,8 @@ function NovoPost() {
       return null;
     }
     // Salvo: some o estado "não salvo" antes de qualquer navegação.
-    baseRef.current = { titulo, legenda, hashtags, videoUrl, agendadoPara };
+    baseRef.current = { titulo, legenda, hashtags, videoUrl, agendadoPara, tipoMidia, chaveImagens };
+
     temAlteracoesRef.current = false;
     if (!opcoes?.silencioso) {
       toast.success(status === "agendado" ? "Post agendado!" : "Rascunho salvo");
