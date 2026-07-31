@@ -1,12 +1,17 @@
 import { useState } from "react";
 import { Heart, MessageCircle, MoreHorizontal, Send, Video } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { normalizarTipoMidia, type TipoMidia } from "@/lib/midia-post";
 
 export interface PostPreviewProps extends React.ComponentProps<"div"> {
   videoUrl?: string;
   legenda?: string;
   hashtags?: string;
   contaUsername?: string;
+  /** Formato do post. Ausente = Reels (comportamento legado). */
+  tipoMidia?: TipoMidia | string | null;
+  /** URLs das imagens, na ordem em que aparecem no Instagram. */
+  imagens?: string[];
 }
 
 const LIMITE_LEGENDA = 125;
@@ -20,11 +25,14 @@ export function PostPreview({
   legenda = "",
   hashtags = "",
   contaUsername,
+  tipoMidia,
+  imagens = [],
   className,
   ...props
 }: PostPreviewProps) {
   const [expandido, setExpandido] = useState(false);
 
+  const tipo = normalizarTipoMidia(tipoMidia ?? "reels");
   const arroba = contaUsername ? `@${contaUsername}` : "@sua_conta";
   const inicial = (contaUsername?.trim()?.[0] ?? "Q").toUpperCase();
 
@@ -32,6 +40,8 @@ export function PostPreview({
   const tags = hashtags.trim();
   const precisaTruncar = !expandido && texto.length > LIMITE_LEGENDA;
   const textoVisivel = precisaTruncar ? texto.slice(0, LIMITE_LEGENDA) : texto;
+
+  const primeiraImagem = imagens[0];
 
   return (
     <div
@@ -52,18 +62,53 @@ export function PostPreview({
 
       {/* Corpo 9:16 */}
       <div className="relative w-full bg-muted" style={{ aspectRatio: "9 / 16" }}>
-        {videoUrl ? (
-          <video
-            src={videoUrl}
-            controls
-            muted
-            playsInline
-            className="absolute inset-0 h-full w-full bg-black object-contain"
-          />
+        {tipo === "reels" ? (
+          videoUrl ? (
+            <video
+              src={videoUrl}
+              controls
+              muted
+              playsInline
+              className="absolute inset-0 h-full w-full bg-black object-contain"
+            />
+          ) : (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-muted-foreground">
+              <Video className="h-8 w-8" aria-hidden />
+              <span className="text-xs">Seu vídeo aparece aqui</span>
+            </div>
+          )
+        ) : primeiraImagem ? (
+          <>
+            <img
+              src={primeiraImagem}
+              alt="Prévia da primeira imagem do post"
+              className="absolute inset-0 h-full w-full bg-black object-contain"
+            />
+            {tipo === "carrossel" && imagens.length > 1 && (
+              <>
+                <span className="absolute right-2 top-2 rounded-full bg-foreground/70 px-2 py-0.5 text-[11px] font-semibold text-background">
+                  1/{imagens.length}
+                </span>
+                <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1.5">
+                  {imagens.map((url, i) => (
+                    <span
+                      key={`${url}-${i}`}
+                      className={cn(
+                        "h-1.5 w-1.5 rounded-full bg-background/60",
+                        i === 0 && "bg-background",
+                      )}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+          </>
         ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-muted-foreground">
             <Video className="h-8 w-8" aria-hidden />
-            <span className="text-xs">Seu vídeo aparece aqui</span>
+            <span className="text-xs">
+              {tipo === "carrossel" ? "Suas fotos aparecem aqui" : "Sua foto aparece aqui"}
+            </span>
           </div>
         )}
       </div>

@@ -361,11 +361,13 @@ export type Database = {
           legenda: string
           media_id: string | null
           metricas_em: string | null
+          midia_itens: Json | null
           permalink: string | null
           publicado_em: string | null
           removido_no_instagram: boolean
           reposts: number | null
           status: Database["public"]["Enums"]["post_status"]
+          tipo_midia: string
           titulo: string | null
           updated_at: string
           verificado_em: string | null
@@ -388,11 +390,13 @@ export type Database = {
           legenda?: string
           media_id?: string | null
           metricas_em?: string | null
+          midia_itens?: Json | null
           permalink?: string | null
           publicado_em?: string | null
           removido_no_instagram?: boolean
           reposts?: number | null
           status?: Database["public"]["Enums"]["post_status"]
+          tipo_midia?: string
           titulo?: string | null
           updated_at?: string
           verificado_em?: string | null
@@ -415,11 +419,13 @@ export type Database = {
           legenda?: string
           media_id?: string | null
           metricas_em?: string | null
+          midia_itens?: Json | null
           permalink?: string | null
           publicado_em?: string | null
           removido_no_instagram?: boolean
           reposts?: number | null
           status?: Database["public"]["Enums"]["post_status"]
+          tipo_midia?: string
           titulo?: string | null
           updated_at?: string
           verificado_em?: string | null

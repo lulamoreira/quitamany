@@ -2,6 +2,8 @@ import { createFileRoute, useNavigate, useBlocker } from "@tanstack/react-router
 import { useServerFn } from "@tanstack/react-start";
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,7 +21,19 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Eye, Hash, Loader2, Pilcrow, Send, Upload, Video } from "lucide-react";
+import {
+  Eye,
+  Film,
+  Hash,
+  Image as ImageIcon,
+  Images,
+  Loader2,
+  Pilcrow,
+  Send,
+  Upload,
+  Video,
+  X,
+} from "lucide-react";
 import { EmojiPicker } from "@/components/emoji-picker";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -27,12 +41,23 @@ import { PostPreview } from "@/components/agenda/post-preview";
 import { publicarAgora, executarMotorAgora } from "@/lib/publicador.functions";
 import { ehModuloObsoleto, MENSAGEM_VERSAO_OBSOLETA } from "@/lib/versao-obsoleta";
 import {
+  LIMITE_IMAGEM_BYTES,
+  MAX_ITENS_CARROSSEL,
+  MIN_ITENS_CARROSSEL,
+  normalizarMidiaItens,
+  normalizarTipoMidia,
+  ROTULO_TIPO_MIDIA,
+  type MidiaItem,
+  type TipoMidia,
+} from "@/lib/midia-post";
+import {
   AVISO_DEMORA_BYTES,
   LIMITE_CONVERSAO_BYTES,
   LIMITE_UPLOAD_BYTES,
   formatarTamanho,
   mensagemVideoMuitoGrande,
 } from "@/lib/video-limites";
+
 
 export const Route = createFileRoute("/_authenticated/novo")({
   validateSearch: (s: Record<string, unknown>) => ({ id: (s.id as string) || undefined }),
@@ -69,27 +94,44 @@ function NovoPost() {
   const [previewAberto, setPreviewAberto] = useState(false);
   const [contaUsername, setContaUsername] = useState<string | undefined>(undefined);
   const [confirmarPublicar, setConfirmarPublicar] = useState(false);
-  
+  const [tipoMidia, setTipoMidia] = useState<TipoMidia>("reels");
+  const [imagens, setImagens] = useState<MidiaItem[]>([]);
+  const [enviandoImagem, setEnviandoImagem] = useState(false);
+
   const legendaRef = useRef<HTMLTextAreaElement | null>(null);
   const [publicando, setPublicando] = useState(false);
   const publicarAgoraFn = useServerFn(publicarAgora);
   const executarMotorFn = useServerFn(executarMotorAgora);
 
+  /** Chave estável das imagens: comparar strings evita falso positivo de identidade. */
+  const chaveImagens = imagens.map((i) => i.url).join("|");
+
   // Snapshot do último estado salvo (ou carregado). Comparar contra ele evita
   // avisos em falso, que são piores que a ausência do aviso.
-  const estadoAtual = { titulo, legenda, hashtags, videoUrl, agendadoPara };
+  const estadoAtual = {
+    titulo,
+    legenda,
+    hashtags,
+    videoUrl,
+    agendadoPara,
+    tipoMidia,
+    chaveImagens,
+  };
   const baseRef = useRef({
     titulo: "",
     legenda: "",
     hashtags: "",
     videoUrl: "",
     agendadoPara: "",
+    tipoMidia: "reels" as TipoMidia,
+    chaveImagens: "",
   });
   const temAlteracoes = (Object.keys(estadoAtual) as Array<keyof typeof estadoAtual>).some(
     (k) => (estadoAtual[k] || "") !== (baseRef.current[k] || ""),
   );
   const temAlteracoesRef = useRef(temAlteracoes);
   temAlteracoesRef.current = temAlteracoes;
+
 
   useEffect(() => {
     let ativo = true;
@@ -125,6 +167,10 @@ function NovoPost() {
         setVideoUrl(data.video_url || "");
         setVideoPath(data.video_path || "");
         setAgendadoPara(dataHora);
+        const tipoSalvo = normalizarTipoMidia((data as { tipo_midia?: unknown }).tipo_midia);
+        const itensSalvos = normalizarMidiaItens((data as { midia_itens?: unknown }).midia_itens);
+        setTipoMidia(tipoSalvo);
+        setImagens(itensSalvos);
         // O que veio do banco já está salvo — não conta como alteração.
         baseRef.current = {
           titulo: data.titulo || "",
@@ -132,7 +178,10 @@ function NovoPost() {
           hashtags: data.hashtags || "",
           videoUrl: data.video_url || "",
           agendadoPara: dataHora,
+          tipoMidia: tipoSalvo,
+          chaveImagens: itensSalvos.map((i) => i.url).join("|"),
         };
+
       });
   }, [editId]);
 
@@ -254,6 +303,56 @@ function NovoPost() {
     }
   };
 
+  /**
+   * Envia imagens para o Storage (mesmo bucket dos vídeos) e devolve as URLs.
+   * Sem conversão: foto vai direto, só validamos tipo e tamanho.
+   */
+  const handleUploadImagens = async (arquivos: File[], limite: number) => {
+    const aceitos = arquivos.slice(0, Math.max(0, limite));
+    if (aceitos.length === 0) return;
+    setEnviandoImagem(true);
+    try {
+      const novos: MidiaItem[] = [];
+      for (const file of aceitos) {
+        if (!/^image\/(jpeg|png)$/.test(file.type)) {
+          toast.error(`"${file.name}": use JPEG ou PNG.`);
+          continue;
+        }
+        if (file.size > LIMITE_IMAGEM_BYTES) {
+          toast.error(
+            `"${file.name}" tem ${formatarTamanho(file.size)} — o limite é ${formatarTamanho(LIMITE_IMAGEM_BYTES)}.`,
+          );
+          continue;
+        }
+        const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+        const { error } = await supabase.storage
+          .from("videos-instagram")
+          .upload(path, file, { contentType: file.type, upsert: false });
+        if (error) {
+          console.error(error);
+          toast.error("Falha no upload: " + error.message);
+          continue;
+        }
+        const { data } = supabase.storage.from("videos-instagram").getPublicUrl(path);
+        novos.push({ url: data.publicUrl });
+      }
+      if (novos.length > 0) {
+        setImagens((atuais) => [...atuais, ...novos].slice(0, MAX_ITENS_CARROSSEL));
+        toast.success(novos.length === 1 ? "Imagem enviada!" : `${novos.length} imagens enviadas!`);
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error("Falha ao enviar imagem: " + descreverErro(e));
+    } finally {
+      setEnviandoImagem(false);
+    }
+  };
+
+  /** Troca o formato do post sem perder o que já foi enviado no outro formato. */
+  const trocarTipo = (novo: TipoMidia) => {
+    setTipoMidia(novo);
+    if (novo === "imagem") setImagens((atuais) => atuais.slice(0, 1));
+  };
 
   const setAtalho = (hora: number) => {
     const d = new Date();
@@ -279,13 +378,31 @@ function NovoPost() {
     });
   };
 
+  /**
+   * A mídia está completa para ir ao ar?
+   * Reels segue exigindo vídeo, como sempre exigiu.
+   */
+  const midiaPronta =
+    tipoMidia === "reels"
+      ? Boolean(videoUrl)
+      : tipoMidia === "imagem"
+        ? imagens.length === 1
+        : imagens.length >= MIN_ITENS_CARROSSEL && imagens.length <= MAX_ITENS_CARROSSEL;
+
+  const avisoMidia =
+    tipoMidia === "reels"
+      ? "Envie um vídeo antes de continuar"
+      : tipoMidia === "imagem"
+        ? "Envie 1 imagem antes de continuar"
+        : `O carrossel precisa de ${MIN_ITENS_CARROSSEL} a ${MAX_ITENS_CARROSSEL} imagens`;
+
   /** Persiste o post. Devolve o id salvo, ou null em caso de falha. */
   const persistir = async (
     status: "rascunho" | "agendado",
     opcoes?: { silencioso?: boolean },
   ): Promise<string | null> => {
-    if (status === "agendado" && !videoUrl) {
-      toast.error("Envie um vídeo antes de agendar");
+    if (status === "agendado" && !midiaPronta) {
+      toast.error(avisoMidia);
       return null;
     }
     if (status === "agendado" && !agendadoPara) {
@@ -300,6 +417,13 @@ function NovoPost() {
       hashtags,
       video_path: videoPath || null,
       video_url: videoUrl || null,
+      tipo_midia: tipoMidia,
+      // O jsonb aceita qualquer JSON; o cast só satisfaz o tipo gerado.
+      midia_itens:
+        tipoMidia === "reels"
+          ? null
+          : (imagens.map((i) => ({ url: i.url })) as unknown as Json),
+
       agendado_para: agendadoPara ? new Date(agendadoPara).toISOString() : null,
       status,
       criado_por: user.user!.id,
@@ -313,7 +437,8 @@ function NovoPost() {
       return null;
     }
     // Salvo: some o estado "não salvo" antes de qualquer navegação.
-    baseRef.current = { titulo, legenda, hashtags, videoUrl, agendadoPara };
+    baseRef.current = { titulo, legenda, hashtags, videoUrl, agendadoPara, tipoMidia, chaveImagens };
+
     temAlteracoesRef.current = false;
     if (!opcoes?.silencioso) {
       toast.success(status === "agendado" ? "Post agendado!" : "Rascunho salvo");
@@ -372,19 +497,32 @@ function NovoPost() {
 
   const preview = (
     <PostPreview
+      tipoMidia={tipoMidia}
       videoUrl={videoUrl || undefined}
+      imagens={imagens.map((i) => i.url)}
       legenda={legenda}
       hashtags={hashtags}
       contaUsername={contaUsername}
     />
   );
 
+  const opcoesTipo: Array<{ tipo: TipoMidia; Icone: typeof Film }> = [
+    { tipo: "reels", Icone: Film },
+    { tipo: "imagem", Icone: ImageIcon },
+    { tipo: "carrossel", Icone: Images },
+  ];
+
   return (
     <div className="space-y-6">
       <header>
         <h1 className="text-2xl font-bold">{editId ? "Editar post" : "Novo post"}</h1>
-        <p className="text-sm text-muted-foreground">{contaUsername ? `Prepare o Reel para @${contaUsername}` : "Prepare o Reel"}</p>
+        <p className="text-sm text-muted-foreground">
+          {contaUsername
+            ? `Prepare a publicação para @${contaUsername}`
+            : "Prepare a publicação"}
+        </p>
       </header>
+
 
       {/* Preview recolhido no mobile */}
       <div className="lg:hidden">
@@ -403,8 +541,109 @@ function NovoPost() {
       <div className="grid gap-6 lg:grid-cols-3 lg:items-start">
         <div className="min-w-0 space-y-6 lg:col-span-2">
       <Card>
+        <CardContent className="space-y-3 p-4">
+          <Label>Tipo de post</Label>
+          <div className="grid grid-cols-3 gap-2">
+            {opcoesTipo.map(({ tipo, Icone }) => (
+              <button
+                key={tipo}
+                type="button"
+                aria-pressed={tipoMidia === tipo}
+                onClick={() => trocarTipo(tipo)}
+                className={cn(
+                  "flex flex-col items-center gap-1.5 rounded-lg border px-2 py-3 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  tipoMidia === tipo
+                    ? "border-primary bg-primary/10 text-foreground"
+                    : "border-border text-muted-foreground hover:bg-accent/30",
+                )}
+              >
+                <Icone className="h-5 w-5" aria-hidden />
+                {ROTULO_TIPO_MIDIA[tipo]}
+              </button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {tipoMidia !== "reels" && (
+        <Card>
+          <CardContent className="space-y-4 p-4">
+            <Label>
+              {tipoMidia === "imagem"
+                ? "Imagem (JPEG ou PNG)"
+                : `Imagens do carrossel — ${MIN_ITENS_CARROSSEL} a ${MAX_ITENS_CARROSSEL}`}
+            </Label>
+
+            {imagens.length > 0 && (
+              <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                {imagens.map((item, i) => (
+                  <li key={item.url} className="relative">
+                    <img
+                      src={item.url}
+                      alt={`Imagem ${i + 1} do post`}
+                      className="aspect-square w-full rounded-md border border-border object-cover"
+                    />
+                    <button
+                      type="button"
+                      aria-label={`Remover imagem ${i + 1}`}
+                      onClick={() => setImagens((a) => a.filter((x) => x.url !== item.url))}
+                      className="absolute right-1 top-1 grid h-6 w-6 place-items-center rounded-full bg-foreground/80 text-background"
+                    >
+                      <X className="h-3.5 w-3.5" aria-hidden />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {imagens.length < (tipoMidia === "imagem" ? 1 : MAX_ITENS_CARROSSEL) && (
+              <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border py-8 transition-colors hover:bg-accent/30">
+                {enviandoImagem ? (
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                ) : (
+                  <Upload className="h-6 w-6 text-muted-foreground" />
+                )}
+                <span className="text-sm text-muted-foreground">
+                  {enviandoImagem
+                    ? "Enviando…"
+                    : tipoMidia === "imagem"
+                      ? "Toque para escolher a imagem"
+                      : "Toque para adicionar imagens"}
+                </span>
+                <span className="text-[11px] text-muted-foreground">
+                  Até {formatarTamanho(LIMITE_IMAGEM_BYTES)} por imagem.
+                </span>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png"
+                  multiple={tipoMidia === "carrossel"}
+                  className="hidden"
+                  disabled={enviandoImagem}
+                  onChange={(e) => {
+                    const arquivos = Array.from(e.target.files ?? []);
+                    const limite =
+                      (tipoMidia === "imagem" ? 1 : MAX_ITENS_CARROSSEL) - imagens.length;
+                    if (arquivos.length) handleUploadImagens(arquivos, limite);
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+            )}
+
+            {tipoMidia === "carrossel" && (
+              <p className="text-[11px] text-muted-foreground">
+                Nesta versão o carrossel aceita apenas fotos.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {tipoMidia === "reels" && (
+      <Card>
         <CardContent className="space-y-4 p-4">
           <Label>Vídeo — convertemos e comprimimos automaticamente</Label>
+
           {videoUrl ? (
             <div className="space-y-2">
               <video src={videoUrl} controls className="max-h-64 w-full rounded-md bg-black" />
@@ -480,6 +719,9 @@ function NovoPost() {
 
         </CardContent>
       </Card>
+      )}
+
+
 
       <Card>
         <CardContent className="space-y-4 p-4">
@@ -582,8 +824,8 @@ function NovoPost() {
         <Button
           variant="secondary"
           onClick={() => setConfirmarPublicar(true)}
-          disabled={saving || publicando || !videoUrl}
-          title={videoUrl ? undefined : "Envie um vídeo antes de publicar"}
+          disabled={saving || publicando || !midiaPronta}
+          title={midiaPronta ? undefined : avisoMidia}
           className="flex-1"
         >
           {publicando ? (
@@ -594,11 +836,12 @@ function NovoPost() {
           Publicar agora
         </Button>
       </div>
-      {!videoUrl && (
+      {!midiaPronta && (
         <p className="text-xs text-muted-foreground">
-          "Publicar agora" fica disponível depois que o vídeo for enviado.
+          "Publicar agora" fica disponível quando a mídia estiver completa: {avisoMidia.toLowerCase()}.
         </p>
       )}
+
         </div>
 
         <aside className="hidden min-w-0 lg:block">

@@ -20,6 +20,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Input } from "@/components/ui/input";
 import { FileText, CalendarClock, CheckCircle2, AlertTriangle, Ban, Loader2, ExternalLink, EyeOff } from "lucide-react";
 import { PostActions, StatusBadge } from "./post-actions";
+import { TipoMidiaBadge } from "./tipo-midia-badge";
+
 import { format, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -297,12 +299,14 @@ function PostCardVisual({ post, elevated }: { post: Post; elevated?: boolean }) 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5">
             <StatusBadge status={post.status} />
+            <TipoMidiaBadge tipo={(post as any).tipo_midia} />
             {post.agendado_para && (
               <span className="text-[10px] text-muted-foreground">
                 {format(new Date(post.agendado_para), "dd MMM · HH:mm", { locale: ptBR })}
               </span>
             )}
           </div>
+
           <p
             className={cn(
               "mt-1 line-clamp-2 text-xs font-semibold leading-tight",
