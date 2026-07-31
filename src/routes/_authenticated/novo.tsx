@@ -21,9 +21,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import { Progress } from "@/components/ui/progress";
 import {
+  Check,
   ChevronLeft,
   ChevronRight,
+  Clock,
   Eye,
   Film,
   Hash,
