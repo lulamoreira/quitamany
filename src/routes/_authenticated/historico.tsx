@@ -161,6 +161,8 @@ function Historico() {
                   </div>
                   <div className="flex shrink-0 flex-col items-end gap-1">
                     <StatusBadge status={p.status} />
+                    <TipoMidiaBadge tipo={(p as any).tipo_midia} />
+
                     {(p as any).removido_no_instagram && (
                       <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
                         <EyeOff className="h-3 w-3" />
