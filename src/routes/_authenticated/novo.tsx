@@ -575,25 +575,79 @@ function NovoPost() {
             </Label>
 
             {imagens.length > 0 && (
-              <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-                {imagens.map((item, i) => (
-                  <li key={item.url} className="relative">
-                    <img
-                      src={item.url}
-                      alt={`Imagem ${i + 1} do post`}
-                      className="aspect-square w-full rounded-md border border-border object-cover"
-                    />
-                    <button
-                      type="button"
-                      aria-label={`Remover imagem ${i + 1}`}
-                      onClick={() => setImagens((a) => a.filter((x) => x.url !== item.url))}
-                      className="absolute right-1 top-1 grid h-6 w-6 place-items-center rounded-full bg-foreground/80 text-background"
+              <>
+                {tipoMidia === "carrossel" && imagens.length > 1 && (
+                  <p className="text-[11px] text-muted-foreground">
+                    Arraste as fotos para definir a ordem de publicação.
+                  </p>
+                )}
+                <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                  {imagens.map((item, i) => (
+                    <li
+                      key={item.url}
+                      draggable={tipoMidia === "carrossel"}
+                      onDragStart={() => setArrastandoIndice(i)}
+                      onDragOver={(e) => {
+                        if (arrastandoIndice === null) return;
+                        e.preventDefault();
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        moverImagem(arrastandoIndice, i);
+                        setArrastandoIndice(null);
+                      }}
+                      onDragEnd={() => setArrastandoIndice(null)}
+                      className={cn(
+                        "relative",
+                        tipoMidia === "carrossel" && "cursor-grab active:cursor-grabbing",
+                        arrastandoIndice === i && "opacity-50",
+                      )}
                     >
-                      <X className="h-3.5 w-3.5" aria-hidden />
-                    </button>
-                  </li>
-                ))}
-              </ul>
+                      <img
+                        src={item.url}
+                        alt={`Imagem ${i + 1} do post`}
+                        className="aspect-square w-full rounded-md border border-border object-cover"
+                        draggable={false}
+                      />
+                      {tipoMidia === "carrossel" && (
+                        <span className="absolute bottom-1 left-1 rounded-full bg-foreground/80 px-1.5 text-[10px] font-semibold text-background">
+                          {i + 1}
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        aria-label={`Remover imagem ${i + 1}`}
+                        onClick={() => setImagens((a) => a.filter((x) => x.url !== item.url))}
+                        className="absolute right-1 top-1 grid h-6 w-6 place-items-center rounded-full bg-foreground/80 text-background"
+                      >
+                        <X className="h-3.5 w-3.5" aria-hidden />
+                      </button>
+                      {tipoMidia === "carrossel" && imagens.length > 1 && (
+                        <div className="absolute bottom-1 right-1 flex gap-1">
+                          <button
+                            type="button"
+                            aria-label={`Mover imagem ${i + 1} para trás`}
+                            disabled={i === 0}
+                            onClick={() => moverImagem(i, i - 1)}
+                            className="grid h-5 w-5 place-items-center rounded-full bg-foreground/80 text-background disabled:opacity-30"
+                          >
+                            <ChevronLeft className="h-3 w-3" aria-hidden />
+                          </button>
+                          <button
+                            type="button"
+                            aria-label={`Mover imagem ${i + 1} para frente`}
+                            disabled={i === imagens.length - 1}
+                            onClick={() => moverImagem(i, i + 1)}
+                            className="grid h-5 w-5 place-items-center rounded-full bg-foreground/80 text-background disabled:opacity-30"
+                          >
+                            <ChevronRight className="h-3 w-3" aria-hidden />
+                          </button>
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </>
             )}
 
             {imagens.length < (tipoMidia === "imagem" ? 1 : MAX_ITENS_CARROSSEL) && (
