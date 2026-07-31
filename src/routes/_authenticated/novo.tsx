@@ -81,6 +81,25 @@ const HASHTAG_SETS: Record<string, string> = {
 /** Formatação de tamanho vem do módulo de limites — um lugar só. */
 const mb = formatarTamanho;
 
+/** Etapas visíveis de cada imagem na fila de upload. */
+type EstadoUpload = "pendente" | "preparando" | "enviando" | "concluido" | "erro";
+
+interface ItemUpload {
+  nome: string;
+  tamanho: number;
+  estado: EstadoUpload;
+  /** Detalhe curto: motivo do erro ou tamanho final. */
+  mensagem?: string;
+}
+
+const ROTULO_ESTADO_UPLOAD: Record<EstadoUpload, string> = {
+  pendente: "Na fila",
+  preparando: "Reduzindo…",
+  enviando: "Enviando…",
+  concluido: "Enviada",
+  erro: "Falhou",
+};
+
 function NovoPost() {
   const { id: editId } = Route.useSearch();
   const navigate = useNavigate();
