@@ -297,12 +297,14 @@ function PostCardVisual({ post, elevated }: { post: Post; elevated?: boolean }) 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5">
             <StatusBadge status={post.status} />
+            <TipoMidiaBadge tipo={(post as any).tipo_midia} />
             {post.agendado_para && (
               <span className="text-[10px] text-muted-foreground">
                 {format(new Date(post.agendado_para), "dd MMM · HH:mm", { locale: ptBR })}
               </span>
             )}
           </div>
+
           <p
             className={cn(
               "mt-1 line-clamp-2 text-xs font-semibold leading-tight",
