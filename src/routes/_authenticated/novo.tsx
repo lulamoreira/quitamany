@@ -541,8 +541,109 @@ function NovoPost() {
       <div className="grid gap-6 lg:grid-cols-3 lg:items-start">
         <div className="min-w-0 space-y-6 lg:col-span-2">
       <Card>
+        <CardContent className="space-y-3 p-4">
+          <Label>Tipo de post</Label>
+          <div className="grid grid-cols-3 gap-2">
+            {opcoesTipo.map(({ tipo, Icone }) => (
+              <button
+                key={tipo}
+                type="button"
+                aria-pressed={tipoMidia === tipo}
+                onClick={() => trocarTipo(tipo)}
+                className={cn(
+                  "flex flex-col items-center gap-1.5 rounded-lg border px-2 py-3 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  tipoMidia === tipo
+                    ? "border-primary bg-primary/10 text-foreground"
+                    : "border-border text-muted-foreground hover:bg-accent/30",
+                )}
+              >
+                <Icone className="h-5 w-5" aria-hidden />
+                {ROTULO_TIPO_MIDIA[tipo]}
+              </button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {tipoMidia !== "reels" && (
+        <Card>
+          <CardContent className="space-y-4 p-4">
+            <Label>
+              {tipoMidia === "imagem"
+                ? "Imagem (JPEG ou PNG)"
+                : `Imagens do carrossel — ${MIN_ITENS_CARROSSEL} a ${MAX_ITENS_CARROSSEL}`}
+            </Label>
+
+            {imagens.length > 0 && (
+              <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                {imagens.map((item, i) => (
+                  <li key={item.url} className="relative">
+                    <img
+                      src={item.url}
+                      alt={`Imagem ${i + 1} do post`}
+                      className="aspect-square w-full rounded-md border border-border object-cover"
+                    />
+                    <button
+                      type="button"
+                      aria-label={`Remover imagem ${i + 1}`}
+                      onClick={() => setImagens((a) => a.filter((x) => x.url !== item.url))}
+                      className="absolute right-1 top-1 grid h-6 w-6 place-items-center rounded-full bg-foreground/80 text-background"
+                    >
+                      <X className="h-3.5 w-3.5" aria-hidden />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {imagens.length < (tipoMidia === "imagem" ? 1 : MAX_ITENS_CARROSSEL) && (
+              <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border py-8 transition-colors hover:bg-accent/30">
+                {enviandoImagem ? (
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                ) : (
+                  <Upload className="h-6 w-6 text-muted-foreground" />
+                )}
+                <span className="text-sm text-muted-foreground">
+                  {enviandoImagem
+                    ? "Enviando…"
+                    : tipoMidia === "imagem"
+                      ? "Toque para escolher a imagem"
+                      : "Toque para adicionar imagens"}
+                </span>
+                <span className="text-[11px] text-muted-foreground">
+                  Até {formatarTamanho(LIMITE_IMAGEM_BYTES)} por imagem.
+                </span>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png"
+                  multiple={tipoMidia === "carrossel"}
+                  className="hidden"
+                  disabled={enviandoImagem}
+                  onChange={(e) => {
+                    const arquivos = Array.from(e.target.files ?? []);
+                    const limite =
+                      (tipoMidia === "imagem" ? 1 : MAX_ITENS_CARROSSEL) - imagens.length;
+                    if (arquivos.length) handleUploadImagens(arquivos, limite);
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+            )}
+
+            {tipoMidia === "carrossel" && (
+              <p className="text-[11px] text-muted-foreground">
+                Nesta versão o carrossel aceita apenas fotos.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {tipoMidia === "reels" && (
+      <Card>
         <CardContent className="space-y-4 p-4">
           <Label>Vídeo — convertemos e comprimimos automaticamente</Label>
+
           {videoUrl ? (
             <div className="space-y-2">
               <video src={videoUrl} controls className="max-h-64 w-full rounded-md bg-black" />
