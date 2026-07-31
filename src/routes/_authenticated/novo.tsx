@@ -99,6 +99,8 @@ function NovoPost() {
   const [tipoMidia, setTipoMidia] = useState<TipoMidia>("reels");
   const [imagens, setImagens] = useState<MidiaItem[]>([]);
   const [enviandoImagem, setEnviandoImagem] = useState(false);
+  /** Índice da imagem sendo arrastada no carrossel; null quando não há arraste. */
+  const [arrastandoIndice, setArrastandoIndice] = useState<number | null>(null);
 
   const legendaRef = useRef<HTMLTextAreaElement | null>(null);
   const [publicando, setPublicando] = useState(false);
