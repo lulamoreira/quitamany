@@ -311,20 +311,39 @@ function NovoPost() {
    * Envia imagens para o Storage (mesmo bucket dos vídeos) e devolve as URLs.
    * Sem conversão: foto vai direto, só validamos tipo e tamanho.
    */
+  /** Move uma imagem de posição, preservando a ordem das demais. */
+  const moverImagem = (de: number | null, para: number) => {
+    if (de === null || de === para) return;
+    setImagens((atuais) => {
+      if (de < 0 || para < 0 || de >= atuais.length || para >= atuais.length) return atuais;
+      const copia = [...atuais];
+      const [item] = copia.splice(de, 1);
+      copia.splice(para, 0, item);
+      return copia;
+    });
+  };
+
   const handleUploadImagens = async (arquivos: File[], limite: number) => {
     const aceitos = arquivos.slice(0, Math.max(0, limite));
     if (aceitos.length === 0) return;
     setEnviandoImagem(true);
     try {
       const novos: MidiaItem[] = [];
-      for (const file of aceitos) {
-        if (!/^image\/(jpeg|png)$/.test(file.type)) {
-          toast.error(`"${file.name}": use JPEG ou PNG.`);
+      for (const original of aceitos) {
+        // Reduzir antes de validar: foto de celular quase sempre passa de 8 MB.
+        let file: File;
+        try {
+          file = await reduzirImagem(original);
+        } catch {
+          toast.error(
+            `"${original.name}": formato não suportado pelo navegador. No iPhone: Ajustes > Câmera > Formatos > Mais Compatível, ou converta para JPG antes de enviar.`,
+          );
           continue;
         }
+        // Rede de segurança: se mesmo reduzida a imagem for grande demais, não insistir.
         if (file.size > LIMITE_IMAGEM_BYTES) {
           toast.error(
-            `"${file.name}" tem ${formatarTamanho(file.size)} — o limite é ${formatarTamanho(LIMITE_IMAGEM_BYTES)}.`,
+            `"${original.name}" continua com ${formatarTamanho(file.size)} depois da redução — use outra foto.`,
           );
           continue;
         }
