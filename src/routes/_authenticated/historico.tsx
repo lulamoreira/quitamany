@@ -8,6 +8,8 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import { PostActions, StatusBadge } from "@/components/agenda/post-actions";
+import { TipoMidiaBadge } from "@/components/agenda/tipo-midia-badge";
+
 import { useRealtimePosts } from "@/hooks/use-realtime-posts";
 import { BotaoAtualizar } from "@/components/agenda/botao-atualizar";
 import { ErrosPublicacao } from "@/components/agenda/erros-publicacao";
