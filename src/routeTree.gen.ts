@@ -20,6 +20,7 @@ import { Route as ApiIdentifyObjetoRouteImport } from './routes/api/identify-obj
 import { Route as AuthenticatedPainelRouteImport } from './routes/_authenticated/painel'
 import { Route as AuthenticatedNovoRouteImport } from './routes/_authenticated/novo'
 import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
+import { Route as AuthenticatedGerarFotosRouteImport } from './routes/_authenticated/gerar-fotos'
 import { Route as AuthenticatedConversasRouteImport } from './routes/_authenticated/conversas'
 import { Route as AuthenticatedContatosRouteImport } from './routes/_authenticated/contatos'
 import { Route as AuthenticatedAutomacoesRouteImport } from './routes/_authenticated/automacoes'
@@ -89,6 +90,11 @@ const AuthenticatedNovoRoute = AuthenticatedNovoRouteImport.update({
 const AuthenticatedHistoricoRoute = AuthenticatedHistoricoRouteImport.update({
   id: '/historico',
   path: '/historico',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedGerarFotosRoute = AuthenticatedGerarFotosRouteImport.update({
+  id: '/gerar-fotos',
+  path: '/gerar-fotos',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedConversasRoute = AuthenticatedConversasRouteImport.update({
@@ -191,6 +197,7 @@ export interface FileRoutesByFullPath {
   '/automacoes': typeof AuthenticatedAutomacoesRoute
   '/contatos': typeof AuthenticatedContatosRoute
   '/conversas': typeof AuthenticatedConversasRoute
+  '/gerar-fotos': typeof AuthenticatedGerarFotosRoute
   '/historico': typeof AuthenticatedHistoricoRoute
   '/novo': typeof AuthenticatedNovoRoute
   '/painel': typeof AuthenticatedPainelRoute
@@ -219,6 +226,7 @@ export interface FileRoutesByTo {
   '/automacoes': typeof AuthenticatedAutomacoesRoute
   '/contatos': typeof AuthenticatedContatosRoute
   '/conversas': typeof AuthenticatedConversasRoute
+  '/gerar-fotos': typeof AuthenticatedGerarFotosRoute
   '/historico': typeof AuthenticatedHistoricoRoute
   '/novo': typeof AuthenticatedNovoRoute
   '/painel': typeof AuthenticatedPainelRoute
@@ -249,6 +257,7 @@ export interface FileRoutesById {
   '/_authenticated/automacoes': typeof AuthenticatedAutomacoesRoute
   '/_authenticated/contatos': typeof AuthenticatedContatosRoute
   '/_authenticated/conversas': typeof AuthenticatedConversasRoute
+  '/_authenticated/gerar-fotos': typeof AuthenticatedGerarFotosRoute
   '/_authenticated/historico': typeof AuthenticatedHistoricoRoute
   '/_authenticated/novo': typeof AuthenticatedNovoRoute
   '/_authenticated/painel': typeof AuthenticatedPainelRoute
@@ -279,6 +288,7 @@ export interface FileRouteTypes {
     | '/automacoes'
     | '/contatos'
     | '/conversas'
+    | '/gerar-fotos'
     | '/historico'
     | '/novo'
     | '/painel'
@@ -307,6 +317,7 @@ export interface FileRouteTypes {
     | '/automacoes'
     | '/contatos'
     | '/conversas'
+    | '/gerar-fotos'
     | '/historico'
     | '/novo'
     | '/painel'
@@ -336,6 +347,7 @@ export interface FileRouteTypes {
     | '/_authenticated/automacoes'
     | '/_authenticated/contatos'
     | '/_authenticated/conversas'
+    | '/_authenticated/gerar-fotos'
     | '/_authenticated/historico'
     | '/_authenticated/novo'
     | '/_authenticated/painel'
@@ -447,6 +459,13 @@ declare module '@tanstack/react-router' {
       path: '/historico'
       fullPath: '/historico'
       preLoaderRoute: typeof AuthenticatedHistoricoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/gerar-fotos': {
+      id: '/_authenticated/gerar-fotos'
+      path: '/gerar-fotos'
+      fullPath: '/gerar-fotos'
+      preLoaderRoute: typeof AuthenticatedGerarFotosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/conversas': {
@@ -570,6 +589,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAutomacoesRoute: typeof AuthenticatedAutomacoesRoute
   AuthenticatedContatosRoute: typeof AuthenticatedContatosRoute
   AuthenticatedConversasRoute: typeof AuthenticatedConversasRoute
+  AuthenticatedGerarFotosRoute: typeof AuthenticatedGerarFotosRoute
   AuthenticatedHistoricoRoute: typeof AuthenticatedHistoricoRoute
   AuthenticatedNovoRoute: typeof AuthenticatedNovoRoute
   AuthenticatedPainelRoute: typeof AuthenticatedPainelRoute
@@ -587,6 +607,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAutomacoesRoute: AuthenticatedAutomacoesRoute,
   AuthenticatedContatosRoute: AuthenticatedContatosRoute,
   AuthenticatedConversasRoute: AuthenticatedConversasRoute,
+  AuthenticatedGerarFotosRoute: AuthenticatedGerarFotosRoute,
   AuthenticatedHistoricoRoute: AuthenticatedHistoricoRoute,
   AuthenticatedNovoRoute: AuthenticatedNovoRoute,
   AuthenticatedPainelRoute: AuthenticatedPainelRoute,

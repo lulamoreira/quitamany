@@ -37,6 +37,7 @@ const SECTIONS: Array<{ title: string | null; items: Item[] }> = [
     items: [
       { to: "/agenda", label: "Agenda", icon: CalendarDays },
       { to: "/novo", label: "Novo post", icon: PlusCircle },
+      { to: "/gerar-fotos", label: "Fotos com IA", icon: Sparkles },
       { to: "/historico", label: "Histórico", icon: Clock },
     ],
   },
