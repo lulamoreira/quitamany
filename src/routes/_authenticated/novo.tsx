@@ -792,11 +792,13 @@ function NovoPost() {
                       : "Toque para adicionar imagens"}
                 </span>
                 <span className="text-[11px] text-muted-foreground">
-                  Aceita fotos de celular — reduzimos o tamanho automaticamente.
+                  JPG, JPEG, PNG, WebP ou HEIC do iPhone — convertemos e reduzimos
+                  automaticamente.
                 </span>
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/*,.jpg,.jpeg,.png,.webp,.heic,.heif,image/heic,image/heif"
+
                   multiple={tipoMidia === "carrossel"}
                   className="hidden"
                   disabled={enviandoImagem}
