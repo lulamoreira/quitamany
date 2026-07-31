@@ -15,6 +15,7 @@ import { Route as ExclusaoDeDadosRouteImport } from './routes/exclusao-de-dados'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiIdentifyObjetoRouteImport } from './routes/api/identify-objeto'
 import { Route as AuthenticatedPainelRouteImport } from './routes/_authenticated/painel'
 import { Route as AuthenticatedNovoRouteImport } from './routes/_authenticated/novo'
 import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
@@ -62,6 +63,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiIdentifyObjetoRoute = ApiIdentifyObjetoRouteImport.update({
+  id: '/api/identify-objeto',
+  path: '/api/identify-objeto',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedPainelRoute = AuthenticatedPainelRouteImport.update({
@@ -182,6 +188,7 @@ export interface FileRoutesByFullPath {
   '/historico': typeof AuthenticatedHistoricoRoute
   '/novo': typeof AuthenticatedNovoRoute
   '/painel': typeof AuthenticatedPainelRoute
+  '/api/identify-objeto': typeof ApiIdentifyObjetoRoute
   '/conversa/$id': typeof AuthenticatedConversaIdRoute
   '/quitamany/ajustes': typeof AuthenticatedQuitamanyAjustesRoute
   '/quitamany/automacoes': typeof AuthenticatedQuitamanyAutomacoesRoute
@@ -208,6 +215,7 @@ export interface FileRoutesByTo {
   '/historico': typeof AuthenticatedHistoricoRoute
   '/novo': typeof AuthenticatedNovoRoute
   '/painel': typeof AuthenticatedPainelRoute
+  '/api/identify-objeto': typeof ApiIdentifyObjetoRoute
   '/conversa/$id': typeof AuthenticatedConversaIdRoute
   '/quitamany/ajustes': typeof AuthenticatedQuitamanyAjustesRoute
   '/quitamany/automacoes': typeof AuthenticatedQuitamanyAutomacoesRoute
@@ -236,6 +244,7 @@ export interface FileRoutesById {
   '/_authenticated/historico': typeof AuthenticatedHistoricoRoute
   '/_authenticated/novo': typeof AuthenticatedNovoRoute
   '/_authenticated/painel': typeof AuthenticatedPainelRoute
+  '/api/identify-objeto': typeof ApiIdentifyObjetoRoute
   '/_authenticated/conversa/$id': typeof AuthenticatedConversaIdRoute
   '/_authenticated/quitamany/ajustes': typeof AuthenticatedQuitamanyAjustesRoute
   '/_authenticated/quitamany/automacoes': typeof AuthenticatedQuitamanyAutomacoesRoute
@@ -264,6 +273,7 @@ export interface FileRouteTypes {
     | '/historico'
     | '/novo'
     | '/painel'
+    | '/api/identify-objeto'
     | '/conversa/$id'
     | '/quitamany/ajustes'
     | '/quitamany/automacoes'
@@ -290,6 +300,7 @@ export interface FileRouteTypes {
     | '/historico'
     | '/novo'
     | '/painel'
+    | '/api/identify-objeto'
     | '/conversa/$id'
     | '/quitamany/ajustes'
     | '/quitamany/automacoes'
@@ -317,6 +328,7 @@ export interface FileRouteTypes {
     | '/_authenticated/historico'
     | '/_authenticated/novo'
     | '/_authenticated/painel'
+    | '/api/identify-objeto'
     | '/_authenticated/conversa/$id'
     | '/_authenticated/quitamany/ajustes'
     | '/_authenticated/quitamany/automacoes'
@@ -337,6 +349,7 @@ export interface RootRouteChildren {
   ExclusaoDeDadosRoute: typeof ExclusaoDeDadosRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   TermosRoute: typeof TermosRoute
+  ApiIdentifyObjetoRoute: typeof ApiIdentifyObjetoRoute
   ApiPublicMetaCallbackRoute: typeof ApiPublicMetaCallbackRoute
   ApiPublicVersaoRoute: typeof ApiPublicVersaoRoute
   ApiPublicHooksPublicarPostsRoute: typeof ApiPublicHooksPublicarPostsRoute
@@ -386,6 +399,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/identify-objeto': {
+      id: '/api/identify-objeto'
+      path: '/api/identify-objeto'
+      fullPath: '/api/identify-objeto'
+      preLoaderRoute: typeof ApiIdentifyObjetoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/painel': {
@@ -568,6 +588,7 @@ const rootRouteChildren: RootRouteChildren = {
   ExclusaoDeDadosRoute: ExclusaoDeDadosRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   TermosRoute: TermosRoute,
+  ApiIdentifyObjetoRoute: ApiIdentifyObjetoRoute,
   ApiPublicMetaCallbackRoute: ApiPublicMetaCallbackRoute,
   ApiPublicVersaoRoute: ApiPublicVersaoRoute,
   ApiPublicHooksPublicarPostsRoute: ApiPublicHooksPublicarPostsRoute,
