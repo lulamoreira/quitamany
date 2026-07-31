@@ -66,7 +66,9 @@ import {
 
 
 export const Route = createFileRoute("/_authenticated/novo")({
-  validateSearch: (s: Record<string, unknown>) => ({ id: (s.id as string) || undefined }),
+  validateSearch: (s: Record<string, unknown>): { id?: string } => ({
+    id: (s.id as string) || undefined,
+  }),
   head: () => ({ meta: [{ title: "Novo post · QuitaMany" }] }),
   component: NovoPost,
 });
