@@ -165,6 +165,10 @@ function NovoPost() {
         setVideoUrl(data.video_url || "");
         setVideoPath(data.video_path || "");
         setAgendadoPara(dataHora);
+        const tipoSalvo = normalizarTipoMidia((data as { tipo_midia?: unknown }).tipo_midia);
+        const itensSalvos = normalizarMidiaItens((data as { midia_itens?: unknown }).midia_itens);
+        setTipoMidia(tipoSalvo);
+        setImagens(itensSalvos);
         // O que veio do banco já está salvo — não conta como alteração.
         baseRef.current = {
           titulo: data.titulo || "",
@@ -172,7 +176,10 @@ function NovoPost() {
           hashtags: data.hashtags || "",
           videoUrl: data.video_url || "",
           agendadoPara: dataHora,
+          tipoMidia: tipoSalvo,
+          chaveImagens: itensSalvos.map((i) => i.url).join("|"),
         };
+
       });
   }, [editId]);
 
