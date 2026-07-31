@@ -102,6 +102,7 @@ function NovoPost() {
   const [enviandoImagem, setEnviandoImagem] = useState(false);
   /** Índice da imagem sendo arrastada no carrossel; null quando não há arraste. */
   const [arrastandoIndice, setArrastandoIndice] = useState<number | null>(null);
+  const [filaUpload, setFilaUpload] = useState<ItemUpload[]>([]);
 
   const legendaRef = useRef<HTMLTextAreaElement | null>(null);
   const [publicando, setPublicando] = useState(false);
