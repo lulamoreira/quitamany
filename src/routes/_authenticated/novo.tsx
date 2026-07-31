@@ -824,8 +824,8 @@ function NovoPost() {
         <Button
           variant="secondary"
           onClick={() => setConfirmarPublicar(true)}
-          disabled={saving || publicando || !videoUrl}
-          title={videoUrl ? undefined : "Envie um vídeo antes de publicar"}
+          disabled={saving || publicando || !midiaPronta}
+          title={midiaPronta ? undefined : avisoMidia}
           className="flex-1"
         >
           {publicando ? (
@@ -836,11 +836,12 @@ function NovoPost() {
           Publicar agora
         </Button>
       </div>
-      {!videoUrl && (
+      {!midiaPronta && (
         <p className="text-xs text-muted-foreground">
-          "Publicar agora" fica disponível depois que o vídeo for enviado.
+          "Publicar agora" fica disponível quando a mídia estiver completa: {avisoMidia.toLowerCase()}.
         </p>
       )}
+
         </div>
 
         <aside className="hidden min-w-0 lg:block">
