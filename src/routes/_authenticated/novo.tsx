@@ -42,6 +42,7 @@ import { cn } from "@/lib/utils";
 import { PostPreview } from "@/components/agenda/post-preview";
 import { publicarAgora, executarMotorAgora } from "@/lib/publicador.functions";
 import { ehModuloObsoleto, MENSAGEM_VERSAO_OBSOLETA } from "@/lib/versao-obsoleta";
+import { reduzirImagem } from "@/lib/image-utils";
 import {
   LIMITE_IMAGEM_BYTES,
   MAX_ITENS_CARROSSEL,
