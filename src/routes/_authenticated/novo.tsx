@@ -92,27 +92,44 @@ function NovoPost() {
   const [previewAberto, setPreviewAberto] = useState(false);
   const [contaUsername, setContaUsername] = useState<string | undefined>(undefined);
   const [confirmarPublicar, setConfirmarPublicar] = useState(false);
-  
+  const [tipoMidia, setTipoMidia] = useState<TipoMidia>("reels");
+  const [imagens, setImagens] = useState<MidiaItem[]>([]);
+  const [enviandoImagem, setEnviandoImagem] = useState(false);
+
   const legendaRef = useRef<HTMLTextAreaElement | null>(null);
   const [publicando, setPublicando] = useState(false);
   const publicarAgoraFn = useServerFn(publicarAgora);
   const executarMotorFn = useServerFn(executarMotorAgora);
 
+  /** Chave estável das imagens: comparar strings evita falso positivo de identidade. */
+  const chaveImagens = imagens.map((i) => i.url).join("|");
+
   // Snapshot do último estado salvo (ou carregado). Comparar contra ele evita
   // avisos em falso, que são piores que a ausência do aviso.
-  const estadoAtual = { titulo, legenda, hashtags, videoUrl, agendadoPara };
+  const estadoAtual = {
+    titulo,
+    legenda,
+    hashtags,
+    videoUrl,
+    agendadoPara,
+    tipoMidia,
+    chaveImagens,
+  };
   const baseRef = useRef({
     titulo: "",
     legenda: "",
     hashtags: "",
     videoUrl: "",
     agendadoPara: "",
+    tipoMidia: "reels" as TipoMidia,
+    chaveImagens: "",
   });
   const temAlteracoes = (Object.keys(estadoAtual) as Array<keyof typeof estadoAtual>).some(
     (k) => (estadoAtual[k] || "") !== (baseRef.current[k] || ""),
   );
   const temAlteracoesRef = useRef(temAlteracoes);
   temAlteracoesRef.current = temAlteracoes;
+
 
   useEffect(() => {
     let ativo = true;
