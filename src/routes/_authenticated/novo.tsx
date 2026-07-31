@@ -19,7 +19,19 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Eye, Hash, Loader2, Pilcrow, Send, Upload, Video } from "lucide-react";
+import {
+  Eye,
+  Film,
+  Hash,
+  Image as ImageIcon,
+  Images,
+  Loader2,
+  Pilcrow,
+  Send,
+  Upload,
+  Video,
+  X,
+} from "lucide-react";
 import { EmojiPicker } from "@/components/emoji-picker";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -27,12 +39,23 @@ import { PostPreview } from "@/components/agenda/post-preview";
 import { publicarAgora, executarMotorAgora } from "@/lib/publicador.functions";
 import { ehModuloObsoleto, MENSAGEM_VERSAO_OBSOLETA } from "@/lib/versao-obsoleta";
 import {
+  LIMITE_IMAGEM_BYTES,
+  MAX_ITENS_CARROSSEL,
+  MIN_ITENS_CARROSSEL,
+  normalizarMidiaItens,
+  normalizarTipoMidia,
+  ROTULO_TIPO_MIDIA,
+  type MidiaItem,
+  type TipoMidia,
+} from "@/lib/midia-post";
+import {
   AVISO_DEMORA_BYTES,
   LIMITE_CONVERSAO_BYTES,
   LIMITE_UPLOAD_BYTES,
   formatarTamanho,
   mensagemVideoMuitoGrande,
 } from "@/lib/video-limites";
+
 
 export const Route = createFileRoute("/_authenticated/novo")({
   validateSearch: (s: Record<string, unknown>) => ({ id: (s.id as string) || undefined }),
